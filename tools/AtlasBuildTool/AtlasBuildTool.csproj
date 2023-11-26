@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Configurations>Debug;Release</Configurations>
+        <Platforms>AnyCPU</Platforms>
+        <Company>Atlas</Company>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <OutputPath>../../build/debug/output/</OutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <OutputPath>../../build/release/output/</OutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ToolCore\ToolCore.csproj" />
+    </ItemGroup>
+
+</Project>

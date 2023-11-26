@@ -1,0 +1,77 @@
+cmake_minimum_required(VERSION 3.26)
+project(atlas LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 23)
+set(dotnet_sdk_version "net7.0")
+
+# compile option
+option(shared           "build with dynamic link"                   ON)
+option(unicode          "build with unicode string"                 ON)
+option(with_test        "build with unit test"                      OFF)
+option(with_benchmark   "build with benchmark"                      OFF)
+option(with_ispc        "use ispc compiler to generate simd code"   OFF)
+
+if(shared)
+    add_compile_definitions(AE_SHARED)
+endif()
+
+if(unicode)
+    add_compile_definitions(UNICODE)
+endif()
+
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    add_compile_definitions(DEBUG)
+elseif(${CMAKE_BUILD_TYPE} MATCHES "RelWithDebInfo")
+    add_compile_definitions(DEVELOPMENT)
+elseif(${CMAKE_BUILD_TYPE} MATCHES "Release")
+    add_compile_definitions(RELEASE)
+endif()
+
+if(WIN32)
+    add_compile_definitions(WIN32)
+    add_compile_definitions(_WIN32)
+endif()
+
+# set output
+# TODO: use different dir for config
+set(CMAKE_DEBUG_POSTFIX "d")
+set(output_dir ${CMAKE_BINARY_DIR}/output)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${output_dir}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${output_dir}/bin)
+
+## set absolute path
+set(atlas_tool_dir ${CMAKE_SOURCE_DIR}/tools)
+
+include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
+
+## run build tool
+set(abt_exist 0)
+
+set(atlas_build_tool_dir ${output_dir}/${dotnet_sdk_version})
+
+if (WIN32)
+    if (EXISTS ${atlas_build_tool_dir}/AtlasBuildTool.exe)
+        set(abt_exist 1)
+    endif ()
+elseif (APPLE)
+    if (EXISTS ${atlas_build_tool_dir}/AtlasBuildTool)
+        set(abt_exist 1)
+    endif ()
+endif ()
+
+if (abt_exist)
+    execute_process(
+            COMMAND ${atlas_build_tool_dir}/AtlasBuildTool
+            RESULT_VARIABLE exit_code
+    )
+
+    if (exit_code)
+        message(FATAL_ERROR "some errors occurred while running atlas build tool")
+    endif ()
+else ()
+    message(FATAL_ERROR "can't find atlas build tool. please make sure tools are built first")
+endif ()
+
+add_subdirectory(src)
+
+message(${CMAKE_BINARY_DIR})

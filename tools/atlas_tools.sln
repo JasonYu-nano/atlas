@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AtlasBuildTool", "AtlasBuildTool\AtlasBuildTool.csproj", "{29F81424-6048-435F-98DB-54F10D5FDDA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolCore", "ToolCore\ToolCore.csproj", "{1ECF8624-0B39-420F-B440-5984FB8C95BF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		RelWithDebInfo|Any CPU = RelWithDebInfo|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{29F81424-6048-435F-98DB-54F10D5FDDA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29F81424-6048-435F-98DB-54F10D5FDDA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29F81424-6048-435F-98DB-54F10D5FDDA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29F81424-6048-435F-98DB-54F10D5FDDA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ECF8624-0B39-420F-B440-5984FB8C95BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ECF8624-0B39-420F-B440-5984FB8C95BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ECF8624-0B39-420F-B440-5984FB8C95BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ECF8624-0B39-420F-B440-5984FB8C95BF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,146 @@
+macro(_build_target_parse_arguments)
+    set(options EDITOR_ONLY SKIP_MOC GAME_TARGET TEST_TARGET)
+    set(one_value_args TARGET)
+    set(multi_value_args PUBLIC_DEFINITIONS PRIVATE_DEFINITIONS PUBLIC_INCLUDE_DIRS PRIVATE_INCLUDE_DIRS PUBLIC_LINK_LIB PRIVATE_LINK_LIB DEPENDENCY_TARGETS)
+    cmake_parse_arguments(ARG "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+endmacro()
+
+macro(_add_target_properties)
+    if (ARG_EDITOR_ONLY)
+        set_target_properties(${ARG_TARGET} PROPERTIES EDITOR_ONLY 1)
+    else ()
+        set_target_properties(${ARG_TARGET} PROPERTIES EDITOR_ONLY 0)
+    endif ()
+endmacro()
+
+macro(_add_compile_definitions)
+    if (ARG_PUBLIC_DEFINITIONS)
+        foreach (PUBLIC_DEFINITION ${ARG_PUBLIC_DEFINITIONS})
+            target_compile_definitions(${ARG_TARGET} PUBLIC ${PUBLIC_DEFINITION})
+        endforeach ()
+    endif ()
+
+    if (ARG_PRIVATE_DEFINITIONS)
+        foreach (PRIVATE_DEFINITION ${ARG_PRIVATE_DEFINITIONS})
+            target_compile_definitions(${ARG_TARGET} PRIVATE ${PRIVATE_DEFINITION})
+        endforeach ()
+    endif ()
+endmacro()
+
+macro(_add_include_dirs)
+    if (ARG_PUBLIC_INCLUDE_DIRS)
+        foreach (INCLUDE_DIR ${ARG_PUBLIC_INCLUDE_DIRS})
+            target_include_directories(${ARG_TARGET} PUBLIC ${INCLUDE_DIR})
+        endforeach ()
+    endif ()
+
+    if (ARG_PRIVATE_INCLUDE_DIRS)
+        foreach (INCLUDE_DIR ${ARG_PRIVATE_INCLUDE_DIRS})
+            target_include_directories(${ARG_TARGET} PRIVATE ${INCLUDE_DIR})
+        endforeach ()
+    endif ()
+endmacro()
+
+macro(_add_dependency)
+    if (ARG_DEPENDENCY_TARGETS)
+        foreach (TARGET ${ARG_DEPENDENCY_TARGETS})
+            add_dependencies(${ARG_TARGET} ${TARGET})
+        endforeach ()
+    endif ()
+endmacro()
+
+macro(_setup_ide)
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})
+
+    if (ARG_GAME_TARGET)
+        set_target_properties(${ARG_TARGET} PROPERTIES FOLDER "game")
+    elseif (ARG_TEST_TARGET)
+        set_target_properties(${ARG_TARGET} PROPERTIES FOLDER "test")
+    else ()
+        set_target_properties(${ARG_TARGET} PROPERTIES FOLDER "atlas_engine")
+    endif ()
+endmacro()
+
+macro(_add_link_libs)
+    get_target_property(target_editor_only ${ARG_TARGET} EDITOR_ONLY)
+
+    if (ARG_PUBLIC_LINK_LIB)
+        foreach (LINK_LIB ${ARG_PUBLIC_LINK_LIB})
+            if (NOT target_editor_only AND TARGET ${LINK_LIB})
+                get_property(editor_only TARGET ${LINK_LIB} PROPERTY EDITOR_ONLY)
+                if (editor_only)
+                    message(FATAL_ERROR "Link an editor target to runtime target is not allowed")
+                endif ()
+            endif ()
+
+            target_link_libraries(${ARG_TARGET} PUBLIC ${LINK_LIB})
+        endforeach ()
+    endif ()
+
+    if (ARG_PRIVATE_LINK_LIB)
+        foreach (LINK_LIB ${ARG_PRIVATE_LINK_LIB})
+            if (NOT target_editor_only AND TARGET ${LINK_LIB})
+                get_property(editor_only TARGET ${LINK_LIB} PROPERTY EDITOR_ONLY)
+                if (editor_only)
+                    message(FATAL_ERROR "Link an editor target to runtime target is not allowed")
+                endif ()
+            endif ()
+
+            target_link_libraries(${ARG_TARGET} PRIVATE ${LINK_LIB})
+        endforeach ()
+    endif ()
+endmacro()
+
+macro(add_atlas_library)
+    _build_target_parse_arguments(${ARGV})
+
+    set(project_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    file(GLOB_RECURSE project_files *.hpp *.cpp)
+
+    if(shared)
+        add_library(${ARG_TARGET} SHARED ${project_files})
+    else()
+        add_library(${ARG_TARGET} STATIC ${project_files})
+    endif()
+
+    _add_target_properties()
+    _add_compile_definitions()
+    _add_include_dirs()
+    _add_link_libs()
+    _add_dependency()
+
+    if(MSVC)
+        add_definitions(/FI"${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/${ARG_TARGET}_definitions.hpp")
+    else()
+        # GCC or Clang
+        add_definitions(-include ${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/${ARG_TARGET}_definitions.hpp)
+    endif()
+
+    _setup_ide()
+endmacro()
+
+macro(add_atlas_executable)
+    _build_target_parse_arguments(${ARGV})
+
+    set(project_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    file(GLOB_RECURSE project_files *.hpp *.cpp)
+
+    add_executable(${ARG_TARGET} ${project_files})
+
+    _add_target_properties()
+    _add_compile_definitions()
+    _add_include_dirs()
+    _add_link_libs()
+    _add_dependency()
+
+    if(MSVC)
+        add_definitions(/FI"${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/${ARG_TARGET}_definitions.hpp")
+    else()
+        # GCC or Clang
+        add_definitions(-include ${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/${ARG_TARGET}_definitions.hpp)
+    endif()
+
+    _setup_ide()
+endmacro()
