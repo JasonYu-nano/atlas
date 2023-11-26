@@ -33,7 +33,6 @@ if(WIN32)
 endif()
 
 # set output
-# TODO: use different dir for config
 set(CMAKE_DEBUG_POSTFIX "d")
 set(output_dir ${CMAKE_BINARY_DIR}/output)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${output_dir}/lib)
