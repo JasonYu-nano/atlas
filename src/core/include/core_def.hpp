@@ -54,10 +54,12 @@ __GNUC_PATCHLEVEL__)
 #endif
 #endif
 
-
+// define default marco
+#define DLL_EXPORT
+#define DLL_IMPORT
 
 #if PLATFORM_WINDOWS
-
+#include "platform/windows/windows_platform.hpp"
 #elif PLATFORM_APPLE
 #include "platform/mac/mac_platform.hpp"
 #elif PLATFORM_LINUX

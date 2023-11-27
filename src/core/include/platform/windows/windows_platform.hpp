@@ -2,11 +2,10 @@
 //  Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
 #pragma once
-#include "core_def.hpp"
 
 namespace atlas
 {
-struct MacPlatformTypes
+struct WindowsPlatformTypes
 {
     typedef unsigned long long      uint64;
     typedef unsigned int            uint32;
@@ -23,17 +22,17 @@ struct MacPlatformTypes
     typedef uint64                  size_t;
 };
 
-typedef MacPlatformTypes PlatformTypes;
+typedef WindowsPlatformTypes PlatformTypes;
 }
 
 #ifdef DLL_EXPORT
 #undef DLL_EXPORT
 #endif
 
-#define DLL_EXPORT __attribute__((visibility("default")))
+#define DLL_EXPORT __declspec(dllexport)
 
 #ifdef DLL_IMPORT
 #undef DLL_IMPORT
 #endif
 
-#define DLL_IMPORT
+#define DLL_IMPORT __declspec(dllimport)

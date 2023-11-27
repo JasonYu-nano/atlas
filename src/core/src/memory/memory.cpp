@@ -4,7 +4,7 @@
 #include "memory/memory.hpp"
 
 #if PLATFORM_WINDOWS
-
+#include "platform/windows/windows_memory.hpp"
 #elif PLATFORM_APPLE
 #include "platform/mac/mac_memory.hpp"
 #elif PLATFORM_LINUX
