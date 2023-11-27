@@ -1,6 +1,8 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
+using System.Runtime.InteropServices;
+
 namespace ToolCore.Utils;
 
 public static class DirectoryUtils
@@ -15,7 +17,7 @@ public static class DirectoryUtils
 
     private static string GetEngineRootDirectory()
     {
-        const string rootName = "/atlas/";
+        string rootName = $"{Path.DirectorySeparatorChar}atlas{Path.DirectorySeparatorChar}";
         var workingDir = AppContext.BaseDirectory;
         var index = workingDir.LastIndexOf(rootName, StringComparison.Ordinal);
         return workingDir.Remove(index + rootName.Length - 1);
