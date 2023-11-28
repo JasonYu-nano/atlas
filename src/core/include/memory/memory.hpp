@@ -12,13 +12,15 @@ class CORE_API Memory
 public:
     static void* Malloc(size_t size);
 
-    static void* Malloc(size_t size, uint32 alignment);
-
-    static void Free(void* ptr);
+    static void* AlignedMalloc(size_t size, uint32 alignment);
 
     static void* Realloc(void* ptr, size_t new_size);
 
-    static void* Realloc(void* ptr, size_t new_size, uint32 alignment);
+    static void* AlignedRealloc(void* ptr, size_t new_size, uint32 alignment);
+
+    static void Free(void* ptr);
+
+    static void AlignedFree(void* ptr);
 
     static void Memcpy(void* dest, void const* src, size_t size);
 

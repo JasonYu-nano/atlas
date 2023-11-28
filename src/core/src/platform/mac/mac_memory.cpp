@@ -5,21 +5,13 @@
 
 #include <cstring>
 
-#include "memory/c_malloc.hpp"
+#include "memory/standard_malloc.hpp"
 
 namespace atlas
 {
-
-uint32 MacMemory::DefaultAlignment = 16;
-
-uint32 MacMemory::GetDefaultAlignment()
-{
-    return DefaultAlignment;
-}
-
 IMalloc* MacMemory::GetDefaultMalloc()
 {
-    return new CMalloc();
+    return new StandardMalloc();
 }
 
 void MacMemory::DestroyMalloc(IMalloc* malloc)
