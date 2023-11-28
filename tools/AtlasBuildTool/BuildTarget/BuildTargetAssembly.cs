@@ -1,3 +1,6 @@
+// Copyright(c) 2023-present, Atlas.
+// Distributed under the MIT License (http://opensource.org/licenses/MIT)
+
 using AtlasBuildTool.CMake;
 
 namespace AtlasBuildTool.BuildTarget;
