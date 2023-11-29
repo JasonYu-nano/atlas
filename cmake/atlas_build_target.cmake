@@ -93,7 +93,6 @@ endmacro()
 
 macro(_include_definition_file)
     set(definition_file "${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/${ARG_TARGET}_definitions.hpp")
-    message("dashu ${definition_file}")
     if (EXISTS ${definition_file})
         if(MSVC)
             add_definitions(/FI${definition_file})
