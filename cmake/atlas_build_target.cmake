@@ -91,6 +91,19 @@ macro(_add_link_libs)
     endif ()
 endmacro()
 
+macro(_include_definition_file)
+    set(definition_file "${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/${ARG_TARGET}_definitions.hpp")
+    message("dashu ${definition_file}")
+    if (EXISTS ${definition_file})
+        if(MSVC)
+            add_definitions(/FI${definition_file})
+        else()
+            # GCC or Clang
+            add_definitions(-include ${definition_file})
+        endif()
+    endif ()
+endmacro()
+
 macro(add_atlas_library)
     _build_target_parse_arguments(${ARGV})
 
@@ -109,13 +122,7 @@ macro(add_atlas_library)
     _add_include_dirs()
     _add_link_libs()
     _add_dependency()
-
-    if(MSVC)
-        add_definitions(/FI"${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/${ARG_TARGET}_definitions.hpp")
-    else()
-        # GCC or Clang
-        add_definitions(-include ${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/${ARG_TARGET}_definitions.hpp)
-    endif()
+    _include_definition_file()
 
     _setup_ide()
 endmacro()
@@ -134,13 +141,7 @@ macro(add_atlas_executable)
     _add_include_dirs()
     _add_link_libs()
     _add_dependency()
-
-    if(MSVC)
-        add_definitions(/FI"${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/${ARG_TARGET}_definitions.hpp")
-    else()
-        # GCC or Clang
-        add_definitions(-include ${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/${ARG_TARGET}_definitions.hpp)
-    endif()
+    _include_definition_file()
 
     _setup_ide()
 endmacro()

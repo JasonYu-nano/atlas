@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.26)
 project(atlas LANGUAGES CXX)
 
+# for conan package manager
+enable_language(C)
+
 set(CMAKE_CXX_STANDARD 23)
 set(dotnet_sdk_version "net7.0")
 
@@ -18,6 +21,14 @@ endif()
 if(unicode)
     add_compile_definitions(UNICODE)
 endif()
+
+if (MSVC)
+    if (shared)
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+    else ()
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif ()
+endif ()
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     add_compile_definitions(DEBUG)
@@ -72,5 +83,8 @@ else ()
 endif ()
 
 add_subdirectory(src)
+if (with_test)
+    add_subdirectory(test)
+endif ()
 
 message(${CMAKE_BINARY_DIR})
