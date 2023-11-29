@@ -22,6 +22,7 @@ void* StandardMalloc::Malloc(size_t size)
 void* StandardMalloc::AlignedMalloc(size_t size, uint32 alignment)
 {
 #if PLATFORM_WINDOWS
+    return ::_aligned_malloc(size, alignment);
 #else
     return std::aligned_alloc(alignment, size);
 #endif
@@ -35,6 +36,7 @@ void* StandardMalloc::Realloc(void* ptr, size_t new_size)
 void* StandardMalloc::AlignedRealloc(void* ptr, size_t new_size, uint32 alignment)
 {
 #if PLATFORM_WINDOWS
+    return ::_aligned_realloc(ptr, new_size, alignment);
 #elif PLATFORM_APPLE
     if (ptr == nullptr)
     {
@@ -77,6 +79,7 @@ void StandardMalloc::Free(void* ptr)
 void StandardMalloc::AlignedFree(void* ptr)
 {
 #if PLATFORM_WINDOWS
+    ::_aligned_free(ptr);
 #else
     return std::free(ptr);
 #endif
