@@ -25,14 +25,18 @@ struct WindowsPlatformTypes
 typedef WindowsPlatformTypes PlatformTypes;
 }
 
-#ifdef DLL_EXPORT
 #undef DLL_EXPORT
-#endif
 
+#ifdef AE_SHARED
 #define DLL_EXPORT __declspec(dllexport)
-
-#ifdef DLL_IMPORT
-#undef DLL_IMPORT
+#else
+#define DLL_EXPORT
 #endif
 
+#undef DLL_IMPORT
+
+#ifdef AE_SHARED
 #define DLL_IMPORT __declspec(dllimport)
+#else
+#define DLL_IMPORT
+#endif

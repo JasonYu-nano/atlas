@@ -17,7 +17,7 @@ static class AtlasBuildTool
         BuildTargetAssembly buildTargetAssembly = new BuildTargetAssembly();
         try
         {
-            buildTargetAssembly.Initialize(DirectoryUtils.EngineSourceDirectory);
+            buildTargetAssembly.Initialize(DirectoryUtils.EngineRootDirectory);
             var generator = new DefinitionsGenerator(buildTargetAssembly);
             var task = generator.GenerateAsync();
             Task.WhenAny(task);

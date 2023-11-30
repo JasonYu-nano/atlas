@@ -13,4 +13,9 @@ public class ExecutableBuildTarget : BuildTargetBase
         : base(targetName, rootDirectory, options, oneValueArgs, multiValueArgs)
     {
     }
+
+    public override bool NeedExportSymbol()
+    {
+        return false;
+    }
 }
