@@ -16,7 +16,9 @@ public abstract class BuildTargetBase
     
     public string RootDirectory { get; }
 
-    public List<BuildTargetBase> Dependencies { get; set; } = new List<BuildTargetBase>();
+    public List<BuildTargetBase> PublicLinkBuildTargets { get; set; } = new List<BuildTargetBase>();
+    
+    public List<BuildTargetBase> PrivateLinkBuildTargets { get; set; } = new List<BuildTargetBase>();
     
     public HashSet<string> Options { get; } = new HashSet<string>();
 
@@ -38,4 +40,6 @@ public abstract class BuildTargetBase
         OneValueArgs = oneValueArgs;
         MultiValueArgs = multiValueArgs;
     }
+
+    public abstract bool NeedExportSymbol();
 }

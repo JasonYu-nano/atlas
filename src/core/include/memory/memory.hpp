@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "memory/malloc_interface.hpp"
 
 namespace atlas
@@ -34,25 +36,8 @@ public:
 
     Memory() = delete;
     ~Memory() = delete;
+
 private:
-
-    class MallocInstance
-    {
-    public:
-        MallocInstance();
-        ~MallocInstance();
-        MallocInstance(const MallocInstance&) = delete;
-        MallocInstance(MallocInstance&&) = delete;
-
-        IMalloc* operator-> ()
-        {
-            return malloc_;
-        }
-
-    private:
-        IMalloc* malloc_;
-    };
-
-    static MallocInstance malloc_instance_;
+    static std::unique_ptr<IMalloc> malloc_instance_;
 };
 }

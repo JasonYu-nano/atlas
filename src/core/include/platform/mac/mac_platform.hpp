@@ -26,14 +26,13 @@ struct MacPlatformTypes
 typedef MacPlatformTypes PlatformTypes;
 }
 
-#ifdef DLL_EXPORT
 #undef DLL_EXPORT
-#endif
 
+#ifdef AE_SHARED
 #define DLL_EXPORT __attribute__((visibility("default")))
-
-#ifdef DLL_IMPORT
-#undef DLL_IMPORT
+#else
+#define DLL_EXPORT
 #endif
 
+#undef DLL_IMPORT
 #define DLL_IMPORT

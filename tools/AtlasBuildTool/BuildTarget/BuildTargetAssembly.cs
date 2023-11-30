@@ -15,18 +15,8 @@ public class BuildTargetAssembly
         {
             throw new BuildTargetException($"no such directory: {topLevelDirectory}");
         }
-        
-        foreach (var subDirectory in Directory.EnumerateDirectories(topLevelDirectory))
-        {
-            var cmakeListsFile = $"{subDirectory}/CMakeLists.txt";
-            if (File.Exists(cmakeListsFile))
-            {
-                if (Directory.Exists($"{subDirectory}/include") || Directory.Exists($"{subDirectory}/src"))
-                {
-                    CreateBuildTarget(subDirectory, cmakeListsFile);
-                }
-            }
-        }
+
+        InitializeBuildTargetsInDirectory(topLevelDirectory);
 
         BuildDependency();
     }
@@ -46,19 +36,58 @@ public class BuildTargetAssembly
         foreach (var nameToBuildTarget in NameToBuildTargets)
         {
             BuildTargetBase buildTarget = nameToBuildTarget.Value;
-            if (buildTarget.MultiValueArgs.TryGetValue(CMakeTypes.DependencyTargets, out var targetNames))
+            if (buildTarget.MultiValueArgs.TryGetValue(CMakeTypes.PublicLinkLib, out var publicLinkNames))
             {
-                foreach (var targetName in targetNames)
+                foreach (var linkName in publicLinkNames)
                 {
-                    if (NameToBuildTargets.TryGetValue(targetName, out var target))
+                    if (NameToBuildTargets.TryGetValue(linkName, out var target))
                     {
-                        if (!buildTarget.Dependencies.Contains(target))
+                        if (!buildTarget.PublicLinkBuildTargets.Contains(target))
                         {
-                            buildTarget.Dependencies.Add(target);
+                            buildTarget.PublicLinkBuildTargets.Add(target);
                         }
                     }
                 }
             }
+            
+            if (buildTarget.MultiValueArgs.TryGetValue(CMakeTypes.PrivateLinkLib, out var privateLinkNames))
+            {
+                foreach (var linkName in privateLinkNames)
+                {
+                    if (NameToBuildTargets.TryGetValue(linkName, out var target))
+                    {
+                        if (!buildTarget.PrivateLinkBuildTargets.Contains(target))
+                        {
+                            buildTarget.PrivateLinkBuildTargets.Add(target);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void InitializeBuildTargetsInDirectory(in string directory)
+    {
+        if (!Directory.Exists(directory))
+        {
+            throw new BuildTargetException($"no such directory: {directory}");
+        }
+        
+        var cmakeListsFile = $"{directory}/CMakeLists.txt";
+        if (!File.Exists(cmakeListsFile))
+        {
+            return;
+        }
+        
+        var buildTarget = CreateBuildTarget(directory, cmakeListsFile);
+        if (buildTarget != null)
+        {
+            return;
+        }
+        
+        foreach (var subDirectory in Directory.EnumerateDirectories(directory))
+        {
+            InitializeBuildTargetsInDirectory(subDirectory);
         }
     }
 

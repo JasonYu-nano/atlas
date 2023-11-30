@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "memory/malloc_interface.hpp"
 
 namespace atlas
@@ -10,11 +12,7 @@ namespace atlas
     class CORE_API WindowsMemory
     {
     public:
-        static uint32 GetDefaultAlignment();
-
-        static IMalloc* GetDefaultMalloc();
-
-        static void DestroyMalloc(IMalloc* malloc);
+        static std::unique_ptr<IMalloc> GetDefaultMalloc();
 
         static void Memcpy(void* dest, const void* src, size_t size);
 

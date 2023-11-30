@@ -9,14 +9,9 @@
 
 namespace atlas
 {
-IMalloc* MacMemory::GetDefaultMalloc()
+std::unique_ptr<IMalloc> MacMemory::GetDefaultMalloc()
 {
-    return new StandardMalloc();
-}
-
-void MacMemory::DestroyMalloc(IMalloc* malloc)
-{
-    delete malloc;
+    return std::make_unique<StandardMalloc>() ;
 }
 
 void MacMemory::Memcpy(void* dest, const void* src, size_t size)
