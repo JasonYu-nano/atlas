@@ -14,7 +14,7 @@
 namespace atlas
 {
 
-Memory::MallocInstance Memory::malloc_instance_ = MallocInstance();
+std::unique_ptr<IMalloc> Memory::malloc_instance_ = PlatformMemory::GetDefaultMalloc();
 
 void* Memory::Malloc(size_t size)
 {
@@ -69,16 +69,5 @@ bool Memory::Memcmp(void* left, void* right, size_t size)
 void Memory::MemmoveBits(uint32* dest, int32 dest_offset, uint32* src, int32 src_offset, uint32 bit_count)
 {
 
-}
-
-Memory::MallocInstance::MallocInstance()
-{
-    malloc_ = PlatformMemory::GetDefaultMalloc();
-}
-
-Memory::MallocInstance::~MallocInstance()
-{
-    PlatformMemory::DestroyMalloc(malloc_);
-    malloc_ = nullptr;
 }
 }
