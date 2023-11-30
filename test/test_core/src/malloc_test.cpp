@@ -15,12 +15,20 @@ TEST(StandardMallocTest, MallocTest)
     StandardMalloc standard_malloc;
 
     void* ptr = standard_malloc.Malloc(100);
+    EXPECT_TRUE(ptr != nullptr);
+
     ptr = standard_malloc.Realloc(ptr, 50);
+    EXPECT_TRUE(ptr != nullptr);
+
     standard_malloc.Free(ptr);
     ptr = nullptr;
 
-    ptr = standard_malloc.AlignedMalloc(100, 32);
-    ptr = standard_malloc.AlignedRealloc(ptr, 50, 32);
+    ptr = standard_malloc.AlignedMalloc(64, 32);
+    EXPECT_TRUE(ptr != nullptr);
+
+    ptr = standard_malloc.AlignedRealloc(ptr, 128, 32);
+    EXPECT_TRUE(ptr != nullptr);
+
     standard_malloc.AlignedFree(ptr);
 }
 
