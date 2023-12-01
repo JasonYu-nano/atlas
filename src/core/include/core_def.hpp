@@ -85,5 +85,3 @@ typedef PlatformTypes::byte         byte;
 typedef PlatformTypes::size_t       size_t;
 
 }
-
-#define ASSERT(expression)

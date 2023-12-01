@@ -6,6 +6,7 @@
 #include <cstdlib>
 
 #include "memory/memory.hpp"
+#include "assertion.hpp"
 
 #if PLATFORM_APPLE
 #include <malloc/malloc.h>
@@ -24,7 +25,7 @@ void* StandardMalloc::AlignedMalloc(size_t size, uint32 alignment)
 #if PLATFORM_WINDOWS
     return ::_aligned_malloc(size, alignment);
 #elif PLATFORM_APPLE
-    ASSERT(size % alignment == 0)
+    ASSERT(size % alignment == 0);
     return std::aligned_alloc(alignment, size);
 #else
     return std::aligned_alloc(alignment, size);
@@ -41,7 +42,7 @@ void* StandardMalloc::AlignedRealloc(void* ptr, size_t new_size, uint32 alignmen
 #if PLATFORM_WINDOWS
     return ::_aligned_realloc(ptr, new_size, alignment);
 #elif PLATFORM_APPLE
-    ASSERT(size % alignment == 0)
+    ASSERT(new_size % alignment == 0);
 
     if (ptr == nullptr)
     {
