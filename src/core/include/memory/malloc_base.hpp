@@ -3,22 +3,24 @@
 
 #pragma once
 
-#include "core_def.hpp"
+#include <new>
+
+#include "memory/system_new_delete_object.hpp"
 
 namespace atlas
 {
-class IMalloc
+class MallocBase : public SystemNewDeleteObject
 {
 public:
-    virtual ~IMalloc() = default;
+    virtual ~MallocBase() = default;
 
     virtual void* Malloc(size_t size) = 0;
 
-    virtual void* AlignedMalloc(size_t size, uint32 alignment) = 0;
+    virtual void* AlignedMalloc(size_t size, size_t alignment) = 0;
 
     virtual void* Realloc(void* ptr, size_t new_size) = 0;
 
-    virtual void* AlignedRealloc(void* ptr, size_t new_size, uint32 alignment) = 0;
+    virtual void* AlignedRealloc(void* ptr, size_t new_size, size_t alignment) = 0;
 
     virtual void Free(void* ptr) = 0;
 

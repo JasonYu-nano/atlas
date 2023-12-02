@@ -5,7 +5,7 @@
 
 #include <memory>
 
-#include "memory/malloc_interface.hpp"
+#include "memory/malloc_base.hpp"
 
 namespace atlas
 {
@@ -14,11 +14,11 @@ class CORE_API Memory
 public:
     static void* Malloc(size_t size);
 
-    static void* AlignedMalloc(size_t size, uint32 alignment);
+    static void* AlignedMalloc(size_t size, size_t alignment);
 
     static void* Realloc(void* ptr, size_t new_size);
 
-    static void* AlignedRealloc(void* ptr, size_t new_size, uint32 alignment);
+    static void* AlignedRealloc(void* ptr, size_t new_size, size_t alignment);
 
     static void Free(void* ptr);
 
@@ -38,6 +38,6 @@ public:
     ~Memory() = delete;
 
 private:
-    static std::unique_ptr<IMalloc> malloc_instance_;
+    static std::unique_ptr<MallocBase> malloc_instance_;
 };
 }

@@ -20,7 +20,7 @@ void* StandardMalloc::Malloc(size_t size)
     return std::malloc(size);
 }
 
-void* StandardMalloc::AlignedMalloc(size_t size, uint32 alignment)
+void* StandardMalloc::AlignedMalloc(size_t size, size_t alignment)
 {
 #if PLATFORM_WINDOWS
     return ::_aligned_malloc(size, alignment);
@@ -37,7 +37,7 @@ void* StandardMalloc::Realloc(void* ptr, size_t new_size)
     return std::realloc(ptr, new_size);
 }
 
-void* StandardMalloc::AlignedRealloc(void* ptr, size_t new_size, uint32 alignment)
+void* StandardMalloc::AlignedRealloc(void* ptr, size_t new_size, size_t alignment)
 {
 #if PLATFORM_WINDOWS
     return ::_aligned_realloc(ptr, new_size, alignment);

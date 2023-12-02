@@ -9,7 +9,7 @@
 
 namespace atlas
 {
-std::unique_ptr<IMalloc> WindowsMemory::GetDefaultMalloc()
+std::unique_ptr<MallocBase> WindowsMemory::GetDefaultMalloc()
 {
     return std::make_unique<StandardMalloc>() ;
 }

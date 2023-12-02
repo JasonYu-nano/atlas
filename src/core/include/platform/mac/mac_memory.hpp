@@ -5,14 +5,14 @@
 
 #include <memory>
 
-#include "memory/malloc_interface.hpp"
+#include "memory/malloc_base.hpp"
 
 namespace atlas
 {
 class CORE_API MacMemory
 {
 public:
-    static std::unique_ptr<IMalloc> GetDefaultMalloc();
+    static std::unique_ptr<MallocBase> GetDefaultMalloc();
 
     static void Memcpy(void* dest, const void* src, size_t size);
 
@@ -21,8 +21,6 @@ public:
     static void Memset(void* dest, byte value, size_t size);
 
     static bool Memcmp(void* left, void* right, size_t size);
-
-    static uint32 DefaultAlignment;
 
     MacMemory() = delete;
 };

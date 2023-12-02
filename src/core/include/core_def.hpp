@@ -82,6 +82,4 @@ typedef PlatformTypes::int64        int8;
 
 typedef PlatformTypes::byte         byte;
 
-typedef PlatformTypes::size_t       size_t;
-
 }

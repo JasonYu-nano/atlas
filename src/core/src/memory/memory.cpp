@@ -14,14 +14,14 @@
 namespace atlas
 {
 
-std::unique_ptr<IMalloc> Memory::malloc_instance_ = PlatformMemory::GetDefaultMalloc();
+std::unique_ptr<MallocBase> Memory::malloc_instance_ = PlatformMemory::GetDefaultMalloc();
 
 void* Memory::Malloc(size_t size)
 {
     return malloc_instance_->Malloc(size);
 }
 
-void* Memory::AlignedMalloc(size_t size, uint32 alignment)
+void* Memory::AlignedMalloc(size_t size, size_t alignment)
 {
     return malloc_instance_->AlignedMalloc(size, alignment);
 }
@@ -31,7 +31,7 @@ void* Memory::Realloc(void* ptr, size_t new_size)
     return malloc_instance_->Realloc(ptr, new_size);
 }
 
-void* Memory::AlignedRealloc(void* ptr, size_t new_size, uint32 alignment)
+void* Memory::AlignedRealloc(void* ptr, size_t new_size, size_t alignment)
 {
     return malloc_instance_->AlignedRealloc(ptr, new_size, alignment);
 }

@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "memory/malloc_interface.hpp"
+#include "memory/malloc_base.hpp"
 
 namespace atlas
 {
-class CORE_API StandardMalloc : public IMalloc
+class CORE_API StandardMalloc : public MallocBase
 {
 public:
     StandardMalloc() = default;
@@ -16,11 +16,11 @@ public:
 
     void* Malloc(size_t size) override;
 
-    void* AlignedMalloc(size_t size, uint32 alignment) override;
+    void* AlignedMalloc(size_t size, size_t alignment) override;
 
     void* Realloc(void* ptr, size_t new_size) override;
 
-    void* AlignedRealloc(void *ptr, size_t new_size, uint32 alignment) override;
+    void* AlignedRealloc(void *ptr, size_t new_size, size_t alignment) override;
 
     void Free(void* ptr) override;
 

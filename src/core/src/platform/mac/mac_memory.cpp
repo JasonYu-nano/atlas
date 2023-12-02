@@ -9,7 +9,7 @@
 
 namespace atlas
 {
-std::unique_ptr<IMalloc> MacMemory::GetDefaultMalloc()
+std::unique_ptr<MallocBase> MacMemory::GetDefaultMalloc()
 {
     return std::make_unique<StandardMalloc>() ;
 }
