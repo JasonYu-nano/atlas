@@ -5,9 +5,7 @@
 
 #include "memory/standard_malloc.hpp"
 
-namespace atlas
-{
-namespace test
+namespace atlas::test
 {
 
 struct alignas(32) Alignment32
@@ -62,5 +60,4 @@ TEST(OperatorNewDeleteTest, MallocTest)
     delete(al_nothrow);
 }
 
-}
 }
