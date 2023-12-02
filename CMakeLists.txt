@@ -45,9 +45,10 @@ endif()
 
 # set output
 set(CMAKE_DEBUG_POSTFIX "d")
-set(output_dir ${CMAKE_BINARY_DIR}/output)
+set(output_dir ${CMAKE_BINARY_DIR}/out)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${output_dir}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${output_dir}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${output_dir}/bin)
 
 ## set absolute path
 set(atlas_tool_dir ${CMAKE_SOURCE_DIR}/tools)
