@@ -76,9 +76,9 @@ typedef PlatformTypes::uint16       uint16;
 typedef PlatformTypes::uint8        uint8;
 
 typedef PlatformTypes::int64        int64;
-typedef PlatformTypes::int64        int32;
-typedef PlatformTypes::int64        int16;
-typedef PlatformTypes::int64        int8;
+typedef PlatformTypes::int32        int32;
+typedef PlatformTypes::int16        int16;
+typedef PlatformTypes::int8         int8;
 
 typedef PlatformTypes::byte         byte;
 
