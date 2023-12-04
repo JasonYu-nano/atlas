@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 
 #include "core_def.hpp"
-#include "utility/compression_pair.hpp"
+#include "utility/call_traits.hpp"
 
 namespace atlas::test
 {
