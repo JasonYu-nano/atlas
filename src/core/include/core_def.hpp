@@ -57,6 +57,7 @@ __GNUC_PATCHLEVEL__)
 // define default marco
 #define DLL_EXPORT
 #define DLL_IMPORT
+#define NODISCARD
 
 #if PLATFORM_WINDOWS
 #include "platform/windows/windows_platform.hpp"

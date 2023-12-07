@@ -40,3 +40,6 @@ typedef WindowsPlatformTypes PlatformTypes;
 #else
 #define DLL_IMPORT
 #endif
+
+#undef NODISCARD
+#define NODISCARD [[nodiscard]]
