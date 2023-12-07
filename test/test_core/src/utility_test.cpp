@@ -20,4 +20,30 @@ TEST(CallTraitsTest, UtilityTest)
     EXPECT_TRUE(std::is_reference_v<CallTraits<CT>::ParamType>);
 }
 
+TEST(CompressionPairTest, UtilityTest)
+{
+    struct CPA
+    {
+    };
+
+    struct CPB
+    {
+        int32 value = 0;
+    };
+
+    struct CPC
+    {
+        int64 value = 0;
+    };
+
+    struct CPD
+    {
+    };
+
+    EXPECT_TRUE(sizeof(CompressionPair<CPA, CPB>) == 4);
+    EXPECT_TRUE(sizeof(CompressionPair<CPB, CPA>) == 4);
+    EXPECT_TRUE(sizeof(CompressionPair<CPB, CPC>) == 16);
+    EXPECT_TRUE(sizeof(CompressionPair<CPA, CPD>) == 1);
+}
+
 }
