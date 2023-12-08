@@ -3,7 +3,6 @@
 
 #include "gtest/gtest.h"
 
-#include "core_def.hpp"
 #include "utility/compression_pair.hpp"
 #include "utility/call_traits.hpp"
 #include "utility/untyped_data.hpp"
@@ -46,6 +45,19 @@ TEST(CompressionPairTest, UtilityTest)
     EXPECT_TRUE(sizeof(CompressionPair<CPB, CPA>) == 4);
     EXPECT_TRUE(sizeof(CompressionPair<CPB, CPC>) == 16);
     EXPECT_TRUE(sizeof(CompressionPair<CPA, CPD>) == 1);
+
+    CompressionPair<CPB, CPC> pair_0;
+    EXPECT_TRUE(pair_0.First().value == 0 && sizeof(pair_0.First().value) == 4);
+    EXPECT_TRUE(pair_0.Second().value == 0 && sizeof(pair_0.Second().value) == 8);
+
+    CompressionPair<CPA, CPD> pair_1;
+    EXPECT_TRUE(static_cast<void*>(&pair_1.First()) != static_cast<void*>(&pair_1.Second()));
+
+    CompressionPair<CPA, CPA> pair_2;
+    EXPECT_TRUE(static_cast<void*>(&pair_2.First()) == static_cast<void*>(&pair_2.Second()));
+
+    CompressionPair<CPB, CPB> pair_3;
+    EXPECT_TRUE(static_cast<void*>(&pair_3.First()) != static_cast<void*>(&pair_3.Second()));
 }
 
 TEST(UntypedDataTest, UtilityTest)

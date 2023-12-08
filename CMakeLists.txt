@@ -80,7 +80,7 @@ if (abt_exist)
         message(FATAL_ERROR "some errors occurred while running atlas build tool")
     endif ()
 else ()
-    message(FATAL_ERROR "can't find atlas build tool. please make sure tools are built first")
+    message(FATAL_ERROR "can't find atlas build tool in ${atlas_build_tool_dir}. please make sure tools are built first")
 endif ()
 
 add_subdirectory(src)
