@@ -28,6 +28,9 @@ if (MSVC)
     else ()
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     endif ()
+
+    # handle the utf-8 encoding problem in MSVC
+    add_compile_options(/utf-8)
 endif ()
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")

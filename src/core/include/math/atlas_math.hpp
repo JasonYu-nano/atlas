@@ -33,5 +33,11 @@ T Min(const T a, const T b)
     return (a <= b) ? a : b;
 }
 
+template<typename T>
+NODISCARD static constexpr T Clamp(const T x, const T min, const T max)
+{
+    return (x < min) ? min : (x < max) ? x : max;
+}
+
 } // namespace math
 } // namespace atlas

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <!-- String visualizer -->
+    <Type Name="atlas::String">
+        <DisplayString Condition="pair_.second_.size_ == 0">empty</DisplayString>
+        <DisplayString Condition="pair_.second_.size_ &lt; 0">invalid</DisplayString>
+        <DisplayString Condition="pair_.second_.capacity_ &lt; pair_.second_.size_">Invalid</DisplayString>
+        <DisplayString Condition="pair_.second_.capacity_ &gt;= pair_.second_.size_ &amp;&amp; pair_.second_.capacity_ &lt; 16">{(const unsigned char*)pair_.second_.u_.buffer_,su}</DisplayString>
+        <DisplayString Condition="pair_.second_.capacity_ &gt;= pair_.second_.size_ &amp;&amp; pair_.second_.capacity_ &gt;= 16">{(const unsigned char*)pair_.second_.u_.ptr_,su}</DisplayString>
+        <StringView Condition="pair_.second_.capacity_ &gt;= pair_.second_.size_ &amp;&amp; pair_.second_.capacity_ &lt; 16">(const unsigned char*)pair_.second_.u_.buffer_,su</StringView>
+        <StringView Condition="pair_.second_.capacity_ &gt;= pair_.second_.size_ &amp;&amp; pair_.second_.capacity_ &gt;= 16">(const unsigned char*)pair_.second_.u_.ptr_,su</StringView>
+    </Type>
+</AutoVisualizer>

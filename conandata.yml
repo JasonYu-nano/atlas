@@ -4,3 +4,4 @@
 requirements:
   - "spdlog/1.12.0"
   - "gtest/1.14.0"
+  - "icu/74.1"

@@ -18,23 +18,29 @@ class StringVal
 {
     using CharType = CharTraits::char_type;
 public:
-    static constexpr size_t INLINE_SIZE = (sizeof(intptr_t) / sizeof(CharType) < 1) ? 1 : sizeof(intptr_t) / sizeof(CharType);
+    static constexpr size_t INLINE_SIZE = (16 / sizeof(CharType) < 1) ? 1 : 16 / sizeof(CharType);
 
-    bool LargeStringEngaged() const { return INLINE_SIZE < capacity_; }
+    bool LargeStringEngaged() const { return INLINE_SIZE <= capacity_; }
     CharType* GetPtr() { return LargeStringEngaged() ? u_.ptr_ : u_.buffer_; }
     const CharType* GetPtr() const { return LargeStringEngaged() ? u_.ptr_ : u_.buffer_; }
 
     SizeType size_{ 0 };
-    SizeType capacity_{ INLINE_SIZE };
+    SizeType capacity_{ INLINE_SIZE - 1 };
 
     union
     {
-        CharType* ptr_;
         CharType buffer_[INLINE_SIZE];
+        CharType* ptr_;
     } u_;
 };
 
 }
+
+enum class ECaseSensitive : uint8
+{
+    Sensitive,
+    Insensitive
+};
 
 class CORE_API String
 {
@@ -53,11 +59,44 @@ private:
 
 public:
     String();
-    String(ParamType ch);
-    String(ConstPointer str, SizeType len = -1);
+    explicit String(char8_t ch);
+    explicit String(char ch);
+
+    String(char8_t ch, SizeType count);
+    String(char ch, SizeType count);
+
+    String(const char8_t* str, SizeType len = -1);
+    String(const char* str, SizeType len = -1);
+
+    String(const String& right);
+    String(const String& right, SizeType offset, SizeType size = std::numeric_limits<SizeType>::max());
+    String(String&& right) noexcept;
+    String(String&& right, SizeType offset, SizeType size = std::numeric_limits<SizeType>::max()) noexcept;
+
     ~String();
 
+    String& operator= (const String& right);
+    String& operator= (String&& right) noexcept;
+
+    bool operator== (const String& right) const;
+    bool operator!= (const String& right) const;
+
+    NODISCARD inline char8_t* Data();
+    NODISCARD inline const char8_t* Data() const;
+
+    inline SizeType Size() const;
+
+    inline SizeType Length() const;
+
+    NODISCARD SizeType Count() const;
+
+    inline SizeType Capacity() const;
+
+    NODISCARD bool Equals(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+
     void Reserve(SizeType capacity);
+
+    NODISCARD inline bool IsValidIndex(SizeType index) const;
 protected:
     bool LargeStringEngaged() const { return GetVal().LargeStringEngaged(); }
 
@@ -69,8 +108,21 @@ protected:
 
     void BecomeLarge(SizeType capacity);
 
-    void Init();
+    inline void TidyInit();
 
+    void Construct(ConstPointer str, SizeType len);
+    void Construct(char8_t ch, SizeType count);
+    void Construct(const String& right, SizeType offset, SizeType size);
+
+    void MoveConstruct(String& right, SizeType offset, SizeType size);
+
+    void Assign(const String& right);
+
+    void MoveAssign(String& right);
+
+    void Eos(SizeType size);
+
+    bool IsValidAddress(const char8_t* start, const char8_t* end) const;
 
     CompressionPair<AllocatorType, ValType> pair_;
 };
