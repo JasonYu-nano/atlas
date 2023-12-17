@@ -76,6 +76,9 @@ TEST(StringCtor, StringTest)
 
         str_1 = std::move(str_0);
         EXPECT_TRUE(str_1 == u8"你好atlas");
+
+        str_1 = "";
+        EXPECT_TRUE(str_1.Length() == 0);
     }
 }
 

@@ -77,6 +77,8 @@ public:
 
     String& operator= (const String& right);
     String& operator= (String&& right) noexcept;
+    String& operator= (const char* right);
+    String& operator= (const char8_t* right);
 
     bool operator== (const String& right) const;
     bool operator!= (const String& right) const;
@@ -84,19 +86,19 @@ public:
     NODISCARD inline char8_t* Data();
     NODISCARD inline const char8_t* Data() const;
 
-    inline SizeType Size() const;
+    SizeType Size() const;
 
-    inline SizeType Length() const;
+    SizeType Length() const;
 
     NODISCARD SizeType Count() const;
 
-    inline SizeType Capacity() const;
+    SizeType Capacity() const;
 
     NODISCARD bool Equals(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
     void Reserve(SizeType capacity);
 
-    NODISCARD inline bool IsValidIndex(SizeType index) const;
+    NODISCARD bool IsValidIndex(SizeType index) const;
 protected:
     bool LargeStringEngaged() const { return GetVal().LargeStringEngaged(); }
 
@@ -108,7 +110,7 @@ protected:
 
     void BecomeLarge(SizeType capacity);
 
-    inline void TidyInit();
+    void TidyInit();
 
     void Construct(ConstPointer str, SizeType len);
     void Construct(char8_t ch, SizeType count);
@@ -116,7 +118,7 @@ protected:
 
     void MoveConstruct(String& right, SizeType offset, SizeType size);
 
-    void Assign(const String& right);
+    void Assign(const char8_t* right, SizeType length);
 
     void MoveAssign(String& right);
 
@@ -126,5 +128,40 @@ protected:
 
     CompressionPair<AllocatorType, ValType> pair_;
 };
+
+inline char8_t* String::Data()
+{
+    return GetVal().GetPtr();
+}
+
+inline const char8_t* String::Data() const
+{
+    return GetVal().GetPtr();
+}
+
+inline String::SizeType String::Size() const
+{
+    return GetVal().size_ + 1;
+}
+
+inline String::SizeType String::Length() const
+{
+    return GetVal().size_;
+}
+
+inline String::SizeType String::Capacity() const
+{
+    return GetVal().capacity_;
+}
+
+inline bool String::IsValidIndex(String::SizeType index) const
+{
+    return index >= 0 && index < Length();
+}
+
+inline void String::TidyInit()
+{
+    Eos(0);
+}
 
 }

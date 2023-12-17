@@ -3,7 +3,7 @@
 
 #include "string/string.hpp"
 
-#include "icu.h"
+#include "unicode/utf8.h"
 
 #include "math/atlas_math.hpp"
 
@@ -91,13 +91,25 @@ String::~String()
 
 String& String::operator= (const String& right)
 {
-    Assign(right);
+    Assign(right.Data(), right.Length());
     return *this;
 }
 
 String& String::operator= (String&& right) noexcept
 {
     MoveAssign(right);
+    return *this;
+}
+
+String& String::operator=(const char* right)
+{
+    Assign(reinterpret_cast<const char8_t*>(right), static_cast<SizeType>(std::char_traits<char>::length(right)));
+    return *this;
+}
+
+String& String::operator=(const char8_t* right)
+{
+    Assign(right, static_cast<SizeType>(CharTraits::length(right)));
     return *this;
 }
 
@@ -108,26 +120,6 @@ bool String::operator==(const String& right) const
 bool String::operator!=(const String& right) const
 {
     return !Equals(right, ECaseSensitive::Sensitive);
-}
-
-char8_t* String::Data()
-{
-    return GetVal().GetPtr();
-}
-
-const char8_t* String::Data() const
-{
-    return GetVal().GetPtr();
-}
-
-String::SizeType String::Size() const
-{
-    return GetVal().size_ + 1;
-}
-
-String::SizeType String::Length() const
-{
-    return GetVal().size_;
 }
 
 String::SizeType String::Count() const
@@ -146,11 +138,6 @@ String::SizeType String::Count() const
         }
     }
     return count;
-}
-
-String::SizeType String::Capacity() const
-{
-    return GetVal().capacity_;
 }
 
 bool String::Equals(const String &right, ECaseSensitive case_sensitive) const
@@ -184,11 +171,6 @@ void String::Reserve(String::SizeType capacity)
     }
 }
 
-bool String::IsValidIndex(String::SizeType index) const
-{
-    return index >= 0 && index < Length();
-}
-
 void String::BecomeLarge(String::SizeType capacity)
 {
     auto&& my_val = GetVal();
@@ -196,11 +178,6 @@ void String::BecomeLarge(String::SizeType capacity)
     CharTraits::move(new_ptr, my_val.u_.buffer_, my_val.size_ + 1);
     my_val.u_.ptr_ = new_ptr;
     my_val.capacity_ = capacity;
-}
-
-void String::TidyInit()
-{
-    Eos(0);
 }
 
 void String::Construct(String::ConstPointer str, AllocatorTraits::size_type len)
@@ -254,13 +231,12 @@ void String::MoveConstruct(String& right, String::SizeType offset, String::SizeT
     Eos(actual_size);
 }
 
-void String::Assign(const String& right)
+void String::Assign(const char8_t* right, SizeType length)
 {
-    ASSERT(IsValidAddress(right.Data(), right.Data() + right.Length()));
-    SizeType size = right.Length();
-    Reserve(size);
-    CharTraits::copy(Data(), right.Data(), size);
-    Eos(size);
+    ASSERT(IsValidAddress(right, right + length));
+    Reserve(length);
+    CharTraits::copy(Data(), right, length);
+    Eos(length);
 }
 
 void String::MoveAssign(String& right)
