@@ -82,4 +82,34 @@ TEST(StringCtor, StringTest)
     }
 }
 
+TEST(StringFormat, StringTest)
+{
+    {
+        String name = "atlas";
+        String str = String::Format("my name is {0}", name);
+        EXPECT_TRUE(str == "my name is atlas");
+    }
+
+    {
+        String str = String::Format(u8"my id is {0}", 1);
+        EXPECT_TRUE(str == "my id is 1");
+    }
+
+    {
+        String name = u8"阿特拉斯";
+        String str = String::Format("my name is {0}", name);
+        EXPECT_TRUE(str == "my name is 阿特拉斯");
+    }
+}
+
+TEST(StringAt, StringTest)
+{
+    {
+        String name = u8"阿特拉斯";
+        EXPECT_TRUE(String::CharTraits::to_int_type(name[3]) == 231);
+        EXPECT_TRUE(name.CodePointAt(1) == 29305);
+        EXPECT_TRUE(name.CodePointAt(4) == std::char_traits<char8_t>::eof());
+    }
+}
+
 }

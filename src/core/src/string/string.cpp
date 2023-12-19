@@ -122,6 +122,18 @@ bool String::operator!=(const String& right) const
     return !Equals(right, ECaseSensitive::Sensitive);
 }
 
+inline char8_t& String::operator[] (SizeType index)
+{
+    ASSERT(IsValidIndex(index));
+    return GetVal().GetPtr()[index];
+}
+
+inline char8_t String::operator[] (SizeType index) const
+{
+    ASSERT(IsValidIndex(index));
+    return GetVal().GetPtr()[index];
+}
+
 String::SizeType String::Count() const
 {
     SizeType length = Length();
@@ -132,12 +144,34 @@ String::SizeType String::Count() const
     for (SizeType i = 0; i < length;)
     {
         U8_NEXT(data, i, length, c);
-        if(c >= 0)
+        if (c < 0)
         {
-            ++count;
+            break;
         }
+        ++count;
     }
     return count;
+}
+
+char32_t String::CodePointAt(std::make_unsigned_t<SizeType> offset) const
+{
+    SizeType length = Length();
+    auto data = reinterpret_cast<const uint8*>(Data());
+    SizeType current_offset = 0;
+    std::make_unsigned_t<SizeType> offset_in_code_point = 0;
+    UChar32 c;
+
+    do
+    {
+        U8_NEXT(data, current_offset, length, c);
+        if (offset_in_code_point == offset)
+        {
+            return c > 0 ? c : CharTraits::eof();
+        }
+        ++offset_in_code_point;
+    } while (c > 0 && current_offset < length);
+
+    return CharTraits::eof();
 }
 
 bool String::Equals(const String &right, ECaseSensitive case_sensitive) const

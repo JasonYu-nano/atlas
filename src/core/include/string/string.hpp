@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include "fmt/format.h"
+
 #include "utility/compression_pair.hpp"
 #include "memory/allocator.hpp"
 
@@ -83,6 +85,9 @@ public:
     bool operator== (const String& right) const;
     bool operator!= (const String& right) const;
 
+    char8_t& operator[] (SizeType index);
+    char8_t operator[] (SizeType index) const;
+
     NODISCARD inline char8_t* Data();
     NODISCARD inline const char8_t* Data() const;
 
@@ -94,11 +99,22 @@ public:
 
     SizeType Capacity() const;
 
+    NODISCARD char32_t CodePointAt(std::make_unsigned_t<SizeType> offset) const;
+
     NODISCARD bool Equals(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
     void Reserve(SizeType capacity);
 
     NODISCARD bool IsValidIndex(SizeType index) const;
+
+    template <typename CharType, typename... Args>
+    static String Format(const CharType* fmt, Args&&... args)
+    {
+        static_assert(std::is_same_v<CharType, char> || std::is_same_v<CharType, char8_t>);
+        fmt::basic_memory_buffer<CharType, 250> buffer;
+        fmt::detail::vformat_to(buffer, fmt::basic_string_view<CharType>(fmt), fmt::make_format_args<fmt::buffer_context<CharType>>(args...));
+        return {buffer.data(), static_cast<SizeType>(buffer.size())};
+    }
 protected:
     bool LargeStringEngaged() const { return GetVal().LargeStringEngaged(); }
 
@@ -165,3 +181,22 @@ inline void String::TidyInit()
 }
 
 }
+
+template<>
+struct CORE_API fmt::formatter<atlas::String>
+{
+    template<typename ParseContext>
+    constexpr auto parse(ParseContext& ctx)
+    {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(const atlas::String& str, FormatContext& ctx)
+    {
+        auto&& out = ctx.out();
+        auto&& buf = fmt::detail::get_buffer<char8_t>(out);
+        fmt::detail::vformat_to<char8_t>(buf, str.Data(), {}, {});
+        return fmt::detail::get_iterator(buf, out);
+    }
+};
