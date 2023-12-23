@@ -51,7 +51,7 @@ class CORE_API String
 public:
     using ValueType = char8_t;
     using CharTraits = std::char_traits<ValueType>;
-    using AllocatorType = StandardAllocator<int32>::Allocator<ValueType>;
+    using AllocatorType = StandardAllocator<size_t>::Allocator<ValueType>;
     using AllocatorTraits = std::allocator_traits<AllocatorType>;
     using SizeType = AllocatorTraits::size_type;
     using ViewType = std::basic_string_view<char8_t>;
@@ -70,8 +70,10 @@ public:
     String(char8_t ch, SizeType count);
     String(char ch, SizeType count);
 
-    String(const char8_t* str, SizeType len = -1);
-    String(const char* str, SizeType len = -1);
+    String(const char8_t* str);
+    String(const char8_t* str, SizeType length);
+    String(const char* str);
+    String(const char* str, SizeType length);
 
     String(const String& right);
     String(const String& right, SizeType offset, SizeType size = std::numeric_limits<SizeType>::max());
@@ -116,9 +118,11 @@ public:
 
     NODISCARD String ToLower(const std::locale& locale = locale::DefaultLocale()) const;
 
-    NODISCARD static String FromUtf16(const char16_t* str, SizeType length = -1);
+    NODISCARD static String FromUtf16(const char16_t* str);
+    NODISCARD static String FromUtf16(const char16_t* str, SizeType length);
 
-    NODISCARD static String FromUtf32(const char32_t* str, SizeType length = -1);
+    NODISCARD static String FromUtf32(const char32_t* str);
+    NODISCARD static String FromUtf32(const char32_t* str, SizeType length);
 
     NODISCARD static String From(const std::string& str);
 
@@ -189,7 +193,17 @@ inline String::SizeType String::Capacity() const
 
 inline bool String::IsValidIndex(String::SizeType index) const
 {
-    return index >= 0 && index < Length();
+    return index < Length();
+}
+
+inline String String::FromUtf16(const char16_t* str)
+{
+    return FromUtf16(str, std::char_traits<char16_t>::length(str));
+}
+
+inline String String::FromUtf32(const char32_t* str)
+{
+    return FromUtf32(str, std::char_traits<char32_t>::length(str));
 }
 
 inline String String::From(const std::string& str)
