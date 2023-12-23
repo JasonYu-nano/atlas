@@ -212,9 +212,21 @@ void String::Reserve(String::SizeType capacity)
 String String::FoldCase() const
 {
     const char* data = reinterpret_cast<const char*>(Data());
-    boost::locale::generator gen;
     std::string fold_case = boost::locale::fold_case(data, data + Length(), locale::DefaultLocale());
     return {fold_case.data(), static_cast<SizeType>(fold_case.length())};
+}
+
+String String::ToUpper(const std::locale& locale) const
+{
+    const char* data = reinterpret_cast<const char*>(Data());
+    std::string upper = boost::locale::to_upper(data, data + Length(), locale);
+    return {upper.data(), static_cast<SizeType>(upper.length())};
+}
+String String::ToLower(const std::locale& locale) const
+{
+    const char* data = reinterpret_cast<const char*>(Data());
+    std::string lower = boost::locale::to_lower(data, data + Length(), locale);
+    return {lower.data(), static_cast<SizeType>(lower.length())};
 }
 
 String String::FromUtf16(const char16_t* str, SizeType length)

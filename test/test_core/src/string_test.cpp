@@ -112,7 +112,7 @@ TEST(StringAt, StringTest)
     }
 }
 
-TEST(StringFrom, StringTest)
+TEST(StringConvert, StringTest)
 {
     {
         String name = String::FromUtf16(u"阿特拉斯");
@@ -127,6 +127,16 @@ TEST(StringFrom, StringTest)
     {
         String name = String::From(std::wstring(L"阿特拉斯"));
         EXPECT_TRUE(name == u8"阿特拉斯");
+    }
+
+    {
+        String name = "Atlas";
+        EXPECT_TRUE(name.ToLower() == "atlas");
+    }
+
+    {
+        String name = "atlas";
+        EXPECT_TRUE(name.ToUpper() == "ATLAS");
     }
 }
 

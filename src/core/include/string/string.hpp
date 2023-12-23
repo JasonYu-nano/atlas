@@ -54,6 +54,7 @@ public:
     using AllocatorType = StandardAllocator<int32>::Allocator<ValueType>;
     using AllocatorTraits = std::allocator_traits<AllocatorType>;
     using SizeType = AllocatorTraits::size_type;
+    using ViewType = std::basic_string_view<char8_t>;
 
 private:
     using ValType = details::StringVal<CharTraits, SizeType>;
@@ -110,6 +111,10 @@ public:
     NODISCARD bool IsValidIndex(SizeType index) const;
 
     NODISCARD String FoldCase() const;
+
+    NODISCARD String ToUpper(const std::locale& locale = locale::DefaultLocale()) const;
+
+    NODISCARD String ToLower(const std::locale& locale = locale::DefaultLocale()) const;
 
     NODISCARD static String FromUtf16(const char16_t* str, SizeType length = -1);
 
