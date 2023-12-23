@@ -2,9 +2,6 @@
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
 #include "string/string.hpp"
-
-#include "unicode/utf8.h"
-
 #include "math/atlas_math.hpp"
 
 namespace atlas
@@ -136,52 +133,59 @@ inline char8_t String::operator[] (SizeType index) const
 
 String::SizeType String::Count() const
 {
-    SizeType length = Length();
+    auto it = reinterpret_cast<const char*>(Data());
+    auto end = it + Length();
     SizeType count = 0;
-    const char8_t* data = Data();
-    UChar32 c;
 
-    for (SizeType i = 0; i < length;)
+    while (it < end)
     {
-        U8_NEXT(data, i, length, c);
-        if (c < 0)
-        {
-            break;
-        }
+        int32 next = UtfTraits<char>::trail_length(*it) + 1;
+        it += next;
         ++count;
     }
+
     return count;
 }
 
-char32_t String::CodePointAt(std::make_unsigned_t<SizeType> offset) const
+CodePoint String::CodePointAt(std::make_unsigned_t<SizeType> offset) const
 {
-    SizeType length = Length();
-    auto data = reinterpret_cast<const uint8*>(Data());
+    auto it = reinterpret_cast<const char*>(Data());
+    auto end = it + Length();
     SizeType current_offset = 0;
-    std::make_unsigned_t<SizeType> offset_in_code_point = 0;
-    UChar32 c;
 
-    do
+    while (it < end)
     {
-        U8_NEXT(data, current_offset, length, c);
-        if (offset_in_code_point == offset)
+        if (current_offset == offset)
         {
-            return c > 0 ? c : CharTraits::eof();
+            return UtfTraits<char>::decode(it, end);
         }
-        ++offset_in_code_point;
-    } while (c > 0 && current_offset < length);
 
-    return CharTraits::eof();
+        int32 next = UtfTraits<char>::trail_length(*it) + 1;
+        it += next;
+        ++current_offset;
+    }
+
+    return CodePoint::incomplete;
 }
 
 bool String::Equals(const String &right, ECaseSensitive case_sensitive) const
 {
+    SizeType left_length = Length();
+    SizeType right_length = right.Length();
+
+    if (left_length != right_length)
+    {
+        return false;
+    }
+
     if (case_sensitive == ECaseSensitive::Sensitive)
     {
-        return Length() == right.Length() && CharTraits::compare(Data(), right.Data(), Length()) == 0;
+        return CharTraits::compare(Data(), right.Data(), left_length) == 0;
     }
-    //TODO: not implement!
-    return false;
+
+    String left_fold_case = FoldCase();
+    String right_fold_case = right.FoldCase();
+    return CharTraits::compare(left_fold_case.Data(), right_fold_case.Data(), left_length) == 0;
 }
 
 void String::Reserve(String::SizeType capacity)
@@ -203,6 +207,50 @@ void String::Reserve(String::SizeType capacity)
             my_val.capacity_ = capacity;
         }
     }
+}
+
+String String::FoldCase() const
+{
+    const char* data = reinterpret_cast<const char*>(Data());
+    boost::locale::generator gen;
+    std::string fold_case = boost::locale::fold_case(data, data + Length(), locale::DefaultLocale());
+    return {fold_case.data(), static_cast<SizeType>(fold_case.length())};
+}
+
+String String::FromUtf16(const char16_t* str, SizeType length)
+{
+    if (length < 0)
+    {
+        size_t str_len = std::char_traits<char16_t>::length(str);
+        ASSERT(str_len <= std::numeric_limits<SizeType>::max()); // overflow
+        length = static_cast<SizeType>(str_len);
+    }
+
+    if (length <= 0)
+    {
+        return {};
+    }
+
+    std::string u8 = boost::locale::conv::utf_to_utf<char, char16_t>(str, str + length);
+    return {u8.data(), static_cast<SizeType>(u8.length())};
+}
+
+String String::FromUtf32(const char32_t* str, SizeType length)
+{
+    if (length < 0)
+    {
+        size_t str_len = std::char_traits<char32_t>::length(str);
+        ASSERT(str_len <= std::numeric_limits<SizeType>::max()); // overflow
+        length = static_cast<SizeType>(str_len);
+    }
+
+    if (length <= 0)
+    {
+        return {};
+    }
+
+    std::string u8 = boost::locale::conv::utf_to_utf<char, char32_t>(str, str + length);
+    return {u8.data(), static_cast<SizeType>(u8.length())};
 }
 
 void String::BecomeLarge(String::SizeType capacity)

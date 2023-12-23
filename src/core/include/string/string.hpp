@@ -9,6 +9,8 @@
 
 #include "utility/compression_pair.hpp"
 #include "memory/allocator.hpp"
+#include "string/locale.hpp"
+#include "string/unicode.hpp"
 
 namespace atlas
 {
@@ -99,13 +101,23 @@ public:
 
     SizeType Capacity() const;
 
-    NODISCARD char32_t CodePointAt(std::make_unsigned_t<SizeType> offset) const;
+    NODISCARD CodePoint CodePointAt(std::make_unsigned_t<SizeType> offset) const;
 
     NODISCARD bool Equals(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
     void Reserve(SizeType capacity);
 
     NODISCARD bool IsValidIndex(SizeType index) const;
+
+    NODISCARD String FoldCase() const;
+
+    NODISCARD static String FromUtf16(const char16_t* str, SizeType length = -1);
+
+    NODISCARD static String FromUtf32(const char32_t* str, SizeType length = -1);
+
+    NODISCARD static String From(const std::string& str);
+
+    NODISCARD static String From(const std::wstring& str);
 
     template <typename CharType, typename... Args>
     static String Format(const CharType* fmt, Args&&... args)
@@ -173,6 +185,24 @@ inline String::SizeType String::Capacity() const
 inline bool String::IsValidIndex(String::SizeType index) const
 {
     return index >= 0 && index < Length();
+}
+
+inline String String::From(const std::string& str)
+{
+    return {str.data(), static_cast<SizeType>(str.length())};
+}
+
+inline String String::From(const std::wstring& str)
+{
+    if constexpr (sizeof(std::wstring::value_type) == sizeof(char16_t))
+    {
+        return String::FromUtf16(reinterpret_cast<const char16_t*>(str.data()), static_cast<SizeType>(str.length()));
+    }
+    else if constexpr (sizeof(std::wstring::value_type) == sizeof(char32_t))
+    {
+        return String::FromUtf32(reinterpret_cast<const char32_t*>(str.data()), static_cast<SizeType>(str.length()));
+    }
+    ASSERT(0);
 }
 
 inline void String::TidyInit()

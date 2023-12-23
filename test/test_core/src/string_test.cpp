@@ -108,7 +108,34 @@ TEST(StringAt, StringTest)
         String name = u8"阿特拉斯";
         EXPECT_TRUE(String::CharTraits::to_int_type(name[3]) == 231);
         EXPECT_TRUE(name.CodePointAt(1) == 29305);
-        EXPECT_TRUE(name.CodePointAt(4) == std::char_traits<char8_t>::eof());
+        EXPECT_TRUE(name.CodePointAt(4) == CodePoint::incomplete);
+    }
+}
+
+TEST(StringFrom, StringTest)
+{
+    {
+        String name = String::FromUtf16(u"阿特拉斯");
+        EXPECT_TRUE(name == u8"阿特拉斯");
+    }
+
+    {
+        String name = String::FromUtf32(U"阿特拉斯");
+        EXPECT_TRUE(name == u8"阿特拉斯");
+    }
+
+    {
+        String name = String::From(std::wstring(L"阿特拉斯"));
+        EXPECT_TRUE(name == u8"阿特拉斯");
+    }
+}
+
+TEST(StringEquals, StringTest)
+{
+    {
+        String name = "Atlas";
+        EXPECT_FALSE(name.Equals("atlas"));
+        EXPECT_TRUE(name.Equals("atlas", ECaseSensitive::Insensitive));
     }
 }
 
