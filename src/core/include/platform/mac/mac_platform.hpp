@@ -36,3 +36,6 @@ typedef MacPlatformTypes PlatformTypes;
 
 #undef DLL_IMPORT
 #define DLL_IMPORT
+
+#undef NODISCARD
+#define NODISCARD [[nodiscard]]

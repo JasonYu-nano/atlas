@@ -166,6 +166,18 @@ protected:
     CompressionPair<AllocatorType, ValType> pair_;
 };
 
+inline char8_t& String::operator[] (SizeType index)
+{
+    ASSERT(IsValidIndex(index));
+    return GetVal().GetPtr()[index];
+}
+
+inline char8_t String::operator[] (SizeType index) const
+{
+    ASSERT(IsValidIndex(index));
+    return GetVal().GetPtr()[index];
+}
+
 inline char8_t* String::Data()
 {
     return GetVal().GetPtr();

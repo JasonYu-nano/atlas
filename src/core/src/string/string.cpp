@@ -117,18 +117,6 @@ bool String::operator!=(const String& right) const
     return !Equals(right, ECaseSensitive::Sensitive);
 }
 
-inline char8_t& String::operator[] (SizeType index)
-{
-    ASSERT(IsValidIndex(index));
-    return GetVal().GetPtr()[index];
-}
-
-inline char8_t String::operator[] (SizeType index) const
-{
-    ASSERT(IsValidIndex(index));
-    return GetVal().GetPtr()[index];
-}
-
 String::SizeType String::Count() const
 {
     auto it = reinterpret_cast<const char*>(Data());

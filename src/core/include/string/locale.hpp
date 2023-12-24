@@ -11,12 +11,6 @@
 namespace atlas::locale
 {
 
-CORE_API std::locale DefaultLocale();
-
-inline std::locale DefaultLocale()
-{
-    boost::locale::generator generator;
-    return generator("en_US.UTF-8");
-}
+CORE_API const std::locale& DefaultLocale();
 
 }
