@@ -149,4 +149,36 @@ TEST(StringEquals, StringTest)
     }
 }
 
+TEST(StringModify, StringTest)
+{
+    {
+        String name = "Atlas";
+        String::ViewType view = u8"阿特拉斯";
+        name.Append(view);
+        EXPECT_TRUE(name == "Atlas阿特拉斯" && name.Length() == 17);
+    }
+    {
+        String name = "Atlas";
+        name.Prepend(String(u8"阿特拉斯"));
+        EXPECT_TRUE(name == "阿特拉斯Atlas" && name.Length() == 17);
+    }
+
+    {
+        String name = "Atlas";
+        String new_name = name.Concat(u8"阿特拉斯");
+        EXPECT_TRUE(name == "Atlas" && new_name == "Atlas阿特拉斯" && new_name.Length() == 17);
+    }
+}
+
+TEST(StringIter, StringTest)
+{
+    {
+        String str("atlas");
+        EXPECT_TRUE(std::distance(str.begin(), str.end()) == 5);
+        EXPECT_TRUE(std::distance(str.rbegin(), str.rend()) == 5);
+        EXPECT_TRUE(std::distance(str.cbegin(), str.cend()) == 5);
+        EXPECT_TRUE(std::distance(str.crbegin(), str.crend()) == 5);
+    }
+}
+
 }
