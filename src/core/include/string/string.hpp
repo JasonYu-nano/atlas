@@ -6,12 +6,15 @@
 #include <string>
 
 #include "fmt/format.h"
+#include "boost/algorithm/string/find.hpp"
+#include "boost/algorithm/string/finder.hpp"
 
 #include "utility/compression_pair.hpp"
 #include "memory/allocator.hpp"
 #include "string/locale.hpp"
 #include "string/unicode.hpp"
 #include "misc/iterator.hpp"
+#include "core_macro.hpp"
 
 namespace atlas
 {
@@ -58,10 +61,10 @@ public:
     using ViewType = std::basic_string_view<char8_t>;
     using Pointer = ValueType*;
     using ConstPointer = const ValueType*;
-    using Iterator = WrapIterator<Pointer>;
-    using ConstIterator = WrapIterator<ConstPointer>;
-    using ReverseIterator = std::reverse_iterator<Iterator>;
-    using ConstReverseIterator = std::reverse_iterator<ConstIterator>;
+    using iterator = WrapIterator<Pointer>;
+    using const_iterator = WrapIterator<ConstPointer>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 private:
     using ValType = details::StringVal<CharTraits, SizeType>;
@@ -101,20 +104,20 @@ public:
     NODISCARD inline char8_t* Data();
     NODISCARD inline const char8_t* Data() const;
 
-    NODISCARD Iterator begin();
-    NODISCARD ConstIterator begin() const;
-    NODISCARD Iterator end();
-    NODISCARD ConstIterator end() const;
+    NODISCARD iterator begin();
+    NODISCARD const_iterator begin() const;
+    NODISCARD iterator end();
+    NODISCARD const_iterator end() const;
 
-    NODISCARD ReverseIterator rbegin();
-    NODISCARD ConstReverseIterator rbegin() const;
-    NODISCARD ReverseIterator rend();
-    NODISCARD ConstReverseIterator rend() const;
+    NODISCARD reverse_iterator rbegin();
+    NODISCARD const_reverse_iterator rbegin() const;
+    NODISCARD reverse_iterator rend();
+    NODISCARD const_reverse_iterator rend() const;
 
-    NODISCARD ConstIterator cbegin() const;
-    NODISCARD ConstIterator cend() const;
-    NODISCARD ConstReverseIterator crbegin() const;
-    NODISCARD ConstReverseIterator crend() const;
+    NODISCARD const_iterator cbegin() const;
+    NODISCARD const_iterator cend() const;
+    NODISCARD const_reverse_iterator crbegin() const;
+    NODISCARD const_reverse_iterator crend() const;
 
     SizeType Size() const;
 
@@ -158,6 +161,29 @@ public:
     NODISCARD String Concat(const ViewType& view);
     template<typename IteratorType>
     NODISCARD String Concat(const IteratorType& begin, const IteratorType& end);
+
+    String& Insert(SizeType offset, const String& str);
+    String& Insert(SizeType offset, const char* str);
+    String& Insert(SizeType offset, const char8_t* str);
+    String& Insert(SizeType offset, const ViewType& view);
+    template<typename IteratorType>
+    String& Insert(const const_iterator& where, const IteratorType& begin, const IteratorType& end);
+
+    String& Remove(SizeType from, SizeType count);
+
+    SizeType IndexOf(const String& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    SizeType IndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    SizeType IndexOf(const char8_t* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    SizeType IndexOf(const ViewType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    template<typename RangeType>
+    SizeType IndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+
+    SizeType LastIndexOf(const String& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    SizeType LastIndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    SizeType LastIndexOf(const char8_t* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    SizeType LastIndexOf(const ViewType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    template<typename RangeType>
+    SizeType LastIndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
     NODISCARD static String FromUtf16(const char16_t* str);
     NODISCARD static String FromUtf16(const char16_t* str, SizeType length);
@@ -229,29 +255,29 @@ inline const char8_t* String::Data() const
     return GetVal().GetPtr();
 }
 
-inline String::Iterator String::begin() { return Iterator(Data()); }
+inline String::iterator String::begin() { return iterator(Data()); }
 
-inline String::ConstIterator String::begin() const{ return ConstIterator(Data()); }
+inline String::const_iterator String::begin() const{ return const_iterator(Data()); }
 
-inline String::Iterator String::end() { return Iterator(Data() + Length()); }
+inline String::iterator String::end() { return iterator(Data() + Length()); }
 
-inline String::ConstIterator String::end() const { return ConstIterator(Data() + Length()); }
+inline String::const_iterator String::end() const { return const_iterator(Data() + Length()); }
 
-inline String::ReverseIterator String::rbegin() { return ReverseIterator(end()); }
+inline String::reverse_iterator String::rbegin() { return reverse_iterator(end()); }
 
-inline String::ConstReverseIterator String::rbegin() const{ return ConstReverseIterator(end()); }
+inline String::const_reverse_iterator String::rbegin() const{ return const_reverse_iterator(end()); }
 
-inline String::ReverseIterator String::rend() { return ReverseIterator(begin()); }
+inline String::reverse_iterator String::rend() { return reverse_iterator(begin()); }
 
-inline String::ConstReverseIterator String::rend() const { return ConstReverseIterator(begin()); }
+inline String::const_reverse_iterator String::rend() const { return const_reverse_iterator(begin()); }
 
-inline String::ConstIterator String::cbegin() const { return begin(); }
+inline String::const_iterator String::cbegin() const { return begin(); }
 
-inline String::ConstIterator String::cend() const { return end(); }
+inline String::const_iterator String::cend() const { return end(); }
 
-inline String::ConstReverseIterator String::crbegin() const{ return ConstReverseIterator(end()); }
+inline String::const_reverse_iterator String::crbegin() const{ return const_reverse_iterator(end()); }
 
-inline String::ConstReverseIterator String::crend() const { return ConstReverseIterator(begin()); }
+inline String::const_reverse_iterator String::crend() const { return const_reverse_iterator(begin()); }
 
 inline String::SizeType String::Size() const
 {
@@ -416,6 +442,95 @@ String String::Concat(const IteratorType& begin, const IteratorType& end)
     result.Eos(new_length);
 
     return result;
+}
+
+inline String& String::Insert(SizeType offset, const String& str) { return Insert(cbegin() + offset, str.begin(), str.end()); };
+inline String& String::Insert(SizeType offset, const char* str) { return Insert(cbegin() + offset, str, str + std::char_traits<char>::length(str)); };
+inline String& String::Insert(SizeType offset, const char8_t* str) { return Insert(cbegin() + offset, str, str + CharTraits::length(str)); };
+inline String& String::Insert(SizeType offset, const ViewType& view) { return Insert(cbegin() + offset, view.cbegin(), view.cend()); };
+
+template<typename IteratorType>
+String& String::Insert(const const_iterator& where,  const IteratorType& begin, const IteratorType& end)
+{
+    ASSERT(where >= cbegin() && where <= cend());
+    SizeType length = Length();
+    SizeType insert_size = std::distance(begin, end);
+    SizeType new_length = length + insert_size;
+    size_t offset = std::distance(cbegin(), where);
+    Reserve(new_length + 1);
+
+    char8_t* p = Data() + offset;
+
+    CharTraits::move(p + insert_size, p, length - offset);
+
+    for (auto it = begin; it < end; ++p, ++it)
+    {
+        CharTraits::assign(*p, *it);
+    }
+
+    Eos(new_length);
+
+    return *this;
+}
+
+inline String::SizeType String::IndexOf(const String& search, ECaseSensitive case_sensitive) const
+{
+    return IndexOf(boost::make_iterator_range(search.begin(), search.end()), case_sensitive);
+}
+
+inline String::SizeType String::IndexOf(const char* search, ECaseSensitive case_sensitive) const
+{
+    return IndexOf(boost::make_iterator_range(search, search + std::char_traits<char>::length(search)), case_sensitive);
+}
+
+inline String::SizeType String::IndexOf(const char8_t* search, ECaseSensitive case_sensitive) const
+{
+    return IndexOf(boost::make_iterator_range(search, search + CharTraits::length(search)), case_sensitive);
+}
+
+inline String::SizeType String::IndexOf(const ViewType& search, ECaseSensitive case_sensitive) const
+{
+    return IndexOf(boost::make_iterator_range(search.begin(), search.end()), case_sensitive);
+}
+
+template<typename RangeType>
+String::SizeType String::IndexOf(const RangeType& search, ECaseSensitive case_sensitive) const
+{
+    auto&& range = case_sensitive == ECaseSensitive::Sensitive
+        ? boost::algorithm::find_first(*this, search)
+        : boost::algorithm::ifind_first(*this, search);
+
+    return range.empty() ? INDEX_NONE_ZU : std::distance(cbegin(), range.begin());
+}
+
+inline String::SizeType String::LastIndexOf(const String& search, ECaseSensitive case_sensitive) const
+{
+    return LastIndexOf(boost::make_iterator_range(search.begin(), search.end()), case_sensitive);
+}
+
+inline String::SizeType String::LastIndexOf(const char* search, ECaseSensitive case_sensitive) const
+{
+    return LastIndexOf(boost::make_iterator_range(search, search + std::char_traits<char>::length(search)), case_sensitive);
+}
+
+inline String::SizeType String::LastIndexOf(const char8_t* search, ECaseSensitive case_sensitive) const
+{
+    return LastIndexOf(boost::make_iterator_range(search, search + CharTraits::length(search)), case_sensitive);
+}
+
+inline String::SizeType String::LastIndexOf(const ViewType& search, ECaseSensitive case_sensitive) const
+{
+    return LastIndexOf(boost::make_iterator_range(search.begin(), search.end()), case_sensitive);
+}
+
+template<typename RangeType>
+String::SizeType String::LastIndexOf(const RangeType& search, ECaseSensitive case_sensitive) const
+{
+    auto&& range = case_sensitive == ECaseSensitive::Sensitive
+                   ? boost::algorithm::find_last(*this, search)
+                   : boost::algorithm::ifind_last(*this, search);
+
+    return range.empty() ? INDEX_NONE_ZU : std::distance(cbegin(), range.begin());
 }
 
 inline void String::TidyInit()

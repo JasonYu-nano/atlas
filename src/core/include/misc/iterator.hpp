@@ -22,7 +22,9 @@ public:
     typedef typename std::iterator_traits<iterator_type>::iterator_category iterator_category;
     typedef std::contiguous_iterator_tag                                    iterator_concept;
 
+    WrapIterator() : it_(Iter()) {}
     explicit WrapIterator(const Iter& it) : it_(it) {}
+    WrapIterator(const WrapIterator& right) = default;
 
     reference       operator*   () const { return *it_; }
 
@@ -38,7 +40,7 @@ public:
     WrapIterator    operator+   (difference_type n) const { WrapIterator temp = *this; temp.it_ += n; return temp; }
     WrapIterator&   operator+=  (difference_type n) { it_ += n; return *this; }
 
-    WrapIterator    operator-   (difference_type n) const { WrapIterator temp = *this; temp, it_ -= n; return temp; }
+    WrapIterator    operator-   (difference_type n) const { WrapIterator temp = *this; temp.it_ -= n; return temp; }
     WrapIterator&   operator-=  (difference_type n) { it_ -= n; return *this; }
 
     reference       operator[]  (difference_type n) { return it_[n]; }

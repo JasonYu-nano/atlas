@@ -215,6 +215,19 @@ String String::ToLower(const std::locale& locale) const
     return {lower.data(), static_cast<SizeType>(lower.length())};
 }
 
+String& String::Remove(SizeType from, SizeType count)
+{
+    ASSERT(count > 0 && from < Length() && from + count <= Length());
+
+    Pointer start = Data() + from;
+    SizeType length = Length();
+    SizeType new_length = length - count;
+    CharTraits::move(start, start + count, length - from - count);
+    Eos(new_length);
+
+    return *this;
+}
+
 String String::FromUtf16(const char16_t* str, SizeType length)
 {
     if (length <= 0)

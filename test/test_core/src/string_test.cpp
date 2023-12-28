@@ -162,12 +162,35 @@ TEST(StringModify, StringTest)
         name.Prepend(String(u8"阿特拉斯"));
         EXPECT_TRUE(name == "阿特拉斯Atlas" && name.Length() == 17);
     }
-
     {
         String name = "Atlas";
         String new_name = name.Concat(u8"阿特拉斯");
         EXPECT_TRUE(name == "Atlas" && new_name == "Atlas阿特拉斯" && new_name.Length() == 17);
     }
+    {
+        String name = "Atlas";
+        name.Insert(5, u8"阿特拉斯");
+        EXPECT_TRUE(name == "Atlas阿特拉斯" && name.Length() == 17);
+    }
+    {
+        String name = "Atlas";
+        name.Insert(0, u8"阿特拉斯");
+        EXPECT_TRUE(name == "阿特拉斯Atlas" && name.Length() == 17);
+    }
+    {
+        String name = "Atlas";
+        name.Remove(2, 2);
+        EXPECT_TRUE(name == "Ats" && name.Length() == 3);
+    }
+    {
+        String name = "Atlas";
+        EXPECT_TRUE(name.IndexOf(u8"la") == 2);
+        EXPECT_TRUE(name.IndexOf("al") == INDEX_NONE);
+        EXPECT_TRUE(name.IndexOf("at", ECaseSensitive::Insensitive) == 0);
+        EXPECT_TRUE(name.IndexOf(String::ViewType(u8"at")) == INDEX_NONE);
+        std::shared_ptr<String> a;
+    }
+
 }
 
 TEST(StringIter, StringTest)
@@ -178,6 +201,7 @@ TEST(StringIter, StringTest)
         EXPECT_TRUE(std::distance(str.rbegin(), str.rend()) == 5);
         EXPECT_TRUE(std::distance(str.cbegin(), str.cend()) == 5);
         EXPECT_TRUE(std::distance(str.crbegin(), str.crend()) == 5);
+        EXPECT_TRUE(std::distance(str.cbegin(), str.cbegin() + 5) == 5);
     }
 }
 
