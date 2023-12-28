@@ -106,7 +106,7 @@ TEST(StringAt, StringTest)
 {
     {
         String name = u8"阿特拉斯";
-        EXPECT_TRUE(String::CharTraits::to_int_type(name[3]) == 231);
+        EXPECT_TRUE(String::char_traits::to_int_type(name[3]) == 231);
         EXPECT_TRUE(name.CodePointAt(1) == 29305);
         EXPECT_TRUE(name.CodePointAt(4) == CodePoint::incomplete);
     }
@@ -153,7 +153,7 @@ TEST(StringModify, StringTest)
 {
     {
         String name = "Atlas";
-        String::ViewType view = u8"阿特拉斯";
+        String::view_type view = u8"阿特拉斯";
         name.Append(view);
         EXPECT_TRUE(name == "Atlas阿特拉斯" && name.Length() == 17);
     }
@@ -187,7 +187,7 @@ TEST(StringModify, StringTest)
         EXPECT_TRUE(name.IndexOf(u8"la") == 2);
         EXPECT_TRUE(name.IndexOf("al") == INDEX_NONE);
         EXPECT_TRUE(name.IndexOf("at", ECaseSensitive::Insensitive) == 0);
-        EXPECT_TRUE(name.IndexOf(String::ViewType(u8"at")) == INDEX_NONE);
+        EXPECT_TRUE(name.IndexOf(String::view_type(u8"at")) == INDEX_NONE);
         std::shared_ptr<String> a;
     }
 

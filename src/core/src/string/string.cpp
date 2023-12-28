@@ -19,26 +19,26 @@ String::String(const char8_t ch)
 
 String::String(const char ch)
 {
-    auto u8 = static_cast<ValueType>(ch);
+    auto u8 = static_cast<value_type>(ch);
     Construct(&u8, 1);
 }
 
-String::String(const char8_t ch, String::SizeType count)
+String::String(const char8_t ch, String::size_type count)
 {
     Construct(ch, count);
 }
 
-String::String(const char ch, String::SizeType count)
+String::String(const char ch, String::size_type count)
 {
-    Construct(static_cast<ValueType>(ch), count);
+    Construct(static_cast<value_type>(ch), count);
 }
 
 String::String(const char8_t* str)
 {
-    Construct(str, CharTraits::length(str));
+    Construct(str, char_traits::length(str));
 }
 
-String::String(const char8_t* str, String::SizeType length)
+String::String(const char8_t* str, String::size_type length)
 {
     Construct(str, length);
 }
@@ -48,27 +48,27 @@ String::String(const char* str)
     Construct(reinterpret_cast<const char8_t*>(str), std::char_traits<char>::length(str));
 }
 
-String::String(const char* str, String::SizeType length)
+String::String(const char* str, String::size_type length)
 {
     Construct(reinterpret_cast<const char8_t*>(str), length);
 }
 
 String::String(const String& right)
 {
-    Construct(right, 0, std::numeric_limits<SizeType>::max());
+    Construct(right, 0, std::numeric_limits<size_type>::max());
 }
 
-String::String(const String& right, SizeType offset, SizeType size)
+String::String(const String& right, size_type offset, size_type size)
 {
     Construct(right, offset, size);
 }
 
 String::String(String&& right) noexcept
 {
-    MoveConstruct(right, 0, std::numeric_limits<SizeType>::max());
+    MoveConstruct(right, 0, std::numeric_limits<size_type>::max());
 }
 
-String::String(String&& right, SizeType offset, SizeType size) noexcept
+String::String(String&& right, size_type offset, size_type size) noexcept
 {
     MoveConstruct(right, offset, size);
 }
@@ -78,10 +78,10 @@ String::~String()
     auto&& my_val = GetVal();
     if (LargeStringEngaged())
     {
-        AllocatorTraits::deallocate(GetAlloc(), my_val.GetPtr(), my_val.capacity_ + 1);
+        allocator_traits::deallocate(GetAlloc(), my_val.GetPtr(), my_val.capacity_ + 1);
     }
     my_val.size_ = 0;
-    my_val.capacity_ = ValType::INLINE_SIZE - 1;
+    my_val.capacity_ = val_type::INLINE_SIZE - 1;
 }
 
 String& String::operator= (const String& right)
@@ -98,13 +98,13 @@ String& String::operator= (String&& right) noexcept
 
 String& String::operator=(const char* right)
 {
-    Assign(reinterpret_cast<const char8_t*>(right), static_cast<SizeType>(std::char_traits<char>::length(right)));
+    Assign(reinterpret_cast<const char8_t*>(right), static_cast<size_type>(std::char_traits<char>::length(right)));
     return *this;
 }
 
 String& String::operator=(const char8_t* right)
 {
-    Assign(right, CharTraits::length(right));
+    Assign(right, char_traits::length(right));
     return *this;
 }
 
@@ -117,11 +117,11 @@ bool String::operator!=(const String& right) const
     return !Equals(right, ECaseSensitive::Sensitive);
 }
 
-String::SizeType String::Count() const
+String::size_type String::Count() const
 {
     auto it = reinterpret_cast<const char*>(Data());
     auto end = it + Length();
-    SizeType count = 0;
+    size_type count = 0;
 
     while (it < end)
     {
@@ -133,11 +133,11 @@ String::SizeType String::Count() const
     return count;
 }
 
-CodePoint String::CodePointAt(std::make_unsigned_t<SizeType> offset) const
+CodePoint String::CodePointAt(std::make_unsigned_t<size_type> offset) const
 {
     auto it = reinterpret_cast<const char*>(Data());
     auto end = it + Length();
-    SizeType current_offset = 0;
+    size_type current_offset = 0;
 
     while (it < end)
     {
@@ -156,8 +156,8 @@ CodePoint String::CodePointAt(std::make_unsigned_t<SizeType> offset) const
 
 bool String::Equals(const String &right, ECaseSensitive case_sensitive) const
 {
-    const SizeType left_length = Length();
-    const SizeType right_length = right.Length();
+    const size_type left_length = Length();
+    const size_type right_length = right.Length();
 
     if (left_length != right_length)
     {
@@ -166,15 +166,15 @@ bool String::Equals(const String &right, ECaseSensitive case_sensitive) const
 
     if (case_sensitive == ECaseSensitive::Sensitive)
     {
-        return CharTraits::compare(Data(), right.Data(), left_length) == 0;
+        return char_traits::compare(Data(), right.Data(), left_length) == 0;
     }
 
     String left_fold_case = FoldCase();
     String right_fold_case = right.FoldCase();
-    return CharTraits::compare(left_fold_case.Data(), right_fold_case.Data(), left_length) == 0;
+    return char_traits::compare(left_fold_case.Data(), right_fold_case.Data(), left_length) == 0;
 }
 
-void String::Reserve(String::SizeType capacity)
+void String::Reserve(String::size_type capacity)
 {
     auto&& my_val = GetVal();
     if (capacity > my_val.capacity_)
@@ -185,10 +185,10 @@ void String::Reserve(String::SizeType capacity)
         }
         else
         {
-            Pointer new_ptr = AllocatorTraits::allocate(GetAlloc(), capacity + 1);
-            Pointer old_ptr = my_val.u_.ptr_;
-            CharTraits::move(new_ptr, old_ptr, my_val.size_ + 1);
-            AllocatorTraits::deallocate(GetAlloc(), old_ptr, my_val.capacity_ + 1);
+            pointer new_ptr = allocator_traits::allocate(GetAlloc(), capacity + 1);
+            pointer old_ptr = my_val.u_.ptr_;
+            char_traits::move(new_ptr, old_ptr, my_val.size_ + 1);
+            allocator_traits::deallocate(GetAlloc(), old_ptr, my_val.capacity_ + 1);
             my_val.u_.ptr_ = new_ptr;
             my_val.capacity_ = capacity;
         }
@@ -199,36 +199,36 @@ String String::FoldCase() const
 {
     const char* data = reinterpret_cast<const char*>(Data());
     std::string fold_case = boost::locale::fold_case(data, data + Length(), locale::DefaultLocale());
-    return {fold_case.data(), static_cast<SizeType>(fold_case.length())};
+    return {fold_case.data(), static_cast<size_type>(fold_case.length())};
 }
 
 String String::ToUpper(const std::locale& locale) const
 {
     const char* data = reinterpret_cast<const char*>(Data());
     std::string upper = boost::locale::to_upper(data, data + Length(), locale);
-    return {upper.data(), static_cast<SizeType>(upper.length())};
+    return {upper.data(), static_cast<size_type>(upper.length())};
 }
 String String::ToLower(const std::locale& locale) const
 {
     const char* data = reinterpret_cast<const char*>(Data());
     std::string lower = boost::locale::to_lower(data, data + Length(), locale);
-    return {lower.data(), static_cast<SizeType>(lower.length())};
+    return {lower.data(), static_cast<size_type>(lower.length())};
 }
 
-String& String::Remove(SizeType from, SizeType count)
+String& String::Remove(size_type from, size_type count)
 {
     ASSERT(count > 0 && from < Length() && from + count <= Length());
 
-    Pointer start = Data() + from;
-    SizeType length = Length();
-    SizeType new_length = length - count;
-    CharTraits::move(start, start + count, length - from - count);
+    pointer start = Data() + from;
+    size_type length = Length();
+    size_type new_length = length - count;
+    char_traits::move(start, start + count, length - from - count);
     Eos(new_length);
 
     return *this;
 }
 
-String String::FromUtf16(const char16_t* str, SizeType length)
+String String::FromUtf16(const char16_t* str, size_type length)
 {
     if (length <= 0)
     {
@@ -236,10 +236,10 @@ String String::FromUtf16(const char16_t* str, SizeType length)
     }
 
     std::string u8 = boost::locale::conv::utf_to_utf<char, char16_t>(str, str + length);
-    return {u8.data(), static_cast<SizeType>(u8.length())};
+    return {u8.data(), static_cast<size_type>(u8.length())};
 }
 
-String String::FromUtf32(const char32_t* str, SizeType length)
+String String::FromUtf32(const char32_t* str, size_type length)
 {
     if (length <= 0)
     {
@@ -247,92 +247,92 @@ String String::FromUtf32(const char32_t* str, SizeType length)
     }
 
     std::string u8 = boost::locale::conv::utf_to_utf<char, char32_t>(str, str + length);
-    return {u8.data(), static_cast<SizeType>(u8.length())};
+    return {u8.data(), static_cast<size_type>(u8.length())};
 }
 
-void String::BecomeLarge(String::SizeType capacity)
+void String::BecomeLarge(String::size_type capacity)
 {
     auto&& my_val = GetVal();
-    Pointer new_ptr = AllocatorTraits::allocate(GetAlloc(), capacity + 1);
-    CharTraits::move(new_ptr, my_val.u_.buffer_, my_val.size_ + 1);
+    pointer new_ptr = allocator_traits::allocate(GetAlloc(), capacity + 1);
+    char_traits::move(new_ptr, my_val.u_.buffer_, my_val.size_ + 1);
     my_val.u_.ptr_ = new_ptr;
     my_val.capacity_ = capacity;
 }
 
-void String::Construct(String::ConstPointer str, AllocatorTraits::size_type len)
+void String::Construct(String::const_pointer str, allocator_traits::size_type len)
 {
-    ASSERT(len < std::numeric_limits<SizeType>::max());
+    ASSERT(len < std::numeric_limits<size_type>::max());
     Reserve(len + 1);
     auto&& my_val = GetVal();
-    Pointer ptr = my_val.GetPtr();
-    CharTraits::copy(ptr, str, len);
+    pointer ptr = my_val.GetPtr();
+    char_traits::copy(ptr, str, len);
     Eos(len);
 }
 
-void String::Construct(const String::ValueType ch, String::SizeType count)
+void String::Construct(const String::value_type ch, String::size_type count)
 {
-    ASSERT(count > 0 && count < std::numeric_limits<SizeType>::max());
+    ASSERT(count > 0 && count < std::numeric_limits<size_type>::max());
     Reserve(count + 1);
     auto&& my_val = GetVal();
     auto ptr = my_val.GetPtr();
-    CharTraits::assign(ptr, count, ch);
+    char_traits::assign(ptr, count, ch);
     Eos(count);
 }
 
-void String::Construct(const String& right, SizeType offset, SizeType size)
+void String::Construct(const String& right, size_type offset, size_type size)
 {
     ASSERT(right.IsValidIndex(offset));
-    SizeType actual_size = math::Clamp<SizeType>(size, 0, right.Length() - offset);
+    size_type actual_size = math::Clamp<size_type>(size, 0, right.Length() - offset);
     if (actual_size > 0)
     {
         auto right_ptr = right.Data() + offset;
         Reserve(actual_size + 1);
-        CharTraits::copy(Data(), right_ptr, actual_size);
+        char_traits::copy(Data(), right_ptr, actual_size);
     }
     Eos(actual_size);
 }
 
-void String::MoveConstruct(String& right, String::SizeType offset, String::SizeType size)
+void String::MoveConstruct(String& right, String::size_type offset, String::size_type size)
 {
     ASSERT(right.IsValidIndex(offset));
-    SizeType actual_size = math::Clamp<SizeType>(size, 0, right.Length() - offset);
+    size_type actual_size = math::Clamp<size_type>(size, 0, right.Length() - offset);
     if (actual_size > 0)
     {
         auto right_ptr = right.Data();
         if (offset > 0)
         {
-            CharTraits::move(right_ptr, right_ptr + offset, actual_size);
+            char_traits::move(right_ptr, right_ptr + offset, actual_size);
             right.Eos(actual_size);
         }
 
         Reserve(actual_size + 1);
-        CharTraits::move(Data(), right_ptr, actual_size);
+        char_traits::move(Data(), right_ptr, actual_size);
     }
     Eos(actual_size);
 }
 
-void String::Assign(const char8_t* right, SizeType length)
+void String::Assign(const char8_t* right, size_type length)
 {
     ASSERT(IsValidAddress(right, right + length));
     Reserve(length + 1);
-    CharTraits::copy(Data(), right, length);
+    char_traits::copy(Data(), right, length);
     Eos(length);
 }
 
 void String::MoveAssign(String& right)
 {
     ASSERT(IsValidAddress(right.Data(), right.Data() + right.Length()));
-    SizeType length = right.Length();
+    size_type length = right.Length();
     Reserve(length + 1);
-    CharTraits::move(Data(), right.Data(), length);
+    char_traits::move(Data(), right.Data(), length);
     Eos(length);
 }
 
-void String::Eos(String::SizeType size)
+void String::Eos(String::size_type size)
 {
     auto&& my_val = GetVal();
     my_val.size_ = size;
-    CharTraits::assign(my_val.GetPtr()[size], ValueType());
+    char_traits::assign(my_val.GetPtr()[size], value_type());
 }
 
 bool String::IsValidAddress(const char8_t* start, const char8_t* end) const
