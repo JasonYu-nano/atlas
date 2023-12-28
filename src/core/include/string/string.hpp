@@ -68,7 +68,7 @@ public:
 
 private:
     using val_type = details::StringVal<char_traits, size_type>;
-    using param_type = typename CallTraits<value_type>::ParamType;
+    using param_type = typename CallTraits<value_type>::param_type;
 
 public:
     String();

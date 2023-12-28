@@ -17,8 +17,8 @@ TEST(CallTraitsTest, UtilityTest)
 
     };
 
-    EXPECT_TRUE(std::is_const_v<CallTraits<uint64>::ParamType> && !std::is_reference_v<CallTraits<uint64>::ParamType>);
-    EXPECT_TRUE(std::is_reference_v<CallTraits<CT>::ParamType>);
+    EXPECT_TRUE(std::is_const_v<CallTraits<uint64>::param_type> && !std::is_reference_v<CallTraits<uint64>::param_type>);
+    EXPECT_TRUE(std::is_reference_v<CallTraits<CT>::param_type>);
 }
 
 TEST(CompressionPairTest, UtilityTest)

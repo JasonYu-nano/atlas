@@ -30,12 +30,9 @@ struct StandardAllocator
     class Allocator
     {
     public:
-        using ValueType = T;
         using value_type = T;
-        using SizeType = SizeTy;
         using size_type = SizeTy;
-        using DifferenceType = SizeType;
-        using difference_type = SizeType;
+        using difference_type = size_type;
         using propagate_on_container_move_assignment = std::true_type;
 
         Allocator() = default;
@@ -44,12 +41,12 @@ struct StandardAllocator
         Allocator(const Allocator<Other>&) noexcept {}
         ~Allocator() = default;
 
-        NODISCARD ValueType* allocate(const SizeType size)
+        NODISCARD value_type* allocate(const size_type size)
         {
-            return static_cast<ValueType*>(allocate_impl<alignof(T)>(details::GetByteSize<sizeof(T)>(size)));
+            return static_cast<value_type*>(allocate_impl<alignof(T)>(details::GetByteSize<sizeof(T)>(size)));
         }
 
-        void deallocate(ValueType* const ptr, const SizeType size)
+        void deallocate(value_type* const ptr, const size_type size)
         {
             deallocate_impl<alignof(T)>(ptr);
         }
@@ -92,28 +89,25 @@ struct FixedAllocator
     class Allocator
     {
     public:
-        using ValueType = T;
         using value_type = T;
-        using SizeType = SizeTy;
         using size_type = SizeTy;
-        using DifferenceType = SizeType;
-        using difference_type = SizeType;
+        using difference_type = size_type;
 
         Allocator() = default;
         Allocator(const Allocator& ) noexcept {}
         ~Allocator() = default;
 
-        NODISCARD ValueType* allocate(const SizeType size)
+        NODISCARD value_type* allocate(const size_type size)
         {
             ASSERT(size <= MaxSize);
-            return static_cast<ValueType*>(buffer_->GetData());
+            return static_cast<value_type*>(buffer_->GetData());
         }
 
-        void deallocate(ValueType* const ptr, const SizeType size)
+        void deallocate(value_type* const ptr, const size_type size)
         {
         }
 
-        SizeType max_size() const
+        size_type max_size() const
         {
             return MaxSize;
         }
@@ -134,30 +128,27 @@ struct InlineAllocator
     class Allocator
     {
     public:
-        using ValueType = T;
         using value_type = T;
-        using SizeType = SizeTy;
         using size_type = SizeTy;
-        using DifferenceType = SizeType;
-        using difference_type = SizeType;
+        using difference_type = size_type;
 
         Allocator() = default;
         Allocator(const Allocator& ) noexcept {}
         ~Allocator() = default;
 
-        NODISCARD ValueType* allocate(const SizeType size)
+        NODISCARD value_type* allocate(const size_type size)
         {
             if (size <= InlineSize)
             {
-                return static_cast<ValueType*>(buffer_->GetData());
+                return static_cast<value_type*>(buffer_->GetData());
             }
             else
             {
-                return static_cast<ValueType*>(allocate_impl<alignof(T)>(details::GetByteSize<sizeof(T)>(size)));
+                return static_cast<value_type*>(allocate_impl<alignof(T)>(details::GetByteSize<sizeof(T)>(size)));
             }
         }
 
-        void deallocate(ValueType* const ptr, const SizeType size)
+        void deallocate(value_type* const ptr, const size_type size)
         {
             if (size > InlineSize)
             {

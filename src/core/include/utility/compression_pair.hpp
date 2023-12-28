@@ -52,159 +52,159 @@ template<typename T1, typename T2, int>
 class CompressionPairImpl
 {
 public:
-    using FirstType             = T1;
-    using SecondType            = T2;
-    using FirstReference        = CallTraits<FirstType>::Reference;
-    using SecondReference       = CallTraits<SecondType>::Reference;
-    using FirstConstReference   = CallTraits<FirstType>::ConstReference;
-    using SecondConstReference  = CallTraits<SecondType>::ConstReference;
-    using FirstParamType        = CallTraits<FirstType>::ParamType;
-    using SecondParamType       = CallTraits<SecondType>::ParamType;
+    using first_type             = T1;
+    using second_type            = T2;
+    using first_reference        = CallTraits<first_type>::reference;
+    using second_reference       = CallTraits<second_type>::reference;
+    using first_const_reference  = CallTraits<first_type>::const_reference;
+    using second_const_reference = CallTraits<second_type>::const_reference;
+    using first_param_type       = CallTraits<first_type>::param_type;
+    using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(FirstParamType first) : first_(first) {}
-    explicit CompressionPairImpl(SecondParamType second) : second_(second) {}
-    CompressionPairImpl(FirstParamType first, SecondParamType second) : first_(first), second_(second) {}
+    explicit CompressionPairImpl(first_param_type first) : first_(first) {}
+    explicit CompressionPairImpl(second_param_type second) : second_(second) {}
+    CompressionPairImpl(first_param_type first, second_param_type second) : first_(first), second_(second) {}
 
-    FirstReference First() { return first_; }
-    FirstConstReference First() const { return first_; }
-    SecondReference Second() { return second_; }
-    SecondConstReference Second() const { return second_; }
+    first_reference First() { return first_; }
+    first_const_reference First() const { return first_; }
+    second_reference Second() { return second_; }
+    second_const_reference Second() const { return second_; }
 
 private:
-    FirstType first_;
-    SecondType second_;
+    first_type first_;
+    second_type second_;
 };
 
 template<typename T1, typename T2>
 class CompressionPairImpl<T1, T2, 1> : protected std::remove_cv_t<T1>
 {
 public:
-    using FirstType             = T1;
-    using SecondType            = T2;
-    using FirstReference        = CallTraits<FirstType>::Reference;
-    using SecondReference       = CallTraits<SecondType>::Reference;
-    using FirstConstReference   = CallTraits<FirstType>::ConstReference;
-    using SecondConstReference  = CallTraits<SecondType>::ConstReference;
-    using FirstParamType        = CallTraits<FirstType>::ParamType;
-    using SecondParamType       = CallTraits<SecondType>::ParamType;
+    using first_type             = T1;
+    using second_type            = T2;
+    using first_reference        = CallTraits<first_type>::reference;
+    using second_reference       = CallTraits<second_type>::reference;
+    using first_const_reference  = CallTraits<first_type>::const_reference;
+    using second_const_reference = CallTraits<second_type>::const_reference;
+    using first_param_type       = CallTraits<first_type>::param_type;
+    using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(FirstParamType first) : FirstType(first) {}
-    explicit CompressionPairImpl(SecondParamType second) : second_(second) {}
-    CompressionPairImpl(FirstParamType first, SecondParamType second) : FirstType(first), second_(second) {}
+    explicit CompressionPairImpl(first_param_type first) : first_type(first) {}
+    explicit CompressionPairImpl(second_param_type second) : second_(second) {}
+    CompressionPairImpl(first_param_type first, second_param_type second) : first_type(first), second_(second) {}
 
-    FirstReference First() { return *this; }
-    FirstConstReference First() const { return *this; }
-    SecondReference Second() { return second_; }
-    SecondConstReference Second() const { return second_; }
+    first_reference First() { return *this; }
+    first_const_reference First() const { return *this; }
+    second_reference Second() { return second_; }
+    second_const_reference Second() const { return second_; }
 
 private:
-    SecondType second_;
+    second_type second_;
 };
 
 template<typename T1, typename T2>
 class CompressionPairImpl<T1, T2, 2> : protected std::remove_cv_t<T2>
 {
 public:
-    using FirstType             = T1;
-    using SecondType            = T2;
-    using FirstReference        = CallTraits<FirstType>::Reference;
-    using SecondReference       = CallTraits<SecondType>::Reference;
-    using FirstConstReference   = CallTraits<FirstType>::ConstReference;
-    using SecondConstReference  = CallTraits<SecondType>::ConstReference;
-    using FirstParamType        = CallTraits<FirstType>::ParamType;
-    using SecondParamType       = CallTraits<SecondType>::ParamType;
+    using first_type             = T1;
+    using second_type            = T2;
+    using first_reference        = CallTraits<first_type>::reference;
+    using second_reference       = CallTraits<second_type>::reference;
+    using first_const_reference  = CallTraits<first_type>::const_reference;
+    using second_const_reference = CallTraits<second_type>::const_reference;
+    using first_param_type       = CallTraits<first_type>::param_type;
+    using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(FirstParamType first) : first_(first) {}
-    explicit CompressionPairImpl(SecondParamType second) : SecondType(second) {}
-    CompressionPairImpl(FirstParamType first, SecondParamType second) : first_(first), SecondType(second) {}
+    explicit CompressionPairImpl(first_param_type first) : first_(first) {}
+    explicit CompressionPairImpl(second_param_type second) : second_type(second) {}
+    CompressionPairImpl(first_param_type first, second_param_type second) : first_(first), second_type(second) {}
 
-    FirstReference First() { return first_; }
-    FirstConstReference First() const { return first_; }
-    SecondReference Second() { return *this; }
-    SecondConstReference Second() const { return *this; }
+    first_reference First() { return first_; }
+    first_const_reference First() const { return first_; }
+    second_reference Second() { return *this; }
+    second_const_reference Second() const { return *this; }
 
 private:
-    FirstType first_;
+    first_type first_;
 };
 
 template<typename T1, typename T2>
 class CompressionPairImpl<T1, T2, 3> : protected std::remove_cv_t<T1>, protected std::remove_cv_t<T2>
 {
 public:
-    using FirstType             = T1;
-    using SecondType            = T2;
-    using FirstReference        = CallTraits<FirstType>::Reference;
-    using SecondReference       = CallTraits<SecondType>::Reference;
-    using FirstConstReference   = CallTraits<FirstType>::ConstReference;
-    using SecondConstReference  = CallTraits<SecondType>::ConstReference;
-    using FirstParamType        = CallTraits<FirstType>::ParamType;
-    using SecondParamType       = CallTraits<SecondType>::ParamType;
+    using first_type             = T1;
+    using second_type            = T2;
+    using first_reference        = CallTraits<first_type>::reference;
+    using second_reference       = CallTraits<second_type>::reference;
+    using first_const_reference  = CallTraits<first_type>::const_reference;
+    using second_const_reference = CallTraits<second_type>::const_reference;
+    using first_param_type       = CallTraits<first_type>::param_type;
+    using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(FirstParamType first) : FirstType(first) {}
-    explicit CompressionPairImpl(SecondParamType second) : SecondType(second) {}
-    CompressionPairImpl(FirstParamType first, SecondParamType second) : FirstType(first), SecondType(second) {}
+    explicit CompressionPairImpl(first_param_type first) : first_type(first) {}
+    explicit CompressionPairImpl(second_param_type second) : second_type(second) {}
+    CompressionPairImpl(first_param_type first, second_param_type second) : first_type(first), second_type(second) {}
 
-    FirstReference First() { return *this; }
-    FirstConstReference First() const { return *this; }
-    SecondReference Second() { return *this; }
-    SecondConstReference Second() const { return *this; }
+    first_reference First() { return *this; }
+    first_const_reference First() const { return *this; }
+    second_reference Second() { return *this; }
+    second_const_reference Second() const { return *this; }
 };
 
 template<typename T1, typename T2>
 class CompressionPairImpl<T1, T2, 4>
 {
 public:
-    using FirstType             = T1;
-    using SecondType            = T2;
-    using FirstReference        = CallTraits<FirstType>::Reference;
-    using SecondReference       = CallTraits<SecondType>::Reference;
-    using FirstConstReference   = CallTraits<FirstType>::ConstReference;
-    using SecondConstReference  = CallTraits<SecondType>::ConstReference;
-    using FirstParamType        = CallTraits<FirstType>::ParamType;
-    using SecondParamType       = CallTraits<SecondType>::ParamType;
+    using first_type             = T1;
+    using second_type            = T2;
+    using first_reference        = CallTraits<first_type>::reference;
+    using second_reference       = CallTraits<second_type>::reference;
+    using first_const_reference  = CallTraits<first_type>::const_reference;
+    using second_const_reference = CallTraits<second_type>::const_reference;
+    using first_param_type       = CallTraits<first_type>::param_type;
+    using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(FirstParamType first) : first_(first), second_(first) {}
-    CompressionPairImpl(FirstParamType first, SecondParamType second) : first_(first), second_(second) {}
+    explicit CompressionPairImpl(first_param_type first) : first_(first), second_(first) {}
+    CompressionPairImpl(first_param_type first, second_param_type second) : first_(first), second_(second) {}
 
-    FirstReference First() { return first_; }
-    FirstConstReference First() const { return first_; }
-    SecondReference Second() { return second_; }
-    SecondConstReference Second() const { return second_; }
+    first_reference First() { return first_; }
+    first_const_reference First() const { return first_; }
+    second_reference Second() { return second_; }
+    second_const_reference Second() const { return second_; }
 
 private:
-    FirstType first_;
-    SecondType second_;
+    first_type first_;
+    second_type second_;
 };
 
 template<typename T1, typename T2>
 class CompressionPairImpl<T1, T2, 5> : protected std::remove_cv_t<T1>
 {
 public:
-    using FirstType             = T1;
-    using SecondType            = T2;
-    using FirstReference        = CallTraits<FirstType>::Reference;
-    using SecondReference       = CallTraits<SecondType>::Reference;
-    using FirstConstReference   = CallTraits<FirstType>::ConstReference;
-    using SecondConstReference  = CallTraits<SecondType>::ConstReference;
-    using FirstParamType        = CallTraits<FirstType>::ParamType;
-    using SecondParamType       = CallTraits<SecondType>::ParamType;
+    using first_type             = T1;
+    using second_type            = T2;
+    using first_reference        = CallTraits<first_type>::reference;
+    using second_reference       = CallTraits<second_type>::reference;
+    using first_const_reference  = CallTraits<first_type>::const_reference;
+    using second_const_reference = CallTraits<second_type>::const_reference;
+    using first_param_type       = CallTraits<first_type>::param_type;
+    using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(FirstParamType first) : FirstType(first), second_(first) {}
-    CompressionPairImpl(FirstParamType first, SecondParamType second) : FirstType(first), second_(second) {}
+    explicit CompressionPairImpl(first_param_type first) : first_type(first), second_(first) {}
+    CompressionPairImpl(first_param_type first, second_param_type second) : first_type(first), second_(second) {}
 
-    FirstReference First() { return *this; }
-    FirstConstReference First() const { return *this; }
-    SecondReference Second() { return second_; }
-    SecondConstReference Second() const { return second_; }
+    first_reference First() { return *this; }
+    first_const_reference First() const { return *this; }
+    second_reference Second() { return second_; }
+    second_const_reference Second() const { return second_; }
 
 private:
-    SecondType second_;
+    second_type second_;
 };
 
 }
@@ -214,19 +214,19 @@ class CompressionPair : private details::CompressionPairImpl<T1, T2, details::Co
 {
     using Super = details::CompressionPairImpl<T1, T2, details::CompressionPairSwitch<T1, T2>::value>;
 public:
-    using FirstType             = Super::FirstType;
-    using SecondType            = Super::SecondType;
-    using FirstReference        = Super::FirstReference;
-    using SecondReference       = Super::SecondReference;
-    using FirstConstReference   = Super::FirstConstReference;
-    using SecondConstReference  = Super::SecondConstReference;
-    using FirstParamType        = Super::FirstParamType;
-    using SecondParamType       = Super::SecondParamType;
+    using first_type             = Super::first_type;
+    using second_type            = Super::second_type;
+    using first_reference        = Super::first_reference;
+    using second_reference       = Super::second_reference;
+    using first_const_reference  = Super::first_const_reference;
+    using second_const_reference = Super::second_const_reference;
+    using first_param_type       = Super::first_param_type;
+    using second_param_type      = Super::second_param_type;
 
     CompressionPair() : Super() {}
-    explicit CompressionPair(FirstParamType first) : Super(first) {}
-    explicit CompressionPair(SecondParamType second) : Super(second) {}
-    CompressionPair(FirstParamType first, SecondParamType second) : Super(first, second) {}
+    explicit CompressionPair(first_param_type first) : Super(first) {}
+    explicit CompressionPair(second_param_type second) : Super(second) {}
+    CompressionPair(first_param_type first, second_param_type second) : Super(first, second) {}
 
     using Super::First;
     using Super::Second;
@@ -237,18 +237,18 @@ class CompressionPair<T1, T2, true> : private details::CompressionPairImpl<T1, T
 {
     using Super = details::CompressionPairImpl<T1, T2, details::CompressionPairSwitch<T1, T2>::value>;
 public:
-    using FirstType             = Super::FirstType;
-    using SecondType            = Super::SecondType;
-    using FirstReference        = Super::FirstReference;
-    using SecondReference       = Super::SecondReference;
-    using FirstConstReference   = Super::FirstConstReference;
-    using SecondConstReference  = Super::SecondConstReference;
-    using FirstParamType        = Super::FirstParamType;
-    using SecondParamType       = Super::SecondParamType;
+    using first_type             = Super::first_type;
+    using second_type            = Super::second_type;
+    using first_reference        = Super::first_reference;
+    using second_reference       = Super::second_reference;
+    using first_const_reference  = Super::first_const_reference;
+    using second_const_reference = Super::second_const_reference;
+    using first_param_type       = Super::first_param_type;
+    using second_param_type      = Super::second_param_type;
 
     CompressionPair() : Super() {}
-    explicit CompressionPair(FirstParamType first) : Super(first) {}
-    CompressionPair(FirstParamType first, SecondParamType second) : Super(first, second) {}
+    explicit CompressionPair(first_param_type first) : Super(first) {}
+    CompressionPair(first_param_type first, second_param_type second) : Super(first, second) {}
 
     using Super::First;
     using Super::Second;
