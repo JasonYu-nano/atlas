@@ -132,11 +132,13 @@ TEST(StringConvert, StringTest)
     {
         String name = "Atlas";
         EXPECT_TRUE(name.ToLower() == "atlas");
+        EXPECT_TRUE(name.ToLower().IsLower());
     }
 
     {
         String name = "atlas";
         EXPECT_TRUE(name.ToUpper() == "ATLAS");
+        EXPECT_TRUE(name.ToUpper().IsUpper());
     }
 }
 

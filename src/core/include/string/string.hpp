@@ -137,8 +137,9 @@ public:
 
     NODISCARD String FoldCase() const;
 
+    NODISCARD bool IsUpper(const std::locale& locale = locale::DefaultLocale()) const;
     NODISCARD String ToUpper(const std::locale& locale = locale::DefaultLocale()) const;
-
+    NODISCARD bool IsLower(const std::locale& locale = locale::DefaultLocale()) const;
     NODISCARD String ToLower(const std::locale& locale = locale::DefaultLocale()) const;
 
     String& Append(const String& str);

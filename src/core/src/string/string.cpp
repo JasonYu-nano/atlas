@@ -202,12 +202,37 @@ String String::FoldCase() const
     return {fold_case.data(), static_cast<size_type>(fold_case.length())};
 }
 
+bool String::IsUpper(const std::locale& locale) const
+{
+    for (auto&& elem : *this)
+    {
+        if (!std::isupper(elem, locale))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 String String::ToUpper(const std::locale& locale) const
 {
     const char* data = reinterpret_cast<const char*>(Data());
     std::string upper = boost::locale::to_upper(data, data + Length(), locale);
     return {upper.data(), static_cast<size_type>(upper.length())};
 }
+
+bool String::IsLower(const std::locale& locale) const
+{
+    for (auto&& elem : *this)
+    {
+        if (!std::islower(elem, locale))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 String String::ToLower(const std::locale& locale) const
 {
     const char* data = reinterpret_cast<const char*>(Data());
