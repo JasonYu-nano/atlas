@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <ranges>
 
 #include "fmt/format.h"
@@ -120,13 +121,13 @@ public:
     NODISCARD const_reverse_iterator crbegin() const;
     NODISCARD const_reverse_iterator crend() const;
 
-    size_type Size() const;
-    size_type size() const { return Length(); }
-    size_type Length() const;
+    size_type Length() const { return GetVal().size_; }
+    size_type Size() const { return GetVal().size_; }
+    size_type size() const { return Size(); }
 
     NODISCARD size_type Count() const;
 
-    size_type Capacity() const;
+    size_type Capacity() const { return GetVal().capacity_; }
 
     NODISCARD CodePoint CodePointAt(std::make_unsigned_t<size_type> offset) const;
 
@@ -143,44 +144,38 @@ public:
     NODISCARD bool IsLower(const std::locale& locale = locale::DefaultLocale()) const;
     NODISCARD String ToLower(const std::locale& locale = locale::DefaultLocale()) const;
 
-    String& Append(const String& str);
-    String& Append(const char* str);
-    String& Append(const char8_t* str);
-    String& Append(const view_type& view);
-    template<typename IteratorType>
-    String& Append(const IteratorType& begin, const IteratorType& end);
+    String& Append(const char* str) { return Append(std::string_view(str)); }
+    String& Append(const_pointer str)  { return Append(view_type(str)); }
+    template<std::ranges::sized_range RangeType>
+    String& Append(const RangeType& range);
 
-    String& Prepend(const String& str);
-    String& Prepend(const char* str);
-    String& Prepend(const char8_t* str);
-    String& Prepend(const view_type& view);
-    template<typename IteratorType>
-    String& Prepend(const IteratorType& begin, const IteratorType& end);
+    String& Prepend(const char* str) { return Prepend(std::string_view(str)); }
+    String& Prepend(const_pointer str) { return Prepend(view_type(str)); }
+    template<std::ranges::sized_range RangeType>
+    String& Prepend(const RangeType& range);
 
-    NODISCARD String Concat(const String& str);
-    NODISCARD String Concat(const char* str);
-    NODISCARD String Concat(const char8_t* str);
-    NODISCARD String Concat(const view_type& view);
-    template<typename IteratorType>
-    NODISCARD String Concat(const IteratorType& begin, const IteratorType& end);
+    NODISCARD String Concat(const char* str) { return Concat(std::string_view(str)); }
+    NODISCARD String Concat(const_pointer str) { return Concat(view_type(str)); }
+    template<std::ranges::sized_range RangeType>
+    NODISCARD String Concat(const RangeType& range);
 
-    String& Insert(size_type offset, const String& str);
-    String& Insert(size_type offset, const char* str);
-    String& Insert(size_type offset, const char8_t* str);
-    String& Insert(size_type offset, const view_type& view);
-    template<typename IteratorType>
-    String& Insert(const const_iterator& where, const IteratorType& begin, const IteratorType& end);
+    String& Insert(size_type offset, const char* str) { return Insert(cbegin() + offset, std::string_view(str)); }
+    String& Insert(size_type offset, const_pointer str) { return Insert(cbegin() + offset, view_type(str)); }
+    template<std::ranges::sized_range RangeType>
+    String& Insert(const const_iterator& where, const RangeType& range);
 
     String& Remove(size_type from, size_type count);
+    template<std::ranges::sized_range RangeType>
+    String& Remove(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive);
 
     bool StartsWith(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return StartsWith(boost::make_iterator_range(str, str + std::char_traits<char>::length(str)), case_sensitive);
+        return StartsWith(std::string_view(str), case_sensitive);
     }
 
     bool StartsWith(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return StartsWith(boost::make_iterator_range(str, str + char_traits::length(str)), case_sensitive);
+        return StartsWith(view_type(str), case_sensitive);
     }
 
     template<std::ranges::sized_range RangeType>
@@ -188,29 +183,41 @@ public:
 
     bool EndsWith(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return EndsWith(boost::make_iterator_range(str, str + std::char_traits<char>::length(str)), case_sensitive);
+        return EndsWith(std::string_view(str), case_sensitive);
     }
 
     bool EndsWith(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return EndsWith(boost::make_iterator_range(str, str + char_traits::length(str)), case_sensitive);
+        return EndsWith(view_type(str), case_sensitive);
     }
 
     template<std::ranges::sized_range RangeType>
     bool EndsWith(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
-    size_type IndexOf(const String& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-    size_type IndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-    size_type IndexOf(const char8_t* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-    size_type IndexOf(const view_type& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-    template<typename RangeType>
+    size_type IndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return IndexOf(std::string_view(search), case_sensitive);
+    }
+
+    size_type IndexOf(const_pointer search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return IndexOf(view_type(search), case_sensitive);
+    }
+
+    template<std::ranges::range RangeType>
     size_type IndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
-    size_type LastIndexOf(const String& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-    size_type LastIndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-    size_type LastIndexOf(const char8_t* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-    size_type LastIndexOf(const view_type& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-    template<typename RangeType>
+    size_type LastIndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return LastIndexOf(std::string_view(search), case_sensitive);
+    }
+
+    size_type LastIndexOf(const_pointer search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return LastIndexOf(view_type(search), case_sensitive);
+    }
+
+    template<std::ranges::range RangeType>
     size_type LastIndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
     NODISCARD static String FromUtf16(const char16_t* str);
@@ -220,7 +227,6 @@ public:
     NODISCARD static String FromUtf32(const char32_t* str, size_type length);
 
     NODISCARD static String From(const std::string& str);
-
     NODISCARD static String From(const std::wstring& str);
 
     template <typename CharType, typename... Args>
@@ -307,21 +313,6 @@ inline String::const_reverse_iterator String::crbegin() const{ return const_reve
 
 inline String::const_reverse_iterator String::crend() const { return const_reverse_iterator(begin()); }
 
-inline String::size_type String::Size() const
-{
-    return GetVal().size_ + 1;
-}
-
-inline String::size_type String::Length() const
-{
-    return GetVal().size_;
-}
-
-inline String::size_type String::Capacity() const
-{
-    return GetVal().capacity_;
-}
-
 inline bool String::IsValidIndex(String::size_type index) const
 {
     return index < Length();
@@ -355,34 +346,14 @@ inline String String::From(const std::wstring& str)
     ASSERT(0);
 }
 
-inline String& String::Append(const String& str)
-{
-    return Append(str.Data(), str.Data() + str.Length());
-}
-
-inline String& String::Append(const char* str)
-{
-    return Append(str, str + std::char_traits<char>::length(str));
-}
-
-inline String& String::Append(const char8_t* str)
-{
-    return Append(str, str + char_traits::length(str));
-}
-
-inline String& String::Append(const view_type& view)
-{
-    return Append(view.begin(), view.end());
-}
-
-template<typename IteratorType>
-String& String::Append(const IteratorType& begin, const IteratorType& end)
+template<std::ranges::sized_range RangeType>
+String& String::Append(const RangeType& range)
 {
     size_type length = Length();
-    size_type new_length = length + std::distance(begin, end);
+    size_type new_length = length + range.size();
     Reserve(new_length + 1);
     char8_t* p = Data() + length;
-    for (auto it = begin; it < end; ++p, ++it)
+    for (auto it = range.begin(); it < range.end(); ++p, ++it)
     {
         char_traits::assign(*p, *it);
     }
@@ -391,38 +362,18 @@ String& String::Append(const IteratorType& begin, const IteratorType& end)
     return *this;
 }
 
-inline String& String::Prepend(const String& str)
-{
-    return Prepend(str.Data(), str.Data() + str.Length());
-}
-
-inline String& String::Prepend(const char* str)
-{
-    return Prepend(str, str + std::char_traits<char>::length(str));
-}
-
-inline String& String::Prepend(const char8_t* str)
-{
-    return Prepend(str, str + char_traits::length(str));
-}
-
-inline String& String::Prepend(const view_type& view)
-{
-    return Prepend(view.begin(), view.end());
-}
-
-template<typename IteratorType>
-String& String::Prepend(const IteratorType& begin, const IteratorType& end)
+template<std::ranges::sized_range RangeType>
+String& String::Prepend(const RangeType& range)
 {
     size_type length = Length();
-    size_type insert_size = std::distance(begin, end);
+    size_type insert_size = range.size();
     size_type new_length = length + insert_size;
 
     Reserve(new_length + 1);
     char8_t* p = Data();
     char_traits::move(p + insert_size, p, length);
 
-    for (auto it = begin; it < end; ++p, ++it)
+    for (auto it = range.begin(); it < range.end(); ++p, ++it)
     {
         char_traits::assign(*p, *it);
     }
@@ -431,31 +382,11 @@ String& String::Prepend(const IteratorType& begin, const IteratorType& end)
     return *this;
 }
 
-inline String String::Concat(const String& str)
-{
-    return Concat(str.Data(), str.Data() + str.Length());
-}
-
-inline String String::Concat(const char* str)
-{
-    return Concat(str, str + std::char_traits<char>::length(str));
-}
-
-inline String String::Concat(const char8_t* str)
-{
-    return Concat(str, str + char_traits::length(str));
-}
-
-inline String String::Concat(const view_type& view)
-{
-    return Concat(view.begin(), view.end());
-}
-
-template<typename IteratorType>
-String String::Concat(const IteratorType& begin, const IteratorType& end)
+template<std::ranges::sized_range RangeType>
+String String::Concat(const RangeType& range)
 {
     size_type length = Length();
-    size_type new_length = length + std::distance(begin, end);
+    size_type new_length = length + range.size();
 
     String result;
     result.Reserve(new_length + 1);
@@ -463,7 +394,7 @@ String String::Concat(const IteratorType& begin, const IteratorType& end)
 
     char_traits::copy(p, Data(), length);
     p += length;
-    for (auto it = begin; it < end; ++p, ++it)
+    for (auto it = range.begin(); it < range.end(); ++p, ++it)
     {
         char_traits::assign(*p, *it);
     }
@@ -472,17 +403,12 @@ String String::Concat(const IteratorType& begin, const IteratorType& end)
     return result;
 }
 
-inline String& String::Insert(size_type offset, const String& str) { return Insert(cbegin() + offset, str.begin(), str.end()); };
-inline String& String::Insert(size_type offset, const char* str) { return Insert(cbegin() + offset, str, str + std::char_traits<char>::length(str)); };
-inline String& String::Insert(size_type offset, const char8_t* str) { return Insert(cbegin() + offset, str, str + char_traits::length(str)); };
-inline String& String::Insert(size_type offset, const view_type& view) { return Insert(cbegin() + offset, view.cbegin(), view.cend()); };
-
-template<typename IteratorType>
-String& String::Insert(const const_iterator& where,  const IteratorType& begin, const IteratorType& end)
+template<std::ranges::sized_range RangeType>
+String& String::Insert(const const_iterator& where, const RangeType& range)
 {
     ASSERT(where >= cbegin() && where <= cend());
     size_type length = Length();
-    size_type insert_size = std::distance(begin, end);
+    size_type insert_size = range.size();
     size_type new_length = length + insert_size;
     size_t offset = std::distance(cbegin(), where);
     Reserve(new_length + 1);
@@ -491,13 +417,32 @@ String& String::Insert(const const_iterator& where,  const IteratorType& begin, 
 
     char_traits::move(p + insert_size, p, length - offset);
 
-    for (auto it = begin; it < end; ++p, ++it)
+    for (auto it = range.begin(); it < range.end(); ++p, ++it)
     {
         char_traits::assign(*p, *it);
     }
 
     Eos(new_length);
 
+    return *this;
+}
+
+template<std::ranges::sized_range RangeType>
+String& String::Remove(const RangeType& range, ECaseSensitive case_sensitive)
+{
+    size_type index = 0;
+    size_type size = range.size();
+    do
+    {
+        index = IndexOf(range, case_sensitive);
+        if (index == INDEX_NONE)
+        {
+            break;
+        }
+
+        Remove(index, size);
+
+    } while (true);
     return *this;
 }
 
@@ -541,27 +486,7 @@ bool String::EndsWith(const RangeType& range, ECaseSensitive case_sensitive) con
     return true;
 }
 
-inline String::size_type String::IndexOf(const String& search, ECaseSensitive case_sensitive) const
-{
-    return IndexOf(boost::make_iterator_range(search.begin(), search.end()), case_sensitive);
-}
-
-inline String::size_type String::IndexOf(const char* search, ECaseSensitive case_sensitive) const
-{
-    return IndexOf(boost::make_iterator_range(search, search + std::char_traits<char>::length(search)), case_sensitive);
-}
-
-inline String::size_type String::IndexOf(const char8_t* search, ECaseSensitive case_sensitive) const
-{
-    return IndexOf(boost::make_iterator_range(search, search + char_traits::length(search)), case_sensitive);
-}
-
-inline String::size_type String::IndexOf(const view_type& search, ECaseSensitive case_sensitive) const
-{
-    return IndexOf(boost::make_iterator_range(search.begin(), search.end()), case_sensitive);
-}
-
-template<typename RangeType>
+template<std::ranges::range RangeType>
 String::size_type String::IndexOf(const RangeType& search, ECaseSensitive case_sensitive) const
 {
     auto&& range = case_sensitive == ECaseSensitive::Sensitive
@@ -571,27 +496,7 @@ String::size_type String::IndexOf(const RangeType& search, ECaseSensitive case_s
     return range.empty() ? INDEX_NONE_ZU : std::distance(cbegin(), range.begin());
 }
 
-inline String::size_type String::LastIndexOf(const String& search, ECaseSensitive case_sensitive) const
-{
-    return LastIndexOf(boost::make_iterator_range(search.begin(), search.end()), case_sensitive);
-}
-
-inline String::size_type String::LastIndexOf(const char* search, ECaseSensitive case_sensitive) const
-{
-    return LastIndexOf(boost::make_iterator_range(search, search + std::char_traits<char>::length(search)), case_sensitive);
-}
-
-inline String::size_type String::LastIndexOf(const char8_t* search, ECaseSensitive case_sensitive) const
-{
-    return LastIndexOf(boost::make_iterator_range(search, search + char_traits::length(search)), case_sensitive);
-}
-
-inline String::size_type String::LastIndexOf(const view_type& search, ECaseSensitive case_sensitive) const
-{
-    return LastIndexOf(boost::make_iterator_range(search.begin(), search.end()), case_sensitive);
-}
-
-template<typename RangeType>
+template<std::ranges::range RangeType>
 String::size_type String::LastIndexOf(const RangeType& search, ECaseSensitive case_sensitive) const
 {
     auto&& range = case_sensitive == ECaseSensitive::Sensitive
