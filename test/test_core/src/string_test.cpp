@@ -151,6 +151,32 @@ TEST(StringEquals, StringTest)
     }
 }
 
+TEST(StringSearch, StringTest)
+{
+    {
+        String name = "Atlas阿特拉斯";
+        EXPECT_FALSE(name.StartsWith(String("atlas")));
+        EXPECT_TRUE(name.StartsWith("Atlas"));
+        EXPECT_FALSE(name.StartsWith(String("Atlas阿特拉斯A")));
+        EXPECT_TRUE(name.StartsWith(u8"atlas", ECaseSensitive::Insensitive));
+    }
+    {
+        String name = "阿特拉斯Atlas";
+        EXPECT_FALSE(name.EndsWith(String("atlas")));
+        EXPECT_TRUE(name.EndsWith("Atlas"));
+        EXPECT_FALSE(name.EndsWith(String("阿特拉斯AtlasA")));
+        EXPECT_TRUE(name.EndsWith(u8"atlas", ECaseSensitive::Insensitive));
+    }
+    {
+        String name = "Atlas";
+        EXPECT_TRUE(name.IndexOf(u8"la") == 2);
+        EXPECT_TRUE(name.IndexOf("al") == INDEX_NONE);
+        EXPECT_TRUE(name.IndexOf("at", ECaseSensitive::Insensitive) == 0);
+        EXPECT_TRUE(name.IndexOf(String::view_type(u8"at")) == INDEX_NONE);
+        std::shared_ptr<String> a;
+    }
+}
+
 TEST(StringModify, StringTest)
 {
     {
@@ -183,14 +209,6 @@ TEST(StringModify, StringTest)
         String name = "Atlas";
         name.Remove(2, 2);
         EXPECT_TRUE(name == "Ats" && name.Length() == 3);
-    }
-    {
-        String name = "Atlas";
-        EXPECT_TRUE(name.IndexOf(u8"la") == 2);
-        EXPECT_TRUE(name.IndexOf("al") == INDEX_NONE);
-        EXPECT_TRUE(name.IndexOf("at", ECaseSensitive::Insensitive) == 0);
-        EXPECT_TRUE(name.IndexOf(String::view_type(u8"at")) == INDEX_NONE);
-        std::shared_ptr<String> a;
     }
 
 }

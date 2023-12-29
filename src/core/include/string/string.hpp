@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <ranges>
 
 #include "fmt/format.h"
 #include "boost/algorithm/string/find.hpp"
@@ -120,7 +121,7 @@ public:
     NODISCARD const_reverse_iterator crend() const;
 
     size_type Size() const;
-
+    size_type size() const { return Length(); }
     size_type Length() const;
 
     NODISCARD size_type Count() const;
@@ -171,6 +172,32 @@ public:
     String& Insert(const const_iterator& where, const IteratorType& begin, const IteratorType& end);
 
     String& Remove(size_type from, size_type count);
+
+    bool StartsWith(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return StartsWith(boost::make_iterator_range(str, str + std::char_traits<char>::length(str)), case_sensitive);
+    }
+
+    bool StartsWith(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return StartsWith(boost::make_iterator_range(str, str + char_traits::length(str)), case_sensitive);
+    }
+
+    template<std::ranges::sized_range RangeType>
+    bool StartsWith(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+
+    bool EndsWith(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return EndsWith(boost::make_iterator_range(str, str + std::char_traits<char>::length(str)), case_sensitive);
+    }
+
+    bool EndsWith(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return EndsWith(boost::make_iterator_range(str, str + char_traits::length(str)), case_sensitive);
+    }
+
+    template<std::ranges::sized_range RangeType>
+    bool EndsWith(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
     size_type IndexOf(const String& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
     size_type IndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
@@ -472,6 +499,46 @@ String& String::Insert(const const_iterator& where,  const IteratorType& begin, 
     Eos(new_length);
 
     return *this;
+}
+
+template<std::ranges::sized_range RangeType>
+bool String::StartsWith(const RangeType& range, ECaseSensitive case_sensitive) const
+{
+    if (Length() < range.size())
+    {
+        return false;
+    }
+
+    const_iterator p = cbegin();
+    const std::locale& loc = locale::DefaultLocale();
+    for (auto&& it = range.begin(); it < range.end(); ++it, ++p)
+    {
+        if (case_sensitive == ECaseSensitive::Sensitive ? *it != *p : std::tolower(*it, loc) != std::tolower(*p, loc))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+template<std::ranges::sized_range RangeType>
+bool String::EndsWith(const RangeType& range, ECaseSensitive case_sensitive) const
+{
+    if (Length() < range.size())
+    {
+        return false;
+    }
+
+    const_reverse_iterator p = crbegin();
+    const std::locale& loc = locale::DefaultLocale();
+    for (auto&& it = std::make_reverse_iterator(range.end()); it < std::make_reverse_iterator(range.begin()); ++it, ++p)
+    {
+        if (case_sensitive == ECaseSensitive::Sensitive ? *it != *p : std::tolower(*it, loc) != std::tolower(*p, loc))
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 inline String::size_type String::IndexOf(const String& search, ECaseSensitive case_sensitive) const

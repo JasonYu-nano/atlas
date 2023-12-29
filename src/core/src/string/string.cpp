@@ -7,6 +7,22 @@
 namespace atlas
 {
 
+namespace
+{
+    int32 ICompare (String::const_pointer lhs, String::const_pointer rhs, String::size_type length, const std::locale& loc = locale::DefaultLocale())
+    {
+        for (String::size_type i = 0; i < length; ++i)
+        {
+            int32 diff = std::tolower(*(lhs + i), loc) - std::tolower(*(rhs + i), loc);
+            if (diff != 0)
+            {
+                return diff;
+            }
+        }
+        return 0;
+    }
+}
+
 String::String()
 {
     TidyInit();
@@ -169,9 +185,7 @@ bool String::Equals(const String &right, ECaseSensitive case_sensitive) const
         return char_traits::compare(Data(), right.Data(), left_length) == 0;
     }
 
-    String left_fold_case = FoldCase();
-    String right_fold_case = right.FoldCase();
-    return char_traits::compare(left_fold_case.Data(), right_fold_case.Data(), left_length) == 0;
+    return ICompare(Data(), right.Data(), left_length) == 0;
 }
 
 void String::Reserve(String::size_type capacity)
