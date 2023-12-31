@@ -9,11 +9,13 @@ namespace atlas
 
 namespace
 {
-    int32 ICompare (String::const_pointer lhs, String::const_pointer rhs, String::size_type length, const std::locale& loc = locale::DefaultLocale())
+    int32 ICompare(String::const_pointer lhs, String::const_pointer rhs, String::size_type length)
     {
+        auto&& fold_case = details::FoldCaseUnsafe<String::value_type>();
+        auto&& loc = locale::DefaultLocale();
         for (String::size_type i = 0; i < length; ++i)
         {
-            int32 diff = std::tolower(*(lhs + i), loc) - std::tolower(*(rhs + i), loc);
+            int32 diff = fold_case(*(lhs + i), loc) - fold_case(*(rhs + i), loc);
             if (diff != 0)
             {
                 return diff;
@@ -218,14 +220,7 @@ String String::FoldCase() const
 
 bool String::IsUpper(const std::locale& locale) const
 {
-    for (auto&& elem : *this)
-    {
-        if (!std::isupper(elem, locale))
-        {
-            return false;
-        }
-    }
-    return true;
+    return ToUpper(locale) == *this;
 }
 
 String String::ToUpper(const std::locale& locale) const
@@ -237,14 +232,7 @@ String String::ToUpper(const std::locale& locale) const
 
 bool String::IsLower(const std::locale& locale) const
 {
-    for (auto&& elem : *this)
-    {
-        if (!std::islower(elem, locale))
-        {
-            return false;
-        }
-    }
-    return true;
+    return ToLower(locale) == *this;
 }
 
 String String::ToLower(const std::locale& locale) const

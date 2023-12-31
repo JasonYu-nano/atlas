@@ -23,6 +23,75 @@ namespace atlas
 namespace details
 {
 
+template<typename T, bool = sizeof(T) == sizeof(char), bool = sizeof(T) == sizeof(wchar_t)>
+struct FoldCaseUnsafeSwitcher;
+
+template<typename T>
+struct FoldCaseUnsafeSwitcher<T, true, false>
+{
+    static constexpr int32 value = 1;
+};
+
+template<typename T>
+struct FoldCaseUnsafeSwitcher<T, false, true>
+{
+    static constexpr int32 value = 2;
+};
+
+template<typename CharType, int32>
+struct FoldCaseUnsafeImpl
+{
+public:
+    CharType operator() (const CharType ch, const std::locale& loc)
+    {
+        return std::tolower(ch, loc);
+    }
+};
+
+template<typename CharType>
+struct FoldCaseUnsafeImpl<CharType, 1>
+{
+public:
+    CharType operator() (const CharType ch, const std::locale& loc)
+    {
+        return static_cast<CharType>(std::tolower(static_cast<char>(ch), loc));
+    }
+};
+
+template<typename CharType>
+struct FoldCaseUnsafeImpl<CharType, 2>
+{
+public:
+    CharType operator() (const CharType ch, const std::locale& loc)
+    {
+        return static_cast<CharType>(std::tolower(static_cast<wchar_t>(ch), loc));
+    }
+};
+
+template<typename CharType>
+struct FoldCaseUnsafe : private FoldCaseUnsafeImpl<CharType, FoldCaseUnsafeSwitcher<CharType>::value>
+{
+private:
+    using Super = FoldCaseUnsafeImpl<CharType, FoldCaseUnsafeSwitcher<CharType>::value>;
+public:
+    using Super::operator();
+};
+
+class EqualsInsensitive
+{
+public:
+    explicit EqualsInsensitive(const std::locale& loc) : loc_(loc) {}
+
+    template<typename T1, typename T2>
+    bool operator()(const T1& ch1, const T2& ch2) const
+    {
+        return FoldCaseUnsafe<T1>()(ch1, loc_) == FoldCaseUnsafe<T2>()(ch2, loc_);
+    }
+
+private:
+    const std::locale& loc_;
+};
+
 template<typename CharTraits, typename SizeType>
 class StringVal
 {
@@ -165,6 +234,16 @@ public:
     String& Insert(const const_iterator& where, const RangeType& range);
 
     String& Remove(size_type from, size_type count);
+    String& Remove(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive)
+    {
+        return Remove(std::string_view(str), case_sensitive);
+    }
+
+    String& Remove(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive)
+    {
+        return Remove(view_type(str), case_sensitive);
+    }
+
     template<std::ranges::sized_range RangeType>
     String& Remove(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive);
 
@@ -194,6 +273,12 @@ public:
     template<std::ranges::sized_range RangeType>
     bool EndsWith(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
+    template<std::ranges::range RangeType>
+    size_type Find(const RangeType& search, size_type offset, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+
+    template<std::ranges::range RangeType>
+    size_type FindLast(const RangeType& search, size_type offset, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+
     size_type IndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return IndexOf(std::string_view(search), case_sensitive);
@@ -205,7 +290,10 @@ public:
     }
 
     template<std::ranges::range RangeType>
-    size_type IndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    size_type IndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return Find(search, 0, case_sensitive);
+    }
 
     size_type LastIndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
@@ -218,7 +306,10 @@ public:
     }
 
     template<std::ranges::range RangeType>
-    size_type LastIndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    size_type LastIndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return FindLast(search, 0, case_sensitive);
+    }
 
     NODISCARD static String FromUtf16(const char16_t* str);
     NODISCARD static String FromUtf16(const char16_t* str, size_type length);
@@ -434,7 +525,7 @@ String& String::Remove(const RangeType& range, ECaseSensitive case_sensitive)
     size_type size = range.size();
     do
     {
-        index = IndexOf(range, case_sensitive);
+        index = Find(range, index, case_sensitive);
         if (index == INDEX_NONE)
         {
             break;
@@ -456,9 +547,13 @@ bool String::StartsWith(const RangeType& range, ECaseSensitive case_sensitive) c
 
     const_iterator p = cbegin();
     const std::locale& loc = locale::DefaultLocale();
+    auto&& my_fold_case = details::FoldCaseUnsafe<value_type>();
+    auto&& range_fold_case = details::FoldCaseUnsafe<typename RangeType::value_type>();
     for (auto&& it = range.begin(); it < range.end(); ++it, ++p)
     {
-        if (case_sensitive == ECaseSensitive::Sensitive ? *it != *p : std::tolower(*it, loc) != std::tolower(*p, loc))
+        if (case_sensitive == ECaseSensitive::Sensitive
+            ? *it != *p
+            : range_fold_case(*it, loc) != my_fold_case(*p, loc))
         {
             return false;
         }
@@ -476,9 +571,13 @@ bool String::EndsWith(const RangeType& range, ECaseSensitive case_sensitive) con
 
     const_reverse_iterator p = crbegin();
     const std::locale& loc = locale::DefaultLocale();
+    auto&& my_fold_case = details::FoldCaseUnsafe<value_type>();
+    auto&& range_fold_case = details::FoldCaseUnsafe<typename RangeType::value_type>();
     for (auto&& it = std::make_reverse_iterator(range.end()); it < std::make_reverse_iterator(range.begin()); ++it, ++p)
     {
-        if (case_sensitive == ECaseSensitive::Sensitive ? *it != *p : std::tolower(*it, loc) != std::tolower(*p, loc))
+        if (case_sensitive == ECaseSensitive::Sensitive
+            ? *it != *p
+            : range_fold_case(*it, loc) != my_fold_case(*p, loc))
         {
             return false;
         }
@@ -487,23 +586,25 @@ bool String::EndsWith(const RangeType& range, ECaseSensitive case_sensitive) con
 }
 
 template<std::ranges::range RangeType>
-String::size_type String::IndexOf(const RangeType& search, ECaseSensitive case_sensitive) const
+String::size_type String::Find(const RangeType& search, size_type offset, ECaseSensitive case_sensitive) const
 {
+    auto&& source = boost::make_iterator_range(begin() + offset, end());
     auto&& range = case_sensitive == ECaseSensitive::Sensitive
-        ? boost::algorithm::find_first(*this, search)
-        : boost::algorithm::ifind_first(*this, search);
+                   ? boost::algorithm::find_first(source, search)
+                   : boost::algorithm::find(source, ::boost::algorithm::first_finder(search, details::EqualsInsensitive(locale::DefaultLocale())));
 
-    return range.empty() ? INDEX_NONE_ZU : std::distance(cbegin(), range.begin());
+    return range.empty() ? size_type(INDEX_NONE) : std::distance(cbegin(), range.begin());
 }
 
 template<std::ranges::range RangeType>
-String::size_type String::LastIndexOf(const RangeType& search, ECaseSensitive case_sensitive) const
+String::size_type String::FindLast(const RangeType& search, size_type offset, ECaseSensitive case_sensitive) const
 {
+    auto&& source = boost::make_iterator_range(begin(), end() - offset);
     auto&& range = case_sensitive == ECaseSensitive::Sensitive
-                   ? boost::algorithm::find_last(*this, search)
-                   : boost::algorithm::ifind_last(*this, search);
+                   ? boost::algorithm::find_last(source, search)
+                   : boost::algorithm::find(source, ::boost::algorithm::last_finder(search, details::EqualsInsensitive(locale::DefaultLocale())));
 
-    return range.empty() ? INDEX_NONE_ZU : std::distance(cbegin(), range.begin());
+    return range.empty() ? size_type(INDEX_NONE) : std::distance(cbegin(), range.begin());
 }
 
 inline void String::TidyInit()

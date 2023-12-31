@@ -210,6 +210,11 @@ TEST(StringModify, StringTest)
         name.Remove(2, 2);
         EXPECT_TRUE(name == "Ats" && name.Length() == 3);
     }
+    {
+        String name = "this is an utf-8 string";
+        name.Remove("is");
+        EXPECT_TRUE(name == "th  an utf-8 string");
+    }
 
 }
 
