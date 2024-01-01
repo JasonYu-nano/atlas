@@ -215,6 +215,16 @@ TEST(StringModify, StringTest)
         name.Remove("is");
         EXPECT_TRUE(name == "th  an utf-8 string");
     }
+    {
+        String str = "this is a string";
+        str.Replace(8, 1, "an utf-8");
+        EXPECT_TRUE(str == "this is an utf-8 string");
+    }
+    {
+        String str = "cbegin is the const begin iterator of the string";
+        str.Replace("begin", "end");
+        EXPECT_TRUE(str == "cend is the const end iterator of the string");
+    }
 
 }
 

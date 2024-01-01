@@ -401,6 +401,70 @@ public:
     String& Remove(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive);
 
     /**
+     * @brief Replace specified number of characters in the current instance with another specified string.
+     * @param from
+     * @param count
+     * @param new_value
+     * @return
+     */
+    String& Replace(size_type from, size_type count, const char* new_value)
+    {
+        return Replace(from, count, std::string_view(new_value));
+    }
+    /**
+     * @brief Replace specified number of characters in the current instance with another specified string.
+     * @param from
+     * @param count
+     * @param new_value
+     * @return
+     */
+    String& Replace(size_type from, size_type count, const_pointer new_value)
+    {
+        return Replace(from, count, view_type(new_value));
+    }
+    /**
+     * @brief Replace specified number of characters in the current instance with another specified string.
+     * @tparam RangeType
+     * @param from
+     * @param count
+     * @param new_value
+     * @return
+     */
+    template<std::ranges::sized_range RangeType>
+    String& Replace(size_type from, size_type count, const RangeType& new_value);
+    /**
+     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
+     * @param old_value
+     * @param new_value
+     * @return
+     */
+    String& Replace(const char* old_value, const char* new_value)
+    {
+        return Replace(std::string_view(old_value), std::string_view(new_value));
+    }
+    /**
+     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
+     * @param old_value
+     * @param new_value
+     * @return
+     */
+    String& Replace(const_pointer old_value, const_pointer new_value)
+    {
+        return Replace(view_type(old_value), view_type(new_value));
+    }
+    /**
+     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
+     * @tparam RangeType1
+     * @tparam RangeType2
+     * @param old_value
+     * @param new_value
+     * @param case_sensitive
+     * @return
+     */
+    template<std::ranges::sized_range RangeType1, std::ranges::sized_range RangeType2>
+    String& Replace(const RangeType1& old_value, const RangeType2& new_value, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive);
+
+    /**
      * @brief Determines whether the beginning of this string instance matches the specified string.
      * @param str
      * @param case_sensitive
@@ -776,6 +840,48 @@ String& String::Remove(const RangeType& range, ECaseSensitive case_sensitive)
         }
 
         Remove(index, size);
+
+    } while (true);
+    return *this;
+}
+
+template<std::ranges::sized_range RangeType>
+String& String::Replace(size_type from, size_type count, const RangeType& new_value)
+{
+    ASSERT(count > 0 && from < Length() && from + count <= Length());
+
+    size_type length = Length();
+    size_type insert_size = new_value.size();
+    size_type new_length = length - count + insert_size;
+    Reserve(new_length + 1);
+
+    pointer start = Data() + from;
+    char_traits::move(start + insert_size, start + count, length - from - count);
+
+    for (auto&& it = new_value.begin(); it < new_value.end(); ++it, ++start)
+    {
+        char_traits::assign(*start, *it);
+    }
+
+    Eos(new_length);
+
+    return *this;
+}
+
+template<std::ranges::sized_range RangeType1, std::ranges::sized_range RangeType2>
+String& String::Replace(const RangeType1& old_value, const RangeType2& new_value, ECaseSensitive case_sensitive)
+{
+    size_type index = 0;
+    size_type size = old_value.size();
+    do
+    {
+        index = Find(old_value, index, case_sensitive);
+        if (index == INDEX_NONE)
+        {
+            break;
+        }
+
+        Replace(index, size, new_value);
 
     } while (true);
     return *this;
