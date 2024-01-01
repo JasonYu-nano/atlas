@@ -121,6 +121,9 @@ enum class ECaseSensitive : uint8
     Insensitive
 };
 
+/**
+ * @brief Represents text as a sequence of zero terminated UTF-8 code units.
+ */
 class CORE_API String
 {
 public:
@@ -190,86 +193,269 @@ public:
     NODISCARD const_reverse_iterator crbegin() const;
     NODISCARD const_reverse_iterator crend() const;
 
+    /**
+     * @brief Gets the number of characters in the current string.
+     * @return
+     */
     size_type Length() const { return GetVal().size_; }
+    /**
+     * @brief Gets the number of characters in the current string.
+     * @return
+     */
     size_type Size() const { return GetVal().size_; }
+    /**
+     * @brief To implement std::sized_range, avoid direct usage.
+     * @return
+     */
     size_type size() const { return Size(); }
 
+    /**
+     * @brief Get the number of code points contained in the string.
+     * @return
+     */
     NODISCARD size_type Count() const;
 
+    /**
+     * @brief Get the capacity of the current string.
+     * @return
+     */
     size_type Capacity() const { return GetVal().capacity_; }
 
+    /**
+     * @brief Get code point by offset.
+     * @param offset
+     * @return
+     */
     NODISCARD CodePoint CodePointAt(std::make_unsigned_t<size_type> offset) const;
 
+    /**
+     * @brief Determines whether this instance and another specified string have the same value.
+     * @param right
+     * @param case_sensitive
+     * @return
+     */
     NODISCARD bool Equals(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
+    /**
+     * @brief If new capacity is greater than the current capacity, new storage is allocated, and capacity is made equal or greater than new capacity.
+     * @param capacity
+     */
     void Reserve(size_type capacity);
 
-    NODISCARD bool IsValidIndex(size_type index) const;
+    NODISCARD bool IsValidIndex(size_type index) const { return index < Length(); }
 
+    /**
+     * @brief Fold the current string.
+     * @param locale
+     * @return A new string.
+     */
     NODISCARD String FoldCase() const;
 
+    /**
+     * @brief Check if the string is uppercase in specified locale.
+     * @param locale
+     * @return
+     */
     NODISCARD bool IsUpper(const std::locale& locale = locale::DefaultLocale()) const;
+    /**
+     * @brief Translate the current string to uppercase.
+     * @param locale
+     * @return A new uppercase string.
+     */
     NODISCARD String ToUpper(const std::locale& locale = locale::DefaultLocale()) const;
+    /**
+     * @brief Check if the string is lowercase in specified locale.
+     * @param locale
+     * @return
+     */
     NODISCARD bool IsLower(const std::locale& locale = locale::DefaultLocale()) const;
+    /**
+     * @brief Translate the current string to lowercase.
+     * @param locale
+     * @return A new lowercase string.
+     */
     NODISCARD String ToLower(const std::locale& locale = locale::DefaultLocale()) const;
 
+    /**
+     * @brief Append the specified string to the current string.
+     * @param str
+     * @return Current string
+     */
     String& Append(const char* str) { return Append(std::string_view(str)); }
+    /**
+     * @brief Append the specified string to the current string.
+     * @param str
+     * @return Current string
+     */
     String& Append(const_pointer str)  { return Append(view_type(str)); }
+    /**
+     * @brief Append the specified range to the current string.
+     * @tparam RangeType
+     * @param range
+     * @return Current string
+     */
     template<std::ranges::sized_range RangeType>
     String& Append(const RangeType& range);
 
+    /**
+     * @brief Prepend the specified string to the current string.
+     * @param str
+     * @return Current string
+     */
     String& Prepend(const char* str) { return Prepend(std::string_view(str)); }
+    /**
+     * @brief Prepend the specified string to the current string.
+     * @param str
+     * @return Current string
+     */
     String& Prepend(const_pointer str) { return Prepend(view_type(str)); }
+    /**
+     * @brief Prepend the specified range to the current string.
+     * @tparam RangeType
+     * @param range
+     * @return Current string
+     */
     template<std::ranges::sized_range RangeType>
     String& Prepend(const RangeType& range);
 
-    NODISCARD String Concat(const char* str) { return Concat(std::string_view(str)); }
-    NODISCARD String Concat(const_pointer str) { return Concat(view_type(str)); }
+    /**
+     * @brief Concatenates two specified const string.
+     * @param str
+     * @return A new string
+     */
+    NODISCARD String Concat(const char* str) const { return Concat(std::string_view(str)); }
+    /**
+     * @brief Concatenates two specified const string.
+     * @param str
+     * @return A new string
+     */
+    NODISCARD String Concat(const_pointer str) const { return Concat(view_type(str)); }
+    /**
+     * @brief Concatenate the current string with the specified range.
+     * @tparam RangeType
+     * @param range
+     * @return A new string
+     */
     template<std::ranges::sized_range RangeType>
-    NODISCARD String Concat(const RangeType& range);
+    NODISCARD String Concat(const RangeType& range) const;
 
+    /**
+     * @brief Insert the specified string into the current string.
+     * @param offset
+     * @param str
+     * @return Current string
+     */
     String& Insert(size_type offset, const char* str) { return Insert(cbegin() + offset, std::string_view(str)); }
+    /**
+     * @brief Insert the specified string into the current string.
+     * @param offset
+     * @param str
+     * @return Current string
+     */
     String& Insert(size_type offset, const_pointer str) { return Insert(cbegin() + offset, view_type(str)); }
+    /**
+     * @brief Insert the specified range into the current string.
+     * @tparam RangeType
+     * @param where
+     * @param range
+     * @return Current string
+     */
     template<std::ranges::sized_range RangeType>
     String& Insert(const const_iterator& where, const RangeType& range);
 
+    /**
+     * @brief Remove a specified number of characters from the specified position.
+     * @param from
+     * @param count
+     * @return Current string
+     */
     String& Remove(size_type from, size_type count);
+    /**
+     * @brief Remove all specified strings from the current string.
+     * @param str
+     * @param case_sensitive
+     * @return
+     */
     String& Remove(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive)
     {
         return Remove(std::string_view(str), case_sensitive);
     }
-
+    /**
+     * @brief Remove all specified strings from the current string.
+     * @param str
+     * @param case_sensitive
+     * @return
+     */
     String& Remove(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive)
     {
         return Remove(view_type(str), case_sensitive);
     }
-
+    /**
+     * @brief Remove all specified ranges from the current string.
+     * @tparam RangeType
+     * @param range
+     * @param case_sensitive
+     * @return
+     */
     template<std::ranges::sized_range RangeType>
     String& Remove(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive);
 
+    /**
+     * @brief Determines whether the beginning of this string instance matches the specified string.
+     * @param str
+     * @param case_sensitive
+     * @return
+     */
     bool StartsWith(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return StartsWith(std::string_view(str), case_sensitive);
     }
-
+    /**
+     * @brief Determines whether the beginning of this string instance matches the specified string.
+     * @param str
+     * @param case_sensitive
+     * @return
+     */
     bool StartsWith(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return StartsWith(view_type(str), case_sensitive);
     }
-
+    /**
+     * @brief Determines whether the beginning of this string instance matches the specified range.
+     * @tparam RangeType
+     * @param range
+     * @param case_sensitive
+     * @return
+     */
     template<std::ranges::sized_range RangeType>
     bool StartsWith(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-
+    /**
+     * @brief Determines whether the end of this string instance matches the specified string.
+     * @param str
+     * @param case_sensitive
+     * @return
+     */
     bool EndsWith(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return EndsWith(std::string_view(str), case_sensitive);
     }
-
+    /**
+     * @brief Determines whether the end of this string instance matches the specified string.
+     * @param str
+     * @param case_sensitive
+     * @return
+     */
     bool EndsWith(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return EndsWith(view_type(str), case_sensitive);
     }
-
+    /**
+     * @brief Determines whether the end of this string instance matches the specified range.
+     * @tparam RangeType
+     * @param range
+     * @param case_sensitive
+     * @return
+     */
     template<std::ranges::sized_range RangeType>
     bool EndsWith(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
@@ -277,47 +463,110 @@ public:
     size_type Find(const RangeType& search, size_type offset, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
     template<std::ranges::range RangeType>
-    size_type FindLast(const RangeType& search, size_type offset, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    size_type FindLast(const RangeType& search, size_type offset_to_tail, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
+    /**
+     * @brief Reports the zero-based index of the first occurrence of the specified string in this instance.
+     * @param search
+     * @param case_sensitive
+     * @return
+     */
     size_type IndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return IndexOf(std::string_view(search), case_sensitive);
     }
-
+    /**
+     * @brief Reports the zero-based index of the first occurrence of the specified string in this instance.
+     * @param search
+     * @param case_sensitive
+     * @return
+     */
     size_type IndexOf(const_pointer search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return IndexOf(view_type(search), case_sensitive);
     }
-
+    /**
+     * @brief Reports the zero-based index of the first occurrence of the specified string in this instance.
+     * @tparam RangeType
+     * @param search
+     * @param case_sensitive
+     * @return
+     */
     template<std::ranges::range RangeType>
     size_type IndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return Find(search, 0, case_sensitive);
     }
-
+    /**
+     * @brief Reports the zero-based index position of the last occurrence of a specified string within this instance.
+     * @param search
+     * @param case_sensitive
+     * @return
+     */
     size_type LastIndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return LastIndexOf(std::string_view(search), case_sensitive);
     }
-
+    /**
+     * @brief Reports the zero-based index position of the last occurrence of a specified string within this instance.
+     * @param search
+     * @param case_sensitive
+     * @return
+     */
     size_type LastIndexOf(const_pointer search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return LastIndexOf(view_type(search), case_sensitive);
     }
-
+    /**
+     * @brief Reports the zero-based index position of the last occurrence of a specified string within this instance.
+     * @tparam RangeType
+     * @param search
+     * @param case_sensitive
+     * @return
+     */
     template<std::ranges::range RangeType>
     size_type LastIndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return FindLast(search, 0, case_sensitive);
     }
 
+    /**
+     * @brief Construct a new UTF-8 string from a UTF-16 string.
+     * @param str
+     * @return
+     */
     NODISCARD static String FromUtf16(const char16_t* str);
+    /**
+     * @brief Construct a new UTF-8 string from a UTF-16 string.
+     * @param str
+     * @param length
+     * @return
+     */
     NODISCARD static String FromUtf16(const char16_t* str, size_type length);
-
+    /**
+     * @brief Construct a new UTF-8 string from a UTF-32 string.
+     * @param str
+     * @return
+     */
     NODISCARD static String FromUtf32(const char32_t* str);
+    /**
+     * @brief Construct a new UTF-8 string from a UTF-32 string.
+     * @param str
+     * @param length
+     * @return
+     */
     NODISCARD static String FromUtf32(const char32_t* str, size_type length);
-
+    /**
+     * @brief Construct a new UTF-8 string from a std string.
+     * @param str
+     * @return
+     */
     NODISCARD static String From(const std::string& str);
+    /**
+     * @brief Construct a new UTF-8 string from a std wstring.
+     * @param str
+     * @return
+     */
     NODISCARD static String From(const std::wstring& str);
 
     template <typename CharType, typename... Args>
@@ -339,7 +588,7 @@ protected:
 
     void BecomeLarge(size_type capacity);
 
-    void TidyInit();
+    void TidyInit() { Eos(0); }
 
     void Construct(const_pointer str, size_type len);
     void Construct(char8_t ch, size_type count);
@@ -403,11 +652,6 @@ inline String::const_iterator String::cend() const { return end(); }
 inline String::const_reverse_iterator String::crbegin() const{ return const_reverse_iterator(end()); }
 
 inline String::const_reverse_iterator String::crend() const { return const_reverse_iterator(begin()); }
-
-inline bool String::IsValidIndex(String::size_type index) const
-{
-    return index < Length();
-}
 
 inline String String::FromUtf16(const char16_t* str)
 {
@@ -474,7 +718,7 @@ String& String::Prepend(const RangeType& range)
 }
 
 template<std::ranges::sized_range RangeType>
-String String::Concat(const RangeType& range)
+String String::Concat(const RangeType& range) const
 {
     size_type length = Length();
     size_type new_length = length + range.size();
@@ -597,19 +841,14 @@ String::size_type String::Find(const RangeType& search, size_type offset, ECaseS
 }
 
 template<std::ranges::range RangeType>
-String::size_type String::FindLast(const RangeType& search, size_type offset, ECaseSensitive case_sensitive) const
+String::size_type String::FindLast(const RangeType& search, size_type offset_to_tail, ECaseSensitive case_sensitive) const
 {
-    auto&& source = boost::make_iterator_range(begin(), end() - offset);
+    auto&& source = boost::make_iterator_range(begin(), end() - offset_to_tail);
     auto&& range = case_sensitive == ECaseSensitive::Sensitive
                    ? boost::algorithm::find_last(source, search)
                    : boost::algorithm::find(source, ::boost::algorithm::last_finder(search, details::EqualsInsensitive(locale::DefaultLocale())));
 
     return range.empty() ? size_type(INDEX_NONE) : std::distance(cbegin(), range.begin());
-}
-
-inline void String::TidyInit()
-{
-    Eos(0);
 }
 
 }
