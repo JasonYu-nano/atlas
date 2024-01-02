@@ -750,7 +750,7 @@ String& String::Append(const RangeType& range)
 {
     size_type length = Length();
     size_type new_length = length + range.size();
-    Reserve(new_length + 1);
+    Reserve(new_length);
     char8_t* p = Data() + length;
     for (auto it = range.begin(); it < range.end(); ++p, ++it)
     {
@@ -768,7 +768,7 @@ String& String::Prepend(const RangeType& range)
     size_type insert_size = range.size();
     size_type new_length = length + insert_size;
 
-    Reserve(new_length + 1);
+    Reserve(new_length);
     char8_t* p = Data();
     char_traits::move(p + insert_size, p, length);
 
@@ -788,7 +788,7 @@ String String::Concat(const RangeType& range) const
     size_type new_length = length + range.size();
 
     String result;
-    result.Reserve(new_length + 1);
+    result.Reserve(new_length);
     char8_t* p = result.Data();
 
     char_traits::copy(p, Data(), length);
@@ -810,7 +810,7 @@ String& String::Insert(const const_iterator& where, const RangeType& range)
     size_type insert_size = range.size();
     size_type new_length = length + insert_size;
     size_t offset = std::distance(cbegin(), where);
-    Reserve(new_length + 1);
+    Reserve(new_length);
 
     char8_t* p = Data() + offset;
 
@@ -853,7 +853,7 @@ String& String::Replace(size_type from, size_type count, const RangeType& new_va
     size_type length = Length();
     size_type insert_size = new_value.size();
     size_type new_length = length - count + insert_size;
-    Reserve(new_length + 1);
+    Reserve(new_length);
 
     pointer start = Data() + from;
     char_traits::move(start + insert_size, start + count, length - from - count);

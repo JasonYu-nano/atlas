@@ -289,7 +289,7 @@ void String::BecomeLarge(String::size_type capacity)
 void String::Construct(String::const_pointer str, allocator_traits::size_type len)
 {
     ASSERT(len < std::numeric_limits<size_type>::max());
-    Reserve(len + 1);
+    Reserve(len);
     auto&& my_val = GetVal();
     pointer ptr = my_val.GetPtr();
     char_traits::copy(ptr, str, len);
@@ -299,7 +299,7 @@ void String::Construct(String::const_pointer str, allocator_traits::size_type le
 void String::Construct(const String::value_type ch, String::size_type count)
 {
     ASSERT(count > 0 && count < std::numeric_limits<size_type>::max());
-    Reserve(count + 1);
+    Reserve(count);
     auto&& my_val = GetVal();
     auto ptr = my_val.GetPtr();
     char_traits::assign(ptr, count, ch);
@@ -313,7 +313,7 @@ void String::Construct(const String& right, size_type offset, size_type size)
     if (actual_size > 0)
     {
         auto right_ptr = right.Data() + offset;
-        Reserve(actual_size + 1);
+        Reserve(actual_size);
         char_traits::copy(Data(), right_ptr, actual_size);
     }
     Eos(actual_size);
@@ -332,7 +332,7 @@ void String::MoveConstruct(String& right, String::size_type offset, String::size
             right.Eos(actual_size);
         }
 
-        Reserve(actual_size + 1);
+        Reserve(actual_size);
         char_traits::move(Data(), right_ptr, actual_size);
     }
     Eos(actual_size);
@@ -341,7 +341,7 @@ void String::MoveConstruct(String& right, String::size_type offset, String::size
 void String::Assign(const char8_t* right, size_type length)
 {
     ASSERT(IsValidAddress(right, right + length));
-    Reserve(length + 1);
+    Reserve(length);
     char_traits::copy(Data(), right, length);
     Eos(length);
 }
@@ -350,7 +350,7 @@ void String::MoveAssign(String& right)
 {
     ASSERT(IsValidAddress(right.Data(), right.Data() + right.Length()));
     size_type length = right.Length();
-    Reserve(length + 1);
+    Reserve(length);
     char_traits::move(Data(), right.Data(), length);
     Eos(length);
 }
