@@ -51,7 +51,7 @@ void Memory::Memcpy(void* dest, const void* src, size_t size)
     PlatformMemory::Memcpy(dest, src, size);
 }
 
-void Memory::Memmove(void* dest, void* src, size_t size)
+void Memory::Memmove(void* dest, const void* src, size_t size)
 {
     PlatformMemory::Memmove(dest, src, size);
 }

@@ -24,9 +24,9 @@ public:
 
     static void AlignedFree(void* ptr);
 
-    static void Memcpy(void* dest, void const* src, size_t size);
+    static void Memcpy(void* dest, const void* src, size_t size);
 
-    static void Memmove(void* dest, void* src, size_t size);
+    static void Memmove(void* dest, const void* src, size_t size);
 
     static void Memset(void* dest, byte value, size_t size);
 
