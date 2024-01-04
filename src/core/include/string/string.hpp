@@ -106,7 +106,7 @@ public:
     SizeType size_{ 0 };
     SizeType capacity_{ INLINE_SIZE - 1 };
 
-    union
+    union UnionBuffer
     {
         char_type buffer_[INLINE_SIZE];
         char_type* ptr_;
@@ -145,7 +145,7 @@ private:
     using param_type = typename CallTraits<value_type>::param_type;
 
 public:
-    String();
+    String() { TidyInit(); }
     explicit String(char8_t ch);
     explicit String(char ch);
 
@@ -159,7 +159,11 @@ public:
 
     String(const String& right);
     String(const String& right, size_type offset, size_type size = std::numeric_limits<size_type>::max());
-    String(String&& right) noexcept;
+    String(String&& right) noexcept : pair_(std::move(right.GetAlloc())
+        , { std::exchange(right.GetVal().size_, 0)
+        , std::exchange(right.GetVal().capacity_, 0)
+        , std::exchange(right.GetVal().u_, val_type::UnionBuffer()) })
+    {}
     String(String&& right, size_type offset, size_type size = std::numeric_limits<size_type>::max()) noexcept;
 
     ~String();
@@ -703,7 +707,7 @@ inline String::const_iterator String::end() const { return const_iterator(Data()
 
 inline String::reverse_iterator String::rbegin() { return reverse_iterator(end()); }
 
-inline String::const_reverse_iterator String::rbegin() const{ return const_reverse_iterator(end()); }
+inline String::const_reverse_iterator String::rbegin() const { return const_reverse_iterator(end()); }
 
 inline String::reverse_iterator String::rend() { return reverse_iterator(begin()); }
 
@@ -713,7 +717,7 @@ inline String::const_iterator String::cbegin() const { return begin(); }
 
 inline String::const_iterator String::cend() const { return end(); }
 
-inline String::const_reverse_iterator String::crbegin() const{ return const_reverse_iterator(end()); }
+inline String::const_reverse_iterator String::crbegin() const { return const_reverse_iterator(end()); }
 
 inline String::const_reverse_iterator String::crend() const { return const_reverse_iterator(begin()); }
 

@@ -25,11 +25,6 @@ namespace
     }
 }
 
-String::String()
-{
-    TidyInit();
-}
-
 String::String(const char8_t ch)
 {
     Construct(&ch, 1);
@@ -79,11 +74,6 @@ String::String(const String& right)
 String::String(const String& right, size_type offset, size_type size)
 {
     Construct(right, offset, size);
-}
-
-String::String(String&& right) noexcept
-{
-    MoveConstruct(right, 0, std::numeric_limits<size_type>::max());
 }
 
 String::String(String&& right, size_type offset, size_type size) noexcept
