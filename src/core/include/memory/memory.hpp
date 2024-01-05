@@ -38,6 +38,6 @@ public:
     ~Memory() = delete;
 
 private:
-    static std::unique_ptr<MallocBase> malloc_instance_;
+    static MallocBase* GetMallocInstance();
 };
 }

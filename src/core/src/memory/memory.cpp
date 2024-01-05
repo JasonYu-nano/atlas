@@ -14,36 +14,34 @@
 namespace atlas
 {
 
-std::unique_ptr<MallocBase> Memory::malloc_instance_ = PlatformMemory::GetDefaultMalloc();
-
 void* Memory::Malloc(size_t size)
 {
-    return malloc_instance_->Malloc(size);
+    return GetMallocInstance()->Malloc(size);
 }
 
 void* Memory::AlignedMalloc(size_t size, size_t alignment)
 {
-    return malloc_instance_->AlignedMalloc(size, alignment);
+    return GetMallocInstance()->AlignedMalloc(size, alignment);
 }
 
 void* Memory::Realloc(void* ptr, size_t new_size)
 {
-    return malloc_instance_->Realloc(ptr, new_size);
+    return GetMallocInstance()->Realloc(ptr, new_size);
 }
 
 void* Memory::AlignedRealloc(void* ptr, size_t new_size, size_t alignment)
 {
-    return malloc_instance_->AlignedRealloc(ptr, new_size, alignment);
+    return GetMallocInstance()->AlignedRealloc(ptr, new_size, alignment);
 }
 
 void Memory::Free(void* ptr)
 {
-    malloc_instance_->Free(ptr);
+    GetMallocInstance()->Free(ptr);
 }
 
 void Memory::AlignedFree(void* ptr)
 {
-    malloc_instance_->AlignedFree(ptr);
+    GetMallocInstance()->AlignedFree(ptr);
 }
 
 void Memory::Memcpy(void* dest, const void* src, size_t size)
@@ -69,5 +67,11 @@ bool Memory::Memcmp(void* left, void* right, size_t size)
 void Memory::MemmoveBits(uint32* dest, int32 dest_offset, uint32* src, int32 src_offset, uint32 bit_count)
 {
 
+}
+
+MallocBase* Memory::GetMallocInstance()
+{
+    static std::unique_ptr<MallocBase> malloc_instance = PlatformMemory::GetDefaultMalloc();
+    return malloc_instance.get();
 }
 }
