@@ -227,7 +227,11 @@ function(detect_compiler COMPILER COMPILER_VERSION COMPILER_RUNTIME COMPILER_RUN
                     set(_COMPILER_RUNTIME_TYPE "Release")
                 endif()
             else()
-                set(_COMPILER_RUNTIME_TYPE "Debug")
+                if(CMAKE_BUILD_TYPE MATCHES "Debug")
+                    set(_COMPILER_RUNTIME_TYPE "Debug")
+                else ()
+                    set(_COMPILER_RUNTIME_TYPE "Release")
+                endif ()
             endif()
 
             unset(_KNOWN_MSVC_RUNTIME_VALUES)
