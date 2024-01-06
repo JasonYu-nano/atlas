@@ -93,6 +93,5 @@ add_subdirectory(src)
 if (with_test)
     add_subdirectory(test)
 endif ()
-add_subdirectory(benchmark)
 
 message(${CMAKE_BINARY_DIR})
