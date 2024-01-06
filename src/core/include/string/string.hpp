@@ -145,17 +145,17 @@ private:
     using param_type = typename CallTraits<value_type>::param_type;
 
 public:
-    String() { TidyInit(); }
+    String() noexcept { Eos(0); }
     explicit String(char8_t ch);
     explicit String(char ch);
 
     String(char8_t ch, size_type count);
     String(char ch, size_type count);
 
-    String(const char8_t* str);
-    String(const char8_t* str, size_type length);
-    String(const char* str);
-    String(const char* str, size_type length);
+    String(const char8_t* str) { Construct(str, char_traits::length(str)); }
+    String(const char8_t* str, size_type length) { Construct(str, length); }
+    String(const char* str) { Construct(reinterpret_cast<const_pointer>(str), std::char_traits<char>::length(str)); }
+    String(const char* str, size_type length) { Construct(reinterpret_cast<const_pointer>(str), length); }
 
     String(const String& right);
     String(const String& right, size_type offset, size_type size = std::numeric_limits<size_type>::max());
@@ -166,7 +166,7 @@ public:
     {}
     String(String&& right, size_type offset, size_type size = std::numeric_limits<size_type>::max()) noexcept;
 
-    ~String();
+    ~String() noexcept;
 
     String& operator= (const String& right);
     String& operator= (String&& right) noexcept;
@@ -646,17 +646,11 @@ public:
         return {buffer.data(), static_cast<size_type>(buffer.size())};
     }
 protected:
-    bool LargeStringEngaged() const { return GetVal().LargeStringEngaged(); }
-
     allocator_type& GetAlloc() { return pair_.First(); }
     const allocator_type& GetAlloc() const { return pair_.First(); }
 
     val_type& GetVal() { return pair_.Second(); }
     const val_type& GetVal() const { return pair_.Second(); }
-
-    void BecomeLarge(size_type capacity);
-
-    void TidyInit() { Eos(0); }
 
     void Construct(const_pointer str, size_type len);
     void Construct(char8_t ch, size_type count);
@@ -674,6 +668,17 @@ protected:
 
     CompressionPair<allocator_type, val_type> pair_;
 };
+
+inline String::~String() noexcept
+{
+    auto&& my_val = GetVal();
+    if (my_val.LargeStringEngaged())
+    {
+        allocator_traits::deallocate(GetAlloc(), my_val.GetPtr(), my_val.capacity_ + 1);
+    }
+    my_val.size_ = 0;
+    my_val.capacity_ = val_type::INLINE_SIZE - 1;
+}
 
 inline char8_t& String::operator[] (size_type index)
 {
@@ -959,6 +964,13 @@ String::size_type String::FindLast(const RangeType& search, size_type offset_to_
                    : boost::algorithm::find(source, ::boost::algorithm::last_finder(search, details::EqualsInsensitive(locale::DefaultLocale())));
 
     return range.empty() ? size_type(INDEX_NONE) : std::distance(cbegin(), range.begin());
+}
+
+inline void String::Eos(String::size_type size)
+{
+    auto&& my_val = GetVal();
+    my_val.size_ = size;
+    char_traits::assign(my_val.GetPtr()[size], value_type());
 }
 
 }

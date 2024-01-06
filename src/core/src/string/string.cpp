@@ -46,26 +46,6 @@ String::String(const char ch, String::size_type count)
     Construct(static_cast<value_type>(ch), count);
 }
 
-String::String(const char8_t* str)
-{
-    Construct(str, char_traits::length(str));
-}
-
-String::String(const char8_t* str, String::size_type length)
-{
-    Construct(str, length);
-}
-
-String::String(const char* str)
-{
-    Construct(reinterpret_cast<const char8_t*>(str), std::char_traits<char>::length(str));
-}
-
-String::String(const char* str, String::size_type length)
-{
-    Construct(reinterpret_cast<const char8_t*>(str), length);
-}
-
 String::String(const String& right)
 {
     Construct(right, 0, std::numeric_limits<size_type>::max());
@@ -79,17 +59,6 @@ String::String(const String& right, size_type offset, size_type size)
 String::String(String&& right, size_type offset, size_type size) noexcept
 {
     MoveConstruct(right, offset, size);
-}
-
-String::~String()
-{
-    auto&& my_val = GetVal();
-    if (LargeStringEngaged())
-    {
-        allocator_traits::deallocate(GetAlloc(), my_val.GetPtr(), my_val.capacity_ + 1);
-    }
-    my_val.size_ = 0;
-    my_val.capacity_ = val_type::INLINE_SIZE - 1;
 }
 
 String& String::operator= (const String& right)
@@ -183,15 +152,19 @@ bool String::Equals(const String &right, ECaseSensitive case_sensitive) const
 void String::Reserve(String::size_type capacity)
 {
     auto&& my_val = GetVal();
+    auto&& alloc = GetAlloc();
     if (capacity > my_val.capacity_)
     {
-        if (!LargeStringEngaged())
+        if (!my_val.LargeStringEngaged())
         {
-            BecomeLarge(capacity);
+            pointer new_ptr = allocator_traits::allocate(alloc, capacity + 1);
+            char_traits::move(new_ptr, my_val.u_.buffer_, my_val.size_ + 1);
+            my_val.u_.ptr_ = new_ptr;
+            my_val.capacity_ = capacity;
         }
         else
         {
-            pointer new_ptr = allocator_traits::allocate(GetAlloc(), capacity + 1);
+            pointer new_ptr = allocator_traits::allocate(alloc, capacity + 1);
             pointer old_ptr = my_val.u_.ptr_;
             char_traits::move(new_ptr, old_ptr, my_val.size_ + 1);
             allocator_traits::deallocate(GetAlloc(), old_ptr, my_val.capacity_ + 1);
@@ -267,22 +240,16 @@ String String::FromUtf32(const char32_t* str, size_type length)
     return {u8.data(), static_cast<size_type>(u8.length())};
 }
 
-void String::BecomeLarge(String::size_type capacity)
-{
-    auto&& my_val = GetVal();
-    pointer new_ptr = allocator_traits::allocate(GetAlloc(), capacity + 1);
-    char_traits::move(new_ptr, my_val.u_.buffer_, my_val.size_ + 1);
-    my_val.u_.ptr_ = new_ptr;
-    my_val.capacity_ = capacity;
-}
-
 void String::Construct(String::const_pointer str, allocator_traits::size_type len)
 {
     ASSERT(len < std::numeric_limits<size_type>::max());
-    Reserve(len);
     auto&& my_val = GetVal();
+    if (len > my_val.capacity_)
+    {
+        Reserve(len);
+    }
     pointer ptr = my_val.GetPtr();
-    char_traits::copy(ptr, str, len);
+    char_traits::move(ptr, str, len);
     Eos(len);
 }
 
@@ -343,13 +310,6 @@ void String::MoveAssign(String& right)
     Reserve(length);
     char_traits::move(Data(), right.Data(), length);
     Eos(length);
-}
-
-void String::Eos(String::size_type size)
-{
-    auto&& my_val = GetVal();
-    my_val.size_ = size;
-    char_traits::assign(my_val.GetPtr()[size], value_type());
 }
 
 bool String::IsValidAddress(const char8_t* start, const char8_t* end) const
