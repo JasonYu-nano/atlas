@@ -7,30 +7,67 @@
 
 #include "memory/malloc_base.hpp"
 
+#if PLATFORM_WINDOWS
+#include "platform/windows/windows_memory.hpp"
+#elif PLATFORM_APPLE
+#include "platform/mac/mac_memory.hpp"
+#elif PLATFORM_LINUX
+#endif
+
 namespace atlas
 {
 class CORE_API Memory
 {
 public:
-    static void* Malloc(size_t size);
+    static void* Malloc(size_t size)
+    {
+        return GetMallocInstance()->Malloc(size);
+    }
 
-    static void* AlignedMalloc(size_t size, size_t alignment);
+    static void* AlignedMalloc(size_t size, size_t alignment)
+    {
+        return GetMallocInstance()->AlignedMalloc(size, alignment);
+    }
 
-    static void* Realloc(void* ptr, size_t new_size);
+    static void* Realloc(void* ptr, size_t new_size)
+    {
+        return GetMallocInstance()->Realloc(ptr, new_size);
+    }
 
-    static void* AlignedRealloc(void* ptr, size_t new_size, size_t alignment);
+    static void* AlignedRealloc(void* ptr, size_t new_size, size_t alignment)
+    {
+        return GetMallocInstance()->AlignedRealloc(ptr, new_size, alignment);
+    }
 
-    static void Free(void* ptr);
+    static void Free(void* ptr)
+    {
+        GetMallocInstance()->Free(ptr);
+    }
 
-    static void AlignedFree(void* ptr);
+    static void AlignedFree(void* ptr)
+    {
+        GetMallocInstance()->AlignedFree(ptr);
+    }
 
-    static void Memcpy(void* dest, const void* src, size_t size);
+    static void Memcpy(void* dest, const void* src, size_t size)
+    {
+        PlatformMemory::Memcpy(dest, src, size);
+    }
 
-    static void Memmove(void* dest, const void* src, size_t size);
+    static void Memmove(void* dest, const void* src, size_t size)
+    {
+        PlatformMemory::Memmove(dest, src, size);
+    }
 
-    static void Memset(void* dest, byte value, size_t size);
+    static void Memset(void* dest, byte value, size_t size)
+    {
+        PlatformMemory::Memset(dest, value, size);
+    }
 
-    static bool Memcmp(void* left, void* right, size_t size);
+    static bool Memcmp(void* left, void* right, size_t size)
+    {
+        return PlatformMemory::Memcmp(left, right, size);
+    }
 
     static void MemmoveBits(uint32* dest, int32 dest_offset, uint32* src, int32 src_offset, uint32 bit_count);
 
@@ -38,6 +75,10 @@ public:
     ~Memory() = delete;
 
 private:
-    static MallocBase* GetMallocInstance();
+    static MallocBase* GetMallocInstance()
+    {
+        static std::unique_ptr<MallocBase> malloc_instance = PlatformMemory::GetDefaultMalloc();
+        return malloc_instance.get();
+    }
 };
 }
