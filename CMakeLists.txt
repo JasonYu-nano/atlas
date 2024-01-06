@@ -90,6 +90,7 @@ else ()
 endif ()
 
 add_subdirectory(src)
+add_subdirectory(benchmark)
 if (with_test)
     add_subdirectory(test)
 endif ()
