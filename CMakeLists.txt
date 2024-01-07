@@ -31,10 +31,10 @@ if (MSVC)
 
     # handle the utf-8 encoding problem in MSVC
     add_compile_options(/utf-8)
-endif ()
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /GL")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /GL")
+endif ()
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     add_compile_definitions(DEBUG)
