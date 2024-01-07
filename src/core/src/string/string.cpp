@@ -25,75 +25,6 @@ namespace
     }
 }
 
-String::String(const char8_t ch)
-{
-    Construct(&ch, 1);
-}
-
-String::String(const char ch)
-{
-    auto u8 = static_cast<value_type>(ch);
-    Construct(&u8, 1);
-}
-
-String::String(const char8_t ch, String::size_type count)
-{
-    Construct(ch, count);
-}
-
-String::String(const char ch, String::size_type count)
-{
-    Construct(static_cast<value_type>(ch), count);
-}
-
-String::String(const String& right)
-{
-    Construct(right, 0, std::numeric_limits<size_type>::max());
-}
-
-String::String(const String& right, size_type offset, size_type size)
-{
-    Construct(right, offset, size);
-}
-
-String::String(String&& right, size_type offset, size_type size) noexcept
-{
-    MoveConstruct(right, offset, size);
-}
-
-String& String::operator= (const String& right)
-{
-    Assign(right.Data(), right.Length());
-    return *this;
-}
-
-String& String::operator= (String&& right) noexcept
-{
-    MoveAssign(right);
-    return *this;
-}
-
-String& String::operator=(const char* right)
-{
-    Assign(reinterpret_cast<const char8_t*>(right), static_cast<size_type>(std::char_traits<char>::length(right)));
-    return *this;
-}
-
-String& String::operator=(const char8_t* right)
-{
-    Assign(right, char_traits::length(right));
-    return *this;
-}
-
-bool String::operator==(const String& right) const
-{
-    return Equals(right, ECaseSensitive::Sensitive);
-}
-bool String::operator!=(const String& right) const
-{
-    return !Equals(right, ECaseSensitive::Sensitive);
-}
-
 String::size_type String::Count() const
 {
     auto it = reinterpret_cast<const char*>(Data());
@@ -131,22 +62,22 @@ CodePoint String::CodePointAt(std::make_unsigned_t<size_type> offset) const
     return CodePoint::incomplete;
 }
 
-bool String::Equals(const String &right, ECaseSensitive case_sensitive) const
+int32 String::Compare(const String& right, ECaseSensitive case_sensitive) const
 {
     const size_type left_length = Length();
     const size_type right_length = right.Length();
 
     if (left_length != right_length)
     {
-        return false;
+        return left_length < right_length ? -1 : 1;
     }
 
     if (case_sensitive == ECaseSensitive::Sensitive)
     {
-        return char_traits::compare(Data(), right.Data(), left_length) == 0;
+        return char_traits::compare(Data(), right.Data(), left_length);
     }
 
-    return ICompare(Data(), right.Data(), left_length) == 0;
+    return ICompare(Data(), right.Data(), left_length);
 }
 
 void String::Reserve(String::size_type capacity)
@@ -178,7 +109,7 @@ String String::FoldCase() const
 {
     const char* data = reinterpret_cast<const char*>(Data());
     std::string fold_case = boost::locale::fold_case(data, data + Length(), locale::DefaultLocale());
-    return {fold_case.data(), static_cast<size_type>(fold_case.length())};
+    return {fold_case.data(), ConvertSize(fold_case.length())};
 }
 
 bool String::IsUpper(const std::locale& locale) const
@@ -190,7 +121,7 @@ String String::ToUpper(const std::locale& locale) const
 {
     const char* data = reinterpret_cast<const char*>(Data());
     std::string upper = boost::locale::to_upper(data, data + Length(), locale);
-    return {upper.data(), static_cast<size_type>(upper.length())};
+    return {upper.data(), ConvertSize(upper.length())};
 }
 
 bool String::IsLower(const std::locale& locale) const
@@ -202,7 +133,7 @@ String String::ToLower(const std::locale& locale) const
 {
     const char* data = reinterpret_cast<const char*>(Data());
     std::string lower = boost::locale::to_lower(data, data + Length(), locale);
-    return {lower.data(), static_cast<size_type>(lower.length())};
+    return {lower.data(), ConvertSize(lower.length())};
 }
 
 String& String::Remove(size_type from, size_type count)
@@ -226,7 +157,7 @@ String String::FromUtf16(const char16_t* str, size_type length)
     }
 
     std::string u8 = boost::locale::conv::utf_to_utf<char, char16_t>(str, str + length);
-    return {u8.data(), static_cast<size_type>(u8.length())};
+    return {u8.data(), ConvertSize(u8.length())};
 }
 
 String String::FromUtf32(const char32_t* str, size_type length)
@@ -237,10 +168,10 @@ String String::FromUtf32(const char32_t* str, size_type length)
     }
 
     std::string u8 = boost::locale::conv::utf_to_utf<char, char32_t>(str, str + length);
-    return {u8.data(), static_cast<size_type>(u8.length())};
+    return {u8.data(), ConvertSize(u8.length())};
 }
 
-void String::Construct(String::const_pointer str, allocator_traits::size_type len)
+void String::Construct(String::const_pointer str, size_type len)
 {
     ASSERT(len < std::numeric_limits<size_type>::max());
     auto&& my_val = GetVal();
@@ -256,8 +187,11 @@ void String::Construct(String::const_pointer str, allocator_traits::size_type le
 void String::Construct(const String::value_type ch, String::size_type count)
 {
     ASSERT(count > 0 && count < std::numeric_limits<size_type>::max());
-    Reserve(count);
     auto&& my_val = GetVal();
+    if (count > my_val.capacity_)
+    {
+        Reserve(count);
+    }
     auto ptr = my_val.GetPtr();
     char_traits::assign(ptr, count, ch);
     Eos(count);
