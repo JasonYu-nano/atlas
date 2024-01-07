@@ -146,56 +146,115 @@ private:
 
 public:
     String() noexcept { Eos(0); }
-    explicit String(char8_t ch);
-    explicit String(char ch);
+    explicit String(value_type ch)
+    {
+        Construct(ch, 1);
+    }
+    explicit String(char ch)
+    {
+        Construct(static_cast<value_type>(ch), 1);
+    }
 
-    String(char8_t ch, size_type count);
-    String(char ch, size_type count);
+    String(value_type ch, size_type count)
+    {
+        Construct(ch, count);
+    }
+    String(char ch, size_type count)
+    {
+        Construct(static_cast<value_type>(ch), count);
+    }
 
-    String(const char8_t* str) { Construct(str, char_traits::length(str)); }
-    String(const char8_t* str, size_type length) { Construct(str, length); }
-    String(const char* str) { Construct(reinterpret_cast<const_pointer>(str), std::char_traits<char>::length(str)); }
-    String(const char* str, size_type length) { Construct(reinterpret_cast<const_pointer>(str), length); }
+    String(const_pointer str)
+    {
+        Construct(str, ConvertSize(char_traits::length(str)));
+    }
+    String(const_pointer str, size_type length)
+    {
+        Construct(str, length);
+    }
+    String(const char* str)
+    {
+        Construct(reinterpret_cast<const_pointer>(str), ConvertSize(std::char_traits<char>::length(str)));
+    }
+    String(const char* str, size_type length)
+    {
+        Construct(reinterpret_cast<const_pointer>(str), length);
+    }
 
-    String(const String& right);
-    String(const String& right, size_type offset, size_type size = std::numeric_limits<size_type>::max());
+    String(const String& right)
+    {
+        Construct(right, 0, MaxSize());
+    }
+    String(const String& right, size_type offset, size_type size = MaxSize())
+    {
+        Construct(right, offset, size);
+    }
     String(String&& right) noexcept : pair_(std::move(right.GetAlloc())
         , { std::exchange(right.GetVal().size_, 0)
         , std::exchange(right.GetVal().capacity_, 0)
         , std::exchange(right.GetVal().u_, val_type::UnionBuffer()) })
     {}
-    String(String&& right, size_type offset, size_type size = std::numeric_limits<size_type>::max()) noexcept;
+    String(String&& right, size_type offset, size_type size = MaxSize()) noexcept
+    {
+        MoveConstruct(right, offset, size);
+    }
 
     ~String() noexcept;
 
-    String& operator= (const String& right);
-    String& operator= (String&& right) noexcept;
-    String& operator= (const char* right);
-    String& operator= (const char8_t* right);
+    String& operator= (const String& right)
+    {
+        Assign(right.Data(), right.Length());
+        return *this;
+    }
+    String& operator= (String&& right) noexcept
+    {
+        MoveAssign(right);
+        return *this;
+    }
+    String& operator= (const char* right)
+    {
+        Assign(reinterpret_cast<const char8_t*>(right), ConvertSize(std::char_traits<char>::length(right)));
+        return *this;
+    }
+    String& operator= (const char8_t* right)
+    {
+        Assign(right, char_traits::length(right));
+        return *this;
+    }
 
-    bool operator== (const String& right) const;
-    bool operator!= (const String& right) const;
+    bool operator== (const String& right) const { return Equals(right, ECaseSensitive::Sensitive); }
+    bool operator!= (const String& right) const { return !Equals(right, ECaseSensitive::Sensitive); }
+    bool operator< (const String& right) const  { return Compare(right, ECaseSensitive::Sensitive) < 0; }
+    bool operator> (const String& right) const  { return Equals(right, ECaseSensitive::Sensitive) > 0; }
 
-    char8_t& operator[] (size_type index);
-    char8_t operator[] (size_type index) const;
+    char8_t& operator[] (size_type index)
+    {
+        ASSERT(IsValidIndex(index));
+        return GetVal().GetPtr()[index];
+    }
+    char8_t operator[] (size_type index) const
+    {
+        ASSERT(IsValidIndex(index));
+        return GetVal().GetPtr()[index];
+    }
 
-    NODISCARD inline char8_t* Data();
-    NODISCARD inline const char8_t* Data() const;
+    NODISCARD inline char8_t* Data()                    { return GetVal().GetPtr(); }
+    NODISCARD inline const_pointer Data() const         { return GetVal().GetPtr(); }
 
-    NODISCARD iterator begin();
-    NODISCARD const_iterator begin() const;
-    NODISCARD iterator end();
-    NODISCARD const_iterator end() const;
+    NODISCARD iterator begin()                          { return iterator(Data()); }
+    NODISCARD const_iterator begin() const              { return const_iterator(Data()); }
+    NODISCARD iterator end()                            { return iterator(Data() + Length()); }
+    NODISCARD const_iterator end() const                { return const_iterator(Data() + Length()); }
 
-    NODISCARD reverse_iterator rbegin();
-    NODISCARD const_reverse_iterator rbegin() const;
-    NODISCARD reverse_iterator rend();
-    NODISCARD const_reverse_iterator rend() const;
+    NODISCARD reverse_iterator rbegin()                 { return reverse_iterator(end()); }
+    NODISCARD const_reverse_iterator rbegin() const     { return const_reverse_iterator(end()); }
+    NODISCARD reverse_iterator rend()                   { return reverse_iterator(begin()); }
+    NODISCARD const_reverse_iterator rend() const       { return const_reverse_iterator(begin()); }
 
-    NODISCARD const_iterator cbegin() const;
-    NODISCARD const_iterator cend() const;
-    NODISCARD const_reverse_iterator crbegin() const;
-    NODISCARD const_reverse_iterator crend() const;
+    NODISCARD const_iterator cbegin() const             { return begin(); }
+    NODISCARD const_iterator cend() const               { return end(); }
+    NODISCARD const_reverse_iterator crbegin() const    { return const_reverse_iterator(end()); }
+    NODISCARD const_reverse_iterator crend() const      { return const_reverse_iterator(begin()); }
 
     /**
      * @brief Gets the number of characters in the current string.
@@ -238,7 +297,18 @@ public:
      * @param case_sensitive
      * @return
      */
-    NODISCARD bool Equals(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    NODISCARD bool Equals(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return Compare(right, case_sensitive) == 0;
+    }
+
+    /**
+     * @brief Compare with another string.
+     * @param right
+     * @param case_sensitive
+     * @return Positive number if larger than another string.
+     */
+    NODISCARD int32 Compare(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
     /**
      * @brief If new capacity is greater than the current capacity, new storage is allocated, and capacity is made equal or greater than new capacity.
@@ -598,6 +668,9 @@ public:
         return FindLast(search, 0, case_sensitive);
     }
 
+    constexpr static size_type MaxSize() { return std::numeric_limits<size_type>::max() - 1; }
+    constexpr static size_type max_size() { return MaxSize(); }
+
     /**
      * @brief Construct a new UTF-8 string from a UTF-16 string.
      * @param str
@@ -643,14 +716,14 @@ public:
         static_assert(std::is_same_v<CharType, char> || std::is_same_v<CharType, char8_t>);
         fmt::basic_memory_buffer<CharType, 250> buffer;
         fmt::detail::vformat_to(buffer, fmt::basic_string_view<CharType>(fmt), fmt::make_format_args<fmt::buffer_context<CharType>>(args...));
-        return {buffer.data(), static_cast<size_type>(buffer.size())};
+        return {buffer.data(), ConvertSize(buffer.size())};
     }
 protected:
-    allocator_type& GetAlloc() { return pair_.First(); }
-    const allocator_type& GetAlloc() const { return pair_.First(); }
+    allocator_type& GetAlloc()              { return pair_.First(); }
+    const allocator_type& GetAlloc() const  { return pair_.First(); }
 
-    val_type& GetVal() { return pair_.Second(); }
-    const val_type& GetVal() const { return pair_.Second(); }
+    val_type& GetVal()                      { return pair_.Second(); }
+    const val_type& GetVal() const          { return pair_.Second(); }
 
     void Construct(const_pointer str, size_type len);
     void Construct(char8_t ch, size_type count);
@@ -666,6 +739,17 @@ protected:
 
     bool IsValidAddress(const char8_t* start, const char8_t* end) const;
 
+    template<std::integral T>
+    constexpr static size_type ConvertSize(T size)
+    {
+        ASSERT(size <= MaxSize());
+        if constexpr (!std::is_same_v<T, size_type>)
+        {
+            return static_cast<size_type>(size);
+        }
+        return size;
+    }
+
     CompressionPair<allocator_type, val_type> pair_;
 };
 
@@ -680,52 +764,6 @@ inline String::~String() noexcept
     my_val.capacity_ = val_type::INLINE_SIZE - 1;
 }
 
-inline char8_t& String::operator[] (size_type index)
-{
-    ASSERT(IsValidIndex(index));
-    return GetVal().GetPtr()[index];
-}
-
-inline char8_t String::operator[] (size_type index) const
-{
-    ASSERT(IsValidIndex(index));
-    return GetVal().GetPtr()[index];
-}
-
-inline char8_t* String::Data()
-{
-    return GetVal().GetPtr();
-}
-
-inline const char8_t* String::Data() const
-{
-    return GetVal().GetPtr();
-}
-
-inline String::iterator String::begin() { return iterator(Data()); }
-
-inline String::const_iterator String::begin() const{ return const_iterator(Data()); }
-
-inline String::iterator String::end() { return iterator(Data() + Length()); }
-
-inline String::const_iterator String::end() const { return const_iterator(Data() + Length()); }
-
-inline String::reverse_iterator String::rbegin() { return reverse_iterator(end()); }
-
-inline String::const_reverse_iterator String::rbegin() const { return const_reverse_iterator(end()); }
-
-inline String::reverse_iterator String::rend() { return reverse_iterator(begin()); }
-
-inline String::const_reverse_iterator String::rend() const { return const_reverse_iterator(begin()); }
-
-inline String::const_iterator String::cbegin() const { return begin(); }
-
-inline String::const_iterator String::cend() const { return end(); }
-
-inline String::const_reverse_iterator String::crbegin() const { return const_reverse_iterator(end()); }
-
-inline String::const_reverse_iterator String::crend() const { return const_reverse_iterator(begin()); }
-
 inline String String::FromUtf16(const char16_t* str)
 {
     return FromUtf16(str, std::char_traits<char16_t>::length(str));
@@ -738,18 +776,18 @@ inline String String::FromUtf32(const char32_t* str)
 
 inline String String::From(const std::string& str)
 {
-    return {str.data(), static_cast<size_type>(str.length())};
+    return {str.data(), ConvertSize(str.length())};
 }
 
 inline String String::From(const std::wstring& str)
 {
     if constexpr (sizeof(std::wstring::value_type) == sizeof(char16_t))
     {
-        return String::FromUtf16(reinterpret_cast<const char16_t*>(str.data()), static_cast<size_type>(str.length()));
+        return String::FromUtf16(reinterpret_cast<const char16_t*>(str.data()), ConvertSize(str.length()));
     }
     else if constexpr (sizeof(std::wstring::value_type) == sizeof(char32_t))
     {
-        return String::FromUtf32(reinterpret_cast<const char32_t*>(str.data()), static_cast<size_type>(str.length()));
+        return String::FromUtf32(reinterpret_cast<const char32_t*>(str.data()), ConvertSize(str.length()));
     }
     ASSERT(0);
 }
