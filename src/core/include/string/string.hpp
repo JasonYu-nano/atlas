@@ -16,6 +16,7 @@
 #include "string/locale.hpp"
 #include "string/unicode.hpp"
 #include "misc/iterator.hpp"
+#include "math/atlas_math.hpp"
 #include "core_macro.hpp"
 
 namespace atlas
@@ -225,7 +226,7 @@ public:
     bool operator== (const String& right) const { return Equals(right, ECaseSensitive::Sensitive); }
     bool operator!= (const String& right) const { return !Equals(right, ECaseSensitive::Sensitive); }
     bool operator< (const String& right) const  { return Compare(right, ECaseSensitive::Sensitive) < 0; }
-    bool operator> (const String& right) const  { return Equals(right, ECaseSensitive::Sensitive) > 0; }
+    bool operator> (const String& right) const  { return Compare(right, ECaseSensitive::Sensitive) > 0; }
 
     char8_t& operator[] (size_type index)
     {
@@ -739,6 +740,8 @@ protected:
 
     bool IsValidAddress(const char8_t* start, const char8_t* end) const;
 
+    size_type CalculateGrowth(size_type requested) const;
+
     template<std::integral T>
     constexpr static size_type ConvertSize(T size)
     {
@@ -1009,6 +1012,22 @@ inline void String::Eos(String::size_type size)
     auto&& my_val = GetVal();
     my_val.size_ = size;
     char_traits::assign(my_val.GetPtr()[size], value_type());
+}
+
+inline String::size_type String::CalculateGrowth(size_type requested) const
+{
+    if (requested > MaxSize())
+    {
+        return MaxSize();
+    }
+
+    size_type old = GetVal().capacity_;
+    if (old > MaxSize() - old / 2)
+    {
+        return MaxSize();
+    }
+
+    return math::Max(requested, old + old / 2);
 }
 
 }

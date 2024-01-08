@@ -14,7 +14,7 @@ TEST(StringCtor, StringTest)
         String str;
         str.Reserve(20);
         EXPECT_TRUE(str.Length() == 0);
-        EXPECT_TRUE(str.Capacity() == 20);
+        EXPECT_TRUE(str.Capacity() == 22);
     }
 
     {

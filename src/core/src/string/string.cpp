@@ -83,24 +83,30 @@ int32 String::Compare(const String& right, ECaseSensitive case_sensitive) const
 void String::Reserve(String::size_type capacity)
 {
     auto&& my_val = GetVal();
+    if (capacity <= my_val.capacity_)
+    {
+        return;
+    }
+
     auto&& alloc = GetAlloc();
     if (capacity > my_val.capacity_)
     {
+        size_type new_capacity = CalculateGrowth(capacity);
         if (!my_val.LargeStringEngaged())
         {
-            pointer new_ptr = allocator_traits::allocate(alloc, capacity + 1);
+            pointer new_ptr = allocator_traits::allocate(alloc, new_capacity + 1);
             char_traits::move(new_ptr, my_val.u_.buffer_, my_val.size_ + 1);
             my_val.u_.ptr_ = new_ptr;
-            my_val.capacity_ = capacity;
+            my_val.capacity_ = new_capacity;
         }
         else
         {
-            pointer new_ptr = allocator_traits::allocate(alloc, capacity + 1);
+            pointer new_ptr = allocator_traits::allocate(alloc, new_capacity + 1);
             pointer old_ptr = my_val.u_.ptr_;
             char_traits::move(new_ptr, old_ptr, my_val.size_ + 1);
             allocator_traits::deallocate(GetAlloc(), old_ptr, my_val.capacity_ + 1);
             my_val.u_.ptr_ = new_ptr;
-            my_val.capacity_ = capacity;
+            my_val.capacity_ = new_capacity;
         }
     }
 }
