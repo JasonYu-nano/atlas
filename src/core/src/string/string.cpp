@@ -101,11 +101,7 @@ void String::Reserve(String::size_type capacity)
         }
         else
         {
-            pointer new_ptr = allocator_traits::allocate(alloc, new_capacity + 1);
-            pointer old_ptr = my_val.u_.ptr_;
-            char_traits::move(new_ptr, old_ptr, my_val.size_ + 1);
-            allocator_traits::deallocate(GetAlloc(), old_ptr, my_val.capacity_ + 1);
-            my_val.u_.ptr_ = new_ptr;
+            my_val.u_.ptr_ = allocator_traits::reallocate(alloc, my_val.u_.ptr_, my_val.capacity_ + 1, new_capacity + 1);
             my_val.capacity_ = new_capacity;
         }
     }

@@ -91,7 +91,7 @@ TEST(FixedAllocatorTest, MemoryTest)
 TEST(InlineAllocatorTest, MemoryTest)
 {
     using AllocType = InlineAllocator<int32, 10>::Allocator<std::string>;
-    using TraitsType = std::allocator_traits<AllocType>;
+    using TraitsType = AllocatorTraits<AllocType>;
     static_assert(std::is_same_v<typename TraitsType::value_type, std::string>);
     static_assert(std::is_same_v<typename TraitsType::size_type , int32>);
 
@@ -115,6 +115,15 @@ TEST(InlineAllocatorTest, MemoryTest)
     uintptr_t address_2 = reinterpret_cast<uintptr_t>(ptr_2);
     TraitsType::deallocate(allocator, ptr_2, 10);
     EXPECT_TRUE(address_0 != address_2);
+
+    std::string* ptr_3 = TraitsType::allocate(allocator, 2);
+    std::string* ptr_4 = TraitsType::reallocate(allocator, ptr_3, 2, 10);
+    EXPECT_TRUE(ptr_3 == ptr_4);
+    std::string* ptr_5 = TraitsType::reallocate(allocator, ptr_4, 10, 11);
+    EXPECT_TRUE(ptr_4 != ptr_5);
+    std::string* ptr_6 = TraitsType::reallocate(allocator, ptr_5, 11, 15);
+    std::string* ptr_7 = TraitsType::reallocate(allocator, ptr_6, 15, 2);
+    TraitsType::deallocate(allocator, ptr_7, 2);
 
 }
 
