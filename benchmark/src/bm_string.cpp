@@ -49,4 +49,24 @@ static void BM_LargeStdStringCreation(benchmark::State& state)
 }
 BENCHMARK(BM_LargeStdStringCreation)->Iterations(ITERATION_TIMES);
 
+static void BM_StringAppend(benchmark::State& state)
+{
+    String str;
+    std::any var("a");
+    auto item = std::any_cast<const char*>(var);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(str.Append(item));
+}
+BENCHMARK(BM_StringAppend)->Iterations(ITERATION_TIMES);
+
+static void BM_StdStringAppend(benchmark::State& state)
+{
+    std::string str;
+    std::any var("a");
+    auto item = std::any_cast<const char*>(var);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(str.append(item));
+}
+BENCHMARK(BM_StdStringAppend)->Iterations(ITERATION_TIMES);
+
 BENCHMARK_MAIN();
