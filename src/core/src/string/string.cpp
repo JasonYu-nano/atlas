@@ -80,33 +80,6 @@ int32 String::Compare(const String& right, ECaseSensitive case_sensitive) const
     return ICompare(Data(), right.Data(), left_length);
 }
 
-void String::Reserve(String::size_type capacity)
-{
-    auto&& my_val = GetVal();
-    if (capacity <= my_val.capacity_)
-    {
-        return;
-    }
-
-    auto&& alloc = GetAlloc();
-    if (capacity > my_val.capacity_)
-    {
-        size_type new_capacity = CalculateGrowth(capacity);
-        if (!my_val.LargeStringEngaged())
-        {
-            pointer new_ptr = allocator_traits::allocate(alloc, new_capacity + 1);
-            char_traits::move(new_ptr, my_val.u_.buffer_, my_val.size_ + 1);
-            my_val.u_.ptr_ = new_ptr;
-            my_val.capacity_ = new_capacity;
-        }
-        else
-        {
-            my_val.u_.ptr_ = allocator_traits::reallocate(alloc, my_val.u_.ptr_, my_val.capacity_ + 1, new_capacity + 1);
-            my_val.capacity_ = new_capacity;
-        }
-    }
-}
-
 String String::FoldCase() const
 {
     const char* data = reinterpret_cast<const char*>(Data());
@@ -255,4 +228,58 @@ bool String::IsValidAddress(const char8_t* start, const char8_t* end) const
     return (start < my_start || start > my_end) && (end < my_start || end > my_end);
 }
 
+void String::Reallocate(String::size_type new_capacity)
+{
+    auto&& my_val = GetVal();
+    auto&& alloc = GetAlloc();
+    if (new_capacity > my_val.capacity_)
+    {
+        new_capacity = CalculateGrowth(new_capacity);
+        if (!my_val.LargeStringEngaged())
+        {
+            pointer new_ptr = allocator_traits::allocate(alloc, new_capacity + 1);
+            char_traits::move(new_ptr, my_val.u_.buffer_, my_val.size_ + 1);
+            my_val.u_.ptr_ = new_ptr;
+            my_val.capacity_ = new_capacity;
+        }
+        else
+        {
+            my_val.u_.ptr_ = allocator_traits::reallocate(alloc, my_val.u_.ptr_, my_val.capacity_ + 1, new_capacity + 1);
+            my_val.capacity_ = new_capacity;
+        }
+    }
+}
+
+void String::ReallocateGrowth(size_type& increase_size)
+{
+    auto&& my_val = GetVal();
+    size_type old_size = my_val.size_;
+    if (MaxSize() - old_size < increase_size)
+    {
+        ASSERT(0);
+        increase_size = MaxSize() - old_size;
+    }
+
+    size_type new_size = old_size + increase_size;
+    size_type new_capacity = CalculateGrowth(new_size);
+
+    auto&& alloc = GetAlloc();
+    if (new_capacity > my_val.capacity_)
+    {
+        if (!my_val.LargeStringEngaged())
+        {
+            pointer new_ptr = allocator_traits::allocate(alloc, new_capacity + 1);
+            char_traits::move(new_ptr, my_val.u_.buffer_, my_val.size_ + 1);
+            my_val.u_.ptr_ = new_ptr;
+            my_val.capacity_ = new_capacity;
+        }
+        else
+        {
+            my_val.u_.ptr_ = allocator_traits::reallocate(alloc, my_val.u_.ptr_, my_val.capacity_ + 1, new_capacity + 1);
+            my_val.capacity_ = new_capacity;
+        }
+    }
+    my_val.size_ = new_size;
+    char_traits::assign(my_val.GetPtr()[new_size], value_type());
+}
 }

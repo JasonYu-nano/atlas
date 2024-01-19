@@ -136,8 +136,8 @@ public:
     using view_type = std::basic_string_view<char8_t>;
     using pointer = value_type*;
     using const_pointer = const value_type*;
-    using iterator = WrapIterator<pointer>;
-    using const_iterator = WrapIterator<const_pointer>;
+    using iterator = PointerIterator<pointer>;
+    using const_iterator = PointerIterator<const_pointer>;
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -241,6 +241,8 @@ public:
 
     NODISCARD inline char8_t* Data()                    { return GetVal().GetPtr(); }
     NODISCARD inline const_pointer Data() const         { return GetVal().GetPtr(); }
+    NODISCARD inline char8_t* data()                    { return GetVal().GetPtr(); }
+    NODISCARD inline const_pointer data() const         { return GetVal().GetPtr(); }
 
     NODISCARD iterator begin()                          { return iterator(Data()); }
     NODISCARD const_iterator begin() const              { return const_iterator(Data()); }
@@ -315,7 +317,13 @@ public:
      * @brief If new capacity is greater than the current capacity, new storage is allocated, and capacity is made equal or greater than new capacity.
      * @param capacity
      */
-    void Reserve(size_type capacity);
+    void Reserve(size_type capacity)
+    {
+        if (capacity > GetVal().capacity_)
+        {
+            Reallocate(capacity);
+        }
+    }
 
     NODISCARD bool IsValidIndex(size_type index) const { return index < Length(); }
 
@@ -369,7 +377,7 @@ public:
      * @param range
      * @return Current string
      */
-    template<std::ranges::sized_range RangeType>
+    template<std::ranges::contiguous_range RangeType>
     String& Append(const RangeType& range);
 
     /**
@@ -390,7 +398,7 @@ public:
      * @param range
      * @return Current string
      */
-    template<std::ranges::sized_range RangeType>
+    template<std::ranges::contiguous_range RangeType>
     String& Prepend(const RangeType& range);
 
     /**
@@ -411,7 +419,7 @@ public:
      * @param range
      * @return A new string
      */
-    template<std::ranges::sized_range RangeType>
+    template<std::ranges::contiguous_range RangeType>
     NODISCARD String Concat(const RangeType& range) const;
 
     /**
@@ -435,7 +443,7 @@ public:
      * @param range
      * @return Current string
      */
-    template<std::ranges::sized_range RangeType>
+    template<std::ranges::contiguous_range RangeType>
     String& Insert(const const_iterator& where, const RangeType& range);
 
     /**
@@ -742,6 +750,9 @@ protected:
 
     size_type CalculateGrowth(size_type requested) const;
 
+    void Reallocate(size_type new_capacity);
+    void ReallocateGrowth(size_type& increase_size);
+
     template<std::integral T>
     constexpr static size_type ConvertSize(T size)
     {
@@ -795,83 +806,79 @@ inline String String::From(const std::wstring& str)
     ASSERT(0);
 }
 
-template<std::ranges::sized_range RangeType>
+template<std::ranges::contiguous_range RangeType>
 String& String::Append(const RangeType& range)
 {
     size_type length = Length();
-    size_type new_length = length + range.size();
-    Reserve(new_length);
-    char8_t* p = Data() + length;
-    for (auto it = range.begin(); it < range.end(); ++p, ++it)
+    size_type increase_size = range.size();
+    auto&& my_val = GetVal();
+    if (increase_size > my_val.capacity_ - my_val.size_)
     {
-        char_traits::assign(*p, *it);
+        ReallocateGrowth(increase_size);
     }
-    Eos(new_length);
 
+    char_traits::copy(my_val.GetPtr() + length, reinterpret_cast<const_pointer>(range.data()), increase_size);
     return *this;
 }
 
-template<std::ranges::sized_range RangeType>
+template<std::ranges::contiguous_range RangeType>
 String& String::Prepend(const RangeType& range)
 {
     size_type length = Length();
-    size_type insert_size = range.size();
-    size_type new_length = length + insert_size;
-
-    Reserve(new_length);
-    char8_t* p = Data();
-    char_traits::move(p + insert_size, p, length);
-
-    for (auto it = range.begin(); it < range.end(); ++p, ++it)
+    size_type increase_size = range.size();
+    auto&& my_val = GetVal();
+    if (increase_size > my_val.capacity_ - my_val.size_)
     {
-        char_traits::assign(*p, *it);
+        ReallocateGrowth(increase_size);
     }
-    Eos(new_length);
 
+    char8_t* ptr = my_val.GetPtr();
+    char_traits::move(ptr + increase_size, ptr, length);
+    char_traits::copy(ptr, reinterpret_cast<const_pointer>(range.data()), increase_size);
     return *this;
 }
 
-template<std::ranges::sized_range RangeType>
+template<std::ranges::contiguous_range RangeType>
 String String::Concat(const RangeType& range) const
 {
     size_type length = Length();
-    size_type new_length = length + range.size();
+    size_type increase_size = range.size();
+    if (increase_size > MaxSize() - length)
+    {
+        ASSERT(0)
+        increase_size = MaxSize() - length;
+    }
+
+    size_type new_length = length + increase_size;
 
     String result;
     result.Reserve(new_length);
-    char8_t* p = result.Data();
 
-    char_traits::copy(p, Data(), length);
-    p += length;
-    for (auto it = range.begin(); it < range.end(); ++p, ++it)
-    {
-        char_traits::assign(*p, *it);
-    }
+    char8_t* ptr = result.Data();
+    char_traits::copy(ptr, Data(), length);
+    char_traits::copy(ptr + length, reinterpret_cast<const_pointer>(range.data()), increase_size);
     result.Eos(new_length);
 
     return result;
 }
 
-template<std::ranges::sized_range RangeType>
+template<std::ranges::contiguous_range RangeType>
 String& String::Insert(const const_iterator& where, const RangeType& range)
 {
     ASSERT(where >= cbegin() && where <= cend());
-    size_type length = Length();
-    size_type insert_size = range.size();
-    size_type new_length = length + insert_size;
-    size_t offset = std::distance(cbegin(), where);
-    Reserve(new_length);
+    auto&& my_val = GetVal();
+    size_type increase_size = range.size();
+    size_type offset = ConvertSize(std::distance(cbegin(), where));
+    size_type length = my_val.size_;
 
-    char8_t* p = Data() + offset;
-
-    char_traits::move(p + insert_size, p, length - offset);
-
-    for (auto it = range.begin(); it < range.end(); ++p, ++it)
+    if (increase_size > my_val.capacity_ - my_val.size_)
     {
-        char_traits::assign(*p, *it);
+        ReallocateGrowth(increase_size);
     }
 
-    Eos(new_length);
+    char8_t* ptr = my_val.GetPtr() + offset;
+    char_traits::move(ptr + increase_size, ptr, length - offset);
+    char_traits::copy(ptr, reinterpret_cast<const_pointer>(range.data()), increase_size);
 
     return *this;
 }
