@@ -241,8 +241,8 @@ public:
 
     NODISCARD inline char8_t* Data()                    { return GetVal().GetPtr(); }
     NODISCARD inline const_pointer Data() const         { return GetVal().GetPtr(); }
-    NODISCARD inline char8_t* data()                    { return GetVal().GetPtr(); }
-    NODISCARD inline const_pointer data() const         { return GetVal().GetPtr(); }
+    NODISCARD DO_NOT_USE_DIRECTLY inline char8_t* data()                    { return GetVal().GetPtr(); }
+    NODISCARD DO_NOT_USE_DIRECTLY inline const_pointer data() const         { return GetVal().GetPtr(); }
 
     NODISCARD iterator begin()                          { return iterator(Data()); }
     NODISCARD const_iterator begin() const              { return const_iterator(Data()); }
@@ -273,7 +273,9 @@ public:
      * @brief To implement std::sized_range, avoid direct usage.
      * @return
      */
-    size_type size() const { return Size(); }
+    DO_NOT_USE_DIRECTLY size_type size() const { return Size(); }
+
+    DO_NOT_USE_DIRECTLY constexpr size_type max_size() { return MaxSize(); }
 
     /**
      * @brief Get the number of code points contained in the string.
@@ -513,7 +515,7 @@ public:
      * @param new_value
      * @return
      */
-    template<std::ranges::sized_range RangeType>
+    template<std::ranges::contiguous_range RangeType>
     String& Replace(size_type from, size_type count, const RangeType& new_value);
     /**
      * @brief Replace all occurrences of a specified string in the current instance with another specified string.
@@ -544,7 +546,7 @@ public:
      * @param case_sensitive
      * @return
      */
-    template<std::ranges::sized_range RangeType1, std::ranges::sized_range RangeType2>
+    template<std::ranges::sized_range RangeType1, std::ranges::contiguous_range RangeType2>
     String& Replace(const RangeType1& old_value, const RangeType2& new_value, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive);
 
     /**
@@ -678,7 +680,6 @@ public:
     }
 
     constexpr static size_type MaxSize() { return std::numeric_limits<size_type>::max() - 1; }
-    constexpr static size_type max_size() { return MaxSize(); }
 
     /**
      * @brief Construct a new UTF-8 string from a UTF-16 string.
@@ -810,7 +811,7 @@ template<std::ranges::contiguous_range RangeType>
 String& String::Append(const RangeType& range)
 {
     size_type length = Length();
-    size_type increase_size = range.size();
+    size_type increase_size = ConvertSize(range.size());
     auto&& my_val = GetVal();
     if (increase_size > my_val.capacity_ - my_val.size_)
     {
@@ -825,7 +826,7 @@ template<std::ranges::contiguous_range RangeType>
 String& String::Prepend(const RangeType& range)
 {
     size_type length = Length();
-    size_type increase_size = range.size();
+    size_type increase_size = ConvertSize(range.size());
     auto&& my_val = GetVal();
     if (increase_size > my_val.capacity_ - my_val.size_)
     {
@@ -842,10 +843,10 @@ template<std::ranges::contiguous_range RangeType>
 String String::Concat(const RangeType& range) const
 {
     size_type length = Length();
-    size_type increase_size = range.size();
+    size_type increase_size = ConvertSize(range.size());
     if (increase_size > MaxSize() - length)
     {
-        ASSERT(0)
+        ASSERT(0);
         increase_size = MaxSize() - length;
     }
 
@@ -867,7 +868,7 @@ String& String::Insert(const const_iterator& where, const RangeType& range)
 {
     ASSERT(where >= cbegin() && where <= cend());
     auto&& my_val = GetVal();
-    size_type increase_size = range.size();
+    size_type increase_size = ConvertSize(range.size());
     size_type offset = ConvertSize(std::distance(cbegin(), where));
     size_type length = my_val.size_;
 
@@ -887,7 +888,7 @@ template<std::ranges::sized_range RangeType>
 String& String::Remove(const RangeType& range, ECaseSensitive case_sensitive)
 {
     size_type index = 0;
-    size_type size = range.size();
+    size_type size = ConvertSize(range.size());
     do
     {
         index = Find(range, index, case_sensitive);
@@ -902,30 +903,35 @@ String& String::Remove(const RangeType& range, ECaseSensitive case_sensitive)
     return *this;
 }
 
-template<std::ranges::sized_range RangeType>
+template<std::ranges::contiguous_range RangeType>
 String& String::Replace(size_type from, size_type count, const RangeType& new_value)
 {
-    ASSERT(count > 0 && from < Length() && from + count <= Length());
+    ASSERT(count > 0 && from < Length() && from <= Length() - count);
 
     size_type length = Length();
-    size_type insert_size = new_value.size();
+    size_type insert_size = ConvertSize(new_value.size());
+    if (insert_size > count)
+    {
+        size_type increase_size = insert_size - count;
+        if (increase_size > MaxSize() - length)
+        {
+            ASSERT(0);
+            insert_size = MaxSize() - length + count;
+        }
+    }
     size_type new_length = length - count + insert_size;
     Reserve(new_length);
 
     pointer start = Data() + from;
     char_traits::move(start + insert_size, start + count, length - from - count);
-
-    for (auto&& it = new_value.begin(); it < new_value.end(); ++it, ++start)
-    {
-        char_traits::assign(*start, *it);
-    }
+    char_traits::copy(start, reinterpret_cast<const_pointer>(new_value.data()), insert_size);
 
     Eos(new_length);
 
     return *this;
 }
 
-template<std::ranges::sized_range RangeType1, std::ranges::sized_range RangeType2>
+template<std::ranges::sized_range RangeType1, std::ranges::contiguous_range RangeType2>
 String& String::Replace(const RangeType1& old_value, const RangeType2& new_value, ECaseSensitive case_sensitive)
 {
     size_type index = 0;

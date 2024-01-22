@@ -5,3 +5,5 @@
 
 #define INDEX_NONE (-1)
 #define INDEX_NONE_ZU ((size_t)-1)
+
+#define DO_NOT_USE_DIRECTLY
