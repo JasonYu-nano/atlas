@@ -82,5 +82,6 @@ typedef PlatformTypes::int16        int16;
 typedef PlatformTypes::int8         int8;
 
 typedef PlatformTypes::byte         byte;
+typedef PlatformTypes ::real_t      real_t;
 
 }

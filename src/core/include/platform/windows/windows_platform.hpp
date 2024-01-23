@@ -20,6 +20,7 @@ struct WindowsPlatformTypes
     typedef unsigned char           byte;
 
     typedef uint64                  size_t;
+    typedef double                  real_t;
 };
 
 typedef WindowsPlatformTypes PlatformTypes;
