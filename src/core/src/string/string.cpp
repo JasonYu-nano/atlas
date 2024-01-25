@@ -263,9 +263,9 @@ void String::ReallocateGrowth(size_type& increase_size)
     size_type new_size = old_size + increase_size;
     size_type new_capacity = CalculateGrowth(new_size);
 
-    auto&& alloc = GetAlloc();
     if (new_capacity > my_val.capacity_)
     {
+        auto&& alloc = GetAlloc();
         if (!my_val.LargeStringEngaged())
         {
             pointer new_ptr = allocator_traits::allocate(alloc, new_capacity + 1);
