@@ -16,6 +16,8 @@ struct PodStruct
 
 struct NonPodStruct
 {
+    NonPodStruct() = default;
+    NonPodStruct(const std::string& in_str) : str(in_str) {}
     std::string str;
 };
 
@@ -90,6 +92,22 @@ TEST(ArrayAdd, ArrayTest)
         array.Clear(true);
         EXPECT_TRUE(array.Capacity() == 0);
     }
+}
+
+TEST(ArrayFind, ArrayTest)
+{
+    Array<int32> array = { 1, 2, 3, 4, 5 };
+    EXPECT_TRUE(array.Find(0) == INDEX_NONE);
+    EXPECT_TRUE(array.Find(2) == 1);
+
+    EXPECT_TRUE(array.Find([](auto&& elem) { return elem <= 0; }) == INDEX_NONE);
+    EXPECT_TRUE(array.Find([](auto&& elem) { return elem > 3; }) == 3);
+
+    EXPECT_TRUE(array.FindLast(0) == INDEX_NONE);
+    EXPECT_TRUE(array.FindLast(4) == 3);
+
+    EXPECT_TRUE(array.FindLast([](auto&& elem) { return elem <= 0; }) == INDEX_NONE);
+    EXPECT_TRUE(array.FindLast([](auto&& elem) { return elem > 3; }) == 4);
 }
 
 }

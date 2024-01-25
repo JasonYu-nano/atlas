@@ -95,8 +95,8 @@ public:
 
     size_type Add(const param_type elem) { return Emplace(elem); }
     size_type Add(value_type&& elem) { return Emplace(elem); }
-    size_type AddUnique(const param_type elem);
-    size_type AddUnique(value_type&& elem);
+    size_type AddUnique(const param_type elem) { if (Find(elem) != INDEX_NONE) Emplace(elem); }
+    size_type AddUnique(value_type&& elem) { if (Find(elem) != INDEX_NONE) Emplace(std::forward<value_type>(elem)); }
 
     template<typename... Args>
     size_type Emplace(Args&&... args);
@@ -291,6 +291,58 @@ Array<T, Allocator>::size_type Array<T, Allocator>::Append(Array<value_type, All
     return index;
 }
 
+template<typename T, typename Allocator>
+Array<T, Allocator>::size_type Array<T, Allocator>::Find(const param_type search) const
+{
+    for (auto it = cbegin(); it < cend(); ++it)
+    {
+        if (*it == search)
+        {
+            return it - cbegin();
+        }
+    }
+    return INDEX_NONE;
+}
+
+template<typename T, typename Allocator>
+Array<T, Allocator>::size_type Array<T, Allocator>::Find(const std::function<bool(const param_type)>& predicate) const
+{
+    for (auto it = cbegin(); it < cend(); ++it)
+    {
+        if (predicate(*it))
+        {
+            return it - cbegin();
+        }
+    }
+    return INDEX_NONE;
+}
+
+template<typename T, typename Allocator>
+Array<T, Allocator>::size_type Array<T, Allocator>::FindLast(const param_type search) const
+{
+    for (auto it = crbegin(); it < crend(); ++it)
+    {
+        if (*it == search)
+        {
+            return crend() - it - 1;
+        }
+    }
+    return INDEX_NONE;
+}
+
+template<typename T, typename Allocator>
+Array<T, Allocator>::size_type Array<T, Allocator>::FindLast(const std::function<bool(const param_type)>& predicate) const
+{
+    for (auto it = crbegin(); it < crend(); ++it)
+    {
+        if (predicate(*it))
+        {
+            return crend() - it - 1;
+        }
+    }
+    return INDEX_NONE;
+}
+
 template<typename T, typename AllocType>
 void Array<T, AllocType>::Reserve(Array::size_type capacity)
 {
@@ -360,7 +412,7 @@ void Array<T, Allocator>::MoveToUninitialized(pointer first, pointer last, point
 {
     if constexpr (std::is_trivially_copyable<value_type>::value)
     {
-        Memory::Memmove(static_cast<void*>(dest), static_cast<const void*>(first), (last - first) * sizeof(value_type));
+        std::memmove(static_cast<void*>(dest), static_cast<const void*>(first), (last - first) * sizeof(value_type));
     }
     else
     {
@@ -461,32 +513,35 @@ Array<T, Allocator>::size_type Array<T, Allocator>::AddUninitialized(Array::size
     }
 
     size_type new_size = old_size + increase_size;
-    size_type new_capacity = CalculateGrowth(new_size);
-
-    if (new_capacity > my_val.capacity)
+    if (new_size > my_val.capacity)
     {
-        auto&& alloc = GetAlloc();
-        if (my_val.capacity <= 0)
+        size_type new_capacity = CalculateGrowth(new_size);
+        if (new_capacity > my_val.capacity)
         {
-            my_val.ptr = allocator_traits::allocate(alloc, new_capacity);
-        }
-        else if constexpr (std::is_trivially_copyable<value_type>::value)
-        {
-            my_val.ptr = allocator_traits::reallocate(alloc, my_val.ptr, my_val.capacity, new_capacity);
-        }
-        else
-        {
-            pointer new_ptr = allocator_traits::allocate(alloc, new_capacity);
-            pointer old_ptr = my_val.ptr;
-            if (new_ptr != old_ptr)
+            auto&& alloc = GetAlloc();
+            if (my_val.capacity <= 0)
             {
-                MoveToUninitialized(old_ptr, old_ptr + my_val.size, new_ptr);
-                allocator_traits::deallocate(alloc, old_ptr, my_val.capacity);
+                my_val.ptr = allocator_traits::allocate(alloc, new_capacity);
             }
-            my_val.ptr = new_ptr;
+            else if constexpr (std::is_trivially_copyable<value_type>::value)
+            {
+                my_val.ptr = allocator_traits::reallocate(alloc, my_val.ptr, my_val.capacity, new_capacity);
+            }
+            else
+            {
+                pointer new_ptr = allocator_traits::allocate(alloc, new_capacity);
+                pointer old_ptr = my_val.ptr;
+                if (new_ptr != old_ptr)
+                {
+                    MoveToUninitialized(old_ptr, old_ptr + my_val.size, new_ptr);
+                    allocator_traits::deallocate(alloc, old_ptr, my_val.capacity);
+                }
+                my_val.ptr = new_ptr;
+            }
+            my_val.capacity = new_capacity;
         }
-        my_val.capacity = new_capacity;
     }
+
     my_val.size = new_size;
     return old_size;
 }
