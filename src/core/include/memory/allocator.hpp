@@ -32,6 +32,12 @@ struct HasReallocate<AllocatorType, PointerType, SizeType,
                                                                                    std::declval<SizeType>(),
                                                                                    std::declval<SizeType>()))>> : std::true_type {};
 
+template <typename AllocatorType, typename = void>
+struct HasInitializeSize : std::false_type {};
+
+template <typename AllocatorType>
+struct HasInitializeSize<AllocatorType,
+                        std::void_t<decltype(std::declval<AllocatorType>().get_initialize_size())>> : std::true_type {};
 }
 
 template<typename AllocatorType>
@@ -40,6 +46,15 @@ struct AllocatorTraits : public std::allocator_traits<AllocatorType>
 private:
     using Super = std::allocator_traits<AllocatorType>;
 public:
+    static constexpr Super::size_type get_initialize_size(const AllocatorType& allocator)
+    {
+        if constexpr (details::HasInitializeSize<AllocatorType>::value)
+        {
+            return allocator.get_initialize_size();
+        }
+        return 0;
+    }
+
     static constexpr Super::pointer reallocate(AllocatorType& allocator, Super::pointer ptr, Super::size_type old_count, Super::size_type new_count)
     {
         if constexpr (details::HasReallocate<AllocatorType, typename Super::pointer, typename Super::size_type>::value)
@@ -168,6 +183,11 @@ struct FixedAllocator
             return MaxSize;
         }
 
+        constexpr size_type get_initialize_size() const
+        {
+            return MaxSize;
+        }
+
     private:
         UntypedData<T> buffer_[MaxSize];
 
@@ -239,6 +259,11 @@ struct InlineAllocator
             {
                 return pair_.First().deallocate(ptr, size);
             }
+        }
+
+        constexpr size_type get_initialize_size() const
+        {
+            return InlineSize;
         }
 
     private:
