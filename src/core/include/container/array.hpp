@@ -110,8 +110,14 @@ public:
     void Insert(const const_iterator& where, const param_type elem);
     void Insert(const const_iterator& where, value_type&& elem);
     void Insert(const const_iterator& where, std::span<value_type> elems);
-    template<details::ArrayRangeType RangeType>
-    void Insert(const const_iterator& where, const RangeType& elems);
+    template<typename RangeType>
+    void Insert(const const_iterator& where, const RangeType& elems)
+    {
+        if constexpr (std::ranges::sized_range<RangeType> || std::ranges::forward_range<RangeType>)
+        {
+            InsertCountedRange(where, elems.data(), std::ranges::distance(elems));
+        }
+    }
     template<typename AllocatorType>
     void Insert(const const_iterator& where, Array<value_type, AllocatorType>&& elems);
 
@@ -158,7 +164,12 @@ private:
     val_type& GetVal() { return pair_.Second(); }
     const val_type& GetVal() const { return pair_.Second(); }
 
-    void MoveToUninitialized(pointer first, pointer last, pointer dest);
+    template<typename Iter>
+    void MoveToUninitialized(Iter first, Iter last, pointer dest);
+    template<typename Iter>
+    void CopyToUninitialized(Iter first, Iter last, pointer dest);
+    template<typename Iter>
+    void InsertCountedRange(const_iterator first, Iter it, size_type count);
 
     template<std::ranges::sized_range RangeType>
     void Construct(const RangeType& range);
@@ -167,6 +178,7 @@ private:
     void MoveConstruct(const RangeType& range);
 
     size_type CalculateGrowth(size_type requested) const;
+    size_type Reallocate(size_type new_capacity);
     size_type AddUninitialized(size_type& increase_size);
 
     template<std::integral SizeType>
@@ -408,7 +420,8 @@ void Array<T, Allocator>::Clear(bool reset_capacity)
 }
 
 template<typename T, typename Allocator>
-void Array<T, Allocator>::MoveToUninitialized(pointer first, pointer last, pointer dest)
+template<typename Iter>
+void Array<T, Allocator>::MoveToUninitialized(Iter first, Iter last, pointer dest)
 {
     if constexpr (std::is_trivially_copyable<value_type>::value)
     {
@@ -416,10 +429,97 @@ void Array<T, Allocator>::MoveToUninitialized(pointer first, pointer last, point
     }
     else
     {
+        auto&& alloc = GetAlloc();
         for (size_type idx = 0; first != last; ++first, ++idx)
         {
-            new (&dest[idx]) T(std::move(*first));
+            allocator_traits::construct(alloc, dest + idx, std::move(*first));
         }
+    }
+}
+
+template<typename T, typename Allocator>
+template<typename Iter>
+void Array<T, Allocator>::CopyToUninitialized(Iter first, Iter last, pointer dest)
+{
+    if constexpr (std::is_trivially_copyable<value_type>::value)
+    {
+        std::memmove(static_cast<void*>(dest), static_cast<const void*>(first), (last - first) * sizeof(value_type));
+    }
+    else
+    {
+        auto&& alloc = GetAlloc();
+        for (size_type idx = 0; first != last; ++first, ++idx)
+        {
+            allocator_traits::construct(alloc, dest + idx, *first);
+        }
+    }
+}
+
+template<typename T, typename Allocator>
+template<typename Iter>
+void Array<T, Allocator>::InsertCountedRange(const_iterator where, Iter it, size_type count)
+{
+    if (count <= 0)
+    {
+        return;
+    }
+
+    auto&& my_val = GetVal();
+    size_type unused_capacity = my_val.capacity - my_val.size;
+
+    if (count <= unused_capacity)
+    {
+        const_iterator end = cend();
+        size_type move_count = end - where;
+        if (move_count > 0)
+        {
+            if (move_count <= count)
+            {
+                // move to uninitialized location
+                MoveToUninitialized(where, end, (where + count).GetPointer());
+                std::destroy(where, end);
+            }
+            else
+            {
+                MoveToUninitialized(end - count, end, end.GetPointer());
+                std::move_backward(where, end - count, end);
+                std::destroy(where, where + count);
+            }
+        }
+        CopyToUninitialized(it, it + count, where.GetPointer());
+        my_val.size += count;
+    }
+    else
+    {
+        if (count > MaxSize() - my_val.size)
+        {
+            ASSERT(0);
+            count = MaxSize() - my_val.size;
+        }
+
+        size_type new_size = my_val.size + count;
+        size_type new_capacity = CalculateGrowth(new_size);
+        auto&& alloc = GetAlloc();
+
+        pointer new_ptr = allocator_traits::allocate(alloc, new_capacity);
+        const_iterator begin = begin();
+        const_iterator end = end();
+        size_type offset = where - begin;
+        CopyToUninitialized(it, it + count, new_ptr + offset);
+        if (where == end)
+        {
+            MoveToUninitialized(begin, end, new_ptr);
+        }
+        else
+        {
+            MoveToUninitialized(begin, where, new_ptr);
+            MoveToUninitialized(where, end, new_ptr + offset + count);
+        }
+        std::destroy(begin, end);
+        allocator_traits::deallocate(alloc, my_val.ptr, my_val.capacity);
+        my_val.ptr = new_ptr;
+        my_val.size = new_size;
+        my_val.capacity = new_capacity;
     }
 }
 
@@ -475,7 +575,7 @@ void Array<T, Allocator>::MoveConstruct(const RangeType& range)
 {
     size_type size = range.size();
     Reserve(size);
-    MoveToUninitialized(range.begin(), range,end(), Data());
+    MoveToUninitialized(range.begin(), range.end(), Data());
     GetVal().size = size;
 }
 

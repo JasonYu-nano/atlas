@@ -110,4 +110,11 @@ TEST(ArrayFind, ArrayTest)
     EXPECT_TRUE(array.FindLast([](auto&& elem) { return elem > 3; }) == 4);
 }
 
+TEST(ArrayInsert, ArrayTest)
+{
+    Array<int32> array = { 1, 2, 3, 4, 5 };
+    Array<int32> insert = { 0, 0, 0 };
+    array.Insert(array.cbegin() + 2, insert);
+}
+
 }

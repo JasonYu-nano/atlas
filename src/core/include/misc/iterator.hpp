@@ -57,6 +57,8 @@ public:
     bool            operator>=  (const PointerIterator& right) const { return !(it_ < right.it_); }
     difference_type operator-   (const PointerIterator& right) const { return it_ - right.it_; }
 
+    pointer GetPointer() { return std::to_address(it_); }
+
 private:
     iterator_type it_;
 };
