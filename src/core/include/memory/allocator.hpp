@@ -81,7 +81,6 @@ struct StandardAllocator
         using value_type = T;
         using size_type = SizeTy;
         using difference_type = size_type;
-        using propagate_on_container_move_assignment = std::true_type;
 
         constexpr Allocator() noexcept = default;
         constexpr Allocator(const Allocator&) noexcept = default;
