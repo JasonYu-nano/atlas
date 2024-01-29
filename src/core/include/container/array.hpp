@@ -57,14 +57,11 @@ private:
 public:
     explicit Array(const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
-        if (allocator_traits::get_initialize_size(pair_.First()) > 0)
-        {
-            Reserve(allocator_traits::get_initialize_size(pair_.First()));
-        }
+        Reserve(GetInitializeCapacity());
     }
     explicit Array(size_type capacity, const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
-        Reserve(math::Max(capacity, allocator_traits::get_initialize_size(pair_.First())));
+        Reserve(math::Max(capacity, GetInitializeCapacity()));
     }
     explicit Array(std::span<value_type> span, const allocator_type& alloc = allocator_type()) : pair_(alloc) { Construct(span); }
     Array(const std::initializer_list<value_type>& initializer, const allocator_type& alloc = allocator_type()) : pair_(alloc) { Construct(initializer); }
@@ -274,6 +271,7 @@ private:
     void MoveAssign(Array& right, std::true_type) noexcept;
     void MoveAssign(Array& right, std::false_type) noexcept;
 
+    constexpr size_type GetInitializeCapacity() const;
     size_type CalculateGrowth(size_type requested) const;
     void Reallocate(val_type& val, size_type new_capacity);
     size_type AddUninitialized(size_type& increase_size);
@@ -847,6 +845,12 @@ void Array<T, Allocator>::MoveAssign(Array& right, std::false_type) noexcept
     my_val.capacity = right_val.capacity;
     right_val.ptr = 0;
     right_val.size = right_val.capacity = 0;
+}
+
+template<typename T, typename Allocator>
+constexpr Array<T, Allocator>::size_type Array<T, Allocator>::GetInitializeCapacity() const
+{
+    return math::Min(math::Max(size_type(4), allocator_traits::get_initialize_size(pair_.First())), MaxSize());
 }
 
 template<typename T, typename Allocator>

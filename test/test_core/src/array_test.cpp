@@ -86,8 +86,8 @@ TEST(ArrayAdd, ArrayTest)
     {
         Array<PodStruct> array;
         PodStruct elem{};
-        EXPECT_TRUE(array.Add(elem) == 0 && array.Size() == 1 && array.Capacity() == 1);
-        EXPECT_TRUE(array.Add({1}) == 1 && array.Size() == 2 && array.Capacity() == 2);
+        EXPECT_TRUE(array.Add(elem) == 0 && array.Size() == 1);
+        EXPECT_TRUE(array.Add({1}) == 1 && array.Size() == 2);
 
         PodStruct elems[2] = {{2}, {3}};
         EXPECT_TRUE(array.Append(elems) == 2 && array.Size() == 4 && array.Capacity() == 4);

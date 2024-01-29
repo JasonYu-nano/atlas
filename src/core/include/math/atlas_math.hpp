@@ -20,14 +20,14 @@ T Align(T value, uint64 alignment)
 }
 
 template<typename T>
-T Max(const T a, const T b)
+constexpr T Max(const T a, const T b)
 {
     static_assert(std::is_arithmetic_v<T>, "max expects an arithmetic type");
     return (a >= b) ? a : b;
 }
 
 template<typename T>
-T Min(const T a, const T b)
+constexpr T Min(const T a, const T b)
 {
     static_assert(std::is_arithmetic_v<T>, "max expects an arithmetic type");
     return (a <= b) ? a : b;
