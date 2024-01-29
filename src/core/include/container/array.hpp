@@ -248,9 +248,9 @@ private:
     val_type& GetVal() { return pair_.Second(); }
     const val_type& GetVal() const { return pair_.Second(); }
 
-    template<std::forward_iterator InputIter, std::output_iterator<value_type> OutputIter>
+    template<std::forward_iterator InputIter, std::output_iterator<T> OutputIter>
     void MoveToUninitialized(InputIter first, InputIter last, OutputIter dest);
-    template<std::forward_iterator InputIter, std::output_iterator<value_type> OutputIter>
+    template<std::forward_iterator InputIter, std::output_iterator<T> OutputIter>
     void CopyToUninitialized(InputIter first, InputIter last, OutputIter dest);
     template<typename Iter>
     void InsertCountedRange(const_iterator where, Iter first, size_type count, bool move_assign = false);
