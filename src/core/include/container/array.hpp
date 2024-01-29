@@ -24,12 +24,6 @@ struct ArrayVal
     SizeType capacity{ 0 };
     ValueType* ptr{ nullptr };
 };
-
-template <typename RangeType>
-concept ArrayRangeType = std::ranges::contiguous_range<RangeType> && requires (RangeType rng)
-{
-    rng.data();
-};
 }
 
 template<typename T, typename Allocator = StandardAllocator<size_t>>
@@ -63,8 +57,9 @@ public:
     {
         Reserve(math::Max(capacity, GetInitializeCapacity()));
     }
-    explicit Array(std::span<value_type> span, const allocator_type& alloc = allocator_type()) : pair_(alloc) { Construct(span); }
     Array(const std::initializer_list<value_type>& initializer, const allocator_type& alloc = allocator_type()) : pair_(alloc) { Construct(initializer); }
+    template<std::ranges::forward_range RangeType>
+    explicit Array(const RangeType& range, const allocator_type& alloc = allocator_type()) : pair_(alloc) { Construct(range); }
     Array(const_param_type value, size_type count, const allocator_type& alloc = allocator_type()) : pair_(alloc) { Construct(value, count); }
     Array(const Array& right) : pair_(allocator_traits::select_on_container_copy_construction(right.GetAlloc())) { Construct(right); }
     Array(Array&& right) noexcept
@@ -73,7 +68,7 @@ public:
         , std::exchange(right.GetVal().capacity, 0)
         , std::exchange(right.GetVal().ptr, nullptr) })
     {}
-    ~Array();
+    ~Array() noexcept { Clear(true); }
 
     Array& operator= (const Array& right)
     {
@@ -120,6 +115,14 @@ public:
     NODISCARD DO_NOT_USE_DIRECTLY pointer data() { return GetVal().ptr; }
     NODISCARD DO_NOT_USE_DIRECTLY const_pointer data() const { return GetVal().ptr; }
 
+    NODISCARD size_type LastIndex() const
+    {
+        ASSERT(Size() > 0);
+        return Size() - 1;
+    }
+    NODISCARD reference Last() { return Data()[LastIndex()]; }
+    NODISCARD const_reference Last() const { return Data()[LastIndex()]; }
+
     NODISCARD size_type Capacity() const { return GetVal().capacity; }
     NODISCARD bool Empty() const { return Size() <= 0; }
     NODISCARD bool IsValidIndex(size_type index) const { return index >= 0 && index < Size(); }
@@ -140,22 +143,21 @@ public:
     template<typename... Args>
     size_type Emplace(Args&&... args);
 
-    size_type Append(std::span<value_type> elems);
-    template<details::ArrayRangeType RangeType>
+    template<std::ranges::forward_range RangeType>
     size_type Append(const RangeType& others);
     template<typename AllocatorType>
     size_type Append(Array<value_type, AllocatorType>&& others);
 
-    void Insert(const const_iterator& where, const param_type elem)
+    void Insert(const_iterator where, const param_type elem)
     {
         InsertCountedRange(where, &elem, 1);
     }
-    void Insert(const const_iterator& where, value_type&& elem)
+    void Insert(const_iterator where, value_type&& elem)
     {
         InsertCountedRange(where, &elem, 1, true);
     }
     template<std::ranges::range RangeType>
-    void Insert(const const_iterator& where, const RangeType& elems)
+    void Insert(const_iterator where, const RangeType& elems)
     {
         if constexpr (std::ranges::sized_range<RangeType> || std::ranges::forward_range<RangeType>)
         {
@@ -163,42 +165,46 @@ public:
         }
     }
     template<typename AllocatorType>
-    void Insert(const const_iterator& where, Array<value_type, AllocatorType>&& elems)
+    void Insert(const_iterator where, Array<value_type, AllocatorType>&& elems)
     {
         InsertCountedRange(where, elems.begin(), elems.Size(), true);
     }
 
-    void Remove(const param_type elem)
+    size_type Remove(const param_type elem)
     {
         size_type index = Find(elem);
         if (index != INDEX_NONE)
         {
             RemoveAt(cbegin() + index);
         }
+        return index;
     }
-    void Remove(const std::function<bool(const param_type)>& predicate)
+    size_type Remove(const std::function<bool(const param_type)>& predicate)
     {
         size_type index = Find(predicate);
         if (index != INDEX_NONE)
         {
             RemoveAt(cbegin() + index);
         }
+        return index;
     }
-    void RemoveSwap(const param_type elem)
+    size_type RemoveSwap(const param_type elem)
     {
         size_type index = Find(elem);
         if (index != INDEX_NONE)
         {
             RemoveAtSwap(cbegin() + index);
         }
+        return index;
     }
-    void RemoveSwap(const std::function<bool(const param_type)>& predicate)
+    size_type RemoveSwap(const std::function<bool(const param_type)>& predicate)
     {
         size_type index = Find(predicate);
         if (index != INDEX_NONE)
         {
             RemoveAtSwap(cbegin() + index);
         }
+        return index;
     }
     size_type RemoveAll(const param_type elem)
     {
@@ -210,11 +216,27 @@ public:
         return RemoveAllSwap([&elem](const param_type value) { return value == elem; });
     }
     size_type RemoveAllSwap(const std::function<bool(const param_type)>& predicate);
+    iterator RemoveAt(size_type where)
+    {
+        return RemoveAt(begin() + where, 1);
+    }
+    iterator RemoveAt(size_type where, size_type count)
+    {
+        return RemoveAt(begin() + where, count);
+    }
     iterator RemoveAt(const_iterator where)
     {
         return RemoveAt(where, 1);
     }
     iterator RemoveAt(const_iterator where, size_type count);
+    iterator RemoveAtSwap(size_type where)
+    {
+        return RemoveAtSwap(begin() + where, 1);
+    }
+    iterator RemoveAtSwap(size_type where, size_type count)
+    {
+        return RemoveAtSwap(begin() + where, count);
+    }
     iterator RemoveAtSwap(const_iterator where)
     {
         return RemoveAtSwap(where, 1);
@@ -261,8 +283,6 @@ private:
     template<std::ranges::forward_range RangeType>
     void Construct(const RangeType& range);
     void Construct(const_param_type value, size_type count);
-    template<std::ranges::sized_range RangeType>
-    void MoveConstruct(const RangeType& range);
 
     void CopyAssignAllocator(const allocator_type& alloc);
     void MoveAssignAllocator(allocator_type& alloc) noexcept(std::is_nothrow_move_assignable_v<allocator_type>);
@@ -297,24 +317,6 @@ template<typename T, size_t N>
 using FixedArray = Array<T, FixedAllocator<size_t, N>>;
 
 template<typename T, typename Allocator>
-Array<T, Allocator>::~Array()
-{
-    auto&& my_val = GetVal();
-    if (my_val.size > 0)
-    {
-        std::destroy(my_val.ptr, my_val.ptr + my_val.size);
-    }
-
-    if (my_val.capacity > 0)
-    {
-        allocator_traits::deallocate(GetAlloc(), my_val.ptr, my_val.capacity);
-    }
-    my_val.ptr = nullptr;
-    my_val.size = 0;
-    my_val.capacity = 0;
-}
-
-template<typename T, typename Allocator>
 template<typename... Args>
 Array<T, Allocator>::size_type Array<T, Allocator>::Emplace(Args&& ... args)
 {
@@ -328,43 +330,22 @@ Array<T, Allocator>::size_type Array<T, Allocator>::Emplace(Args&& ... args)
 }
 
 template<typename T, typename Allocator>
-Array<T, Allocator>::size_type Array<T, Allocator>::Append(std::span<value_type> elems)
-{
-    size_type increase_size = ConvertSize(elems.size());
-    size_type index = AddUninitialized(increase_size);
-    if constexpr (std::is_trivially_copyable<value_type>::value)
-    {
-        std::memmove(Data() + index, elems.data(), increase_size * sizeof(value_type));
-    }
-    else
-    {
-        pointer ptr = Data() + index;
-        pointer source = elems.data();
-        for (size_type i = 0; i < increase_size; ++i)
-        {
-            new (ptr + i) value_type(source[i]);
-        }
-    }
-    return index;
-}
-
-template<typename T, typename Allocator>
-template<details::ArrayRangeType RangeType>
+template<std::ranges::forward_range RangeType>
 Array<T, Allocator>::size_type Array<T, Allocator>::Append(const RangeType& others)
 {
-    size_type increase_size = others.size();
+    size_type increase_size = ConvertSize(std::ranges::distance(others));
     size_type index = AddUninitialized(increase_size);
     if constexpr (std::is_trivially_copyable<value_type>::value)
     {
-        std::memmove(Data() + index, others.data(), increase_size * sizeof(value_type));
+        std::memmove(Data() + index, std::to_address(std::ranges::begin(others)), increase_size * sizeof(value_type));
     }
     else
     {
         pointer ptr = Data() + index;
-        const_pointer source = others.data();
-        for (size_type i = 0; i < increase_size; ++i)
+        auto&& it = std::ranges::begin(others);
+        for (size_type i = 0; i < increase_size; ++i, ++it)
         {
-            new (ptr + i) value_type(source[i]);
+            new (ptr + i) value_type(*it);
         }
     }
 
@@ -728,7 +709,7 @@ template<std::ranges::forward_range RangeType>
 void Array<T, Allocator>::Construct(const RangeType& range)
 {
     size_type size = std::ranges::distance(range);
-    Reserve(size);
+    Reserve(math::Max(size, GetInitializeCapacity()));
     CopyToUninitialized(std::ranges::begin(range), std::ranges::end(range), end());
     GetVal().size = size;
 }
@@ -736,9 +717,9 @@ void Array<T, Allocator>::Construct(const RangeType& range)
 template<typename T, typename Allocator>
 void Array<T, Allocator>::Construct(const_param_type value, size_type count)
 {
+    Reserve(math::Max(count, GetInitializeCapacity()));
     if (count > 0)
     {
-        Reserve(count);
         auto&& my_val = GetVal();
         auto&& alloc = GetAlloc();
         for (int32 i = 0; i < count; ++i)
@@ -748,16 +729,6 @@ void Array<T, Allocator>::Construct(const_param_type value, size_type count)
 
         my_val.size = count;
     }
-}
-
-template<typename T, typename Allocator>
-template<std::ranges::sized_range RangeType>
-void Array<T, Allocator>::MoveConstruct(const RangeType& range)
-{
-    size_type size = range.size();
-    Reserve(size);
-    MoveToUninitialized(range.begin(), range.end(), Data());
-    GetVal().size = size;
 }
 
 template<typename T, typename Allocator>
@@ -800,7 +771,7 @@ void Array<T, Allocator>::CopyAssign(const RangeType& range)
         bool growing = false;
         auto&& first = std::ranges::begin(range);
         auto&& last = std::ranges::end(range);
-        auto&& mid = last;
+        auto mid = last;
         if (new_size > my_val.size)
         {
             growing = true;

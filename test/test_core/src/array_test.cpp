@@ -4,7 +4,6 @@
 #include "gtest/gtest.h"
 
 #include "container/array.hpp"
-#include "boost/container/small_vector.hpp"
 
 namespace atlas::test
 {
@@ -173,7 +172,7 @@ TEST(ArrayRemove, ArrayTest)
 {
     {
         Array<int32> array = { 1, 2, 3, 4, 5 };
-        auto ret = array.RemoveAt(array.cbegin() + 1);
+        auto ret = array.RemoveAt(1);
         EXPECT_TRUE(*ret == 3 && array.Size() == 4);
     }
     {
