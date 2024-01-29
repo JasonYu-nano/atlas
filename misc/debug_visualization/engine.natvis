@@ -10,4 +10,17 @@
         <StringView Condition="pair_.second_.capacity_ &gt;= pair_.second_.size_ &amp;&amp; pair_.second_.capacity_ &lt; 16">(const unsigned char*)pair_.second_.u_.buffer_,su</StringView>
         <StringView Condition="pair_.second_.capacity_ &gt;= pair_.second_.size_ &amp;&amp; pair_.second_.capacity_ &gt;= 16">(const unsigned char*)pair_.second_.u_.ptr_,su</StringView>
     </Type>
+    <!-- Array visualizer -->
+    <Type Name="atlas::Array&lt;*,*&gt;">
+        <DisplayString Condition="pair_.second_.size == 0">empty</DisplayString>
+        <DisplayString Condition="pair_.second_.size &lt; 0">invalid</DisplayString>
+        <DisplayString Condition="pair_.second_.capacity &lt; pair_.second_.size">invalid</DisplayString>
+        <DisplayString Condition="pair_.second_.capacity &gt;= pair_.second_.size">size={pair_.second_.size} capacity={pair_.second_.capacity}</DisplayString>
+        <Expand>
+            <ArrayItems Condition="pair_.second_.size &lt;= pair_.second_.capacity">
+                <Size>pair_.second_.size</Size>
+                <ValuePointer>($T1*)pair_.second_.ptr</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
 </AutoVisualizer>

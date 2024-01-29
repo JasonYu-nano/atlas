@@ -203,10 +203,16 @@ public:
             RemoveAtSwap(cbegin() + index);
         }
     }
-    void RemoveAll(const param_type elem);
-    void RemoveAll(const std::function<bool(const param_type)>& predicate);
-    void RemoveAllSwap(const param_type elem);
-    void RemoveAllSwap(const std::function<bool(const param_type)>& predicate);
+    size_type RemoveAll(const param_type elem)
+    {
+        return RemoveAll([&elem](const param_type value) { return value == elem; });
+    }
+    size_type RemoveAll(const std::function<bool(const param_type)>& predicate);
+    size_type RemoveAllSwap(const param_type elem)
+    {
+        return RemoveAllSwap([&elem](const param_type value) { return value == elem; });
+    }
+    size_type RemoveAllSwap(const std::function<bool(const param_type)>& predicate);
     iterator RemoveAt(const_iterator where)
     {
         return RemoveAt(where, 1);
@@ -390,6 +396,78 @@ Array<T, Allocator>::size_type Array<T, Allocator>::Append(Array<value_type, All
     other_val.size = 0;
 
     return index;
+}
+
+template<typename T, typename Allocator>
+Array<T, Allocator>::size_type Array<T, Allocator>::RemoveAll(const std::function<bool(const param_type)>& predicate)
+{
+    auto&& my_val = GetVal();
+    size_type num_of_matches = 0;
+    if (my_val.size > 0)
+    {
+        pointer read = my_val.ptr;
+        pointer write = read;
+        pointer last = my_val.ptr + my_val.size;
+        bool not_match = !predicate(*read);
+        do
+        {
+            pointer start = read++;
+            while (read < last && not_match == !predicate(*read))
+            {
+                ++read;
+            }
+
+            if (not_match)
+            {
+                if (write != start)
+                {
+                    std::move(start, read, write);
+                }
+                write += (read - start);
+            }
+            else
+            {
+                num_of_matches += read - start;
+            }
+            not_match = !not_match;
+        }
+        while (read < last);
+
+        if (num_of_matches > 0)
+        {
+            std::destroy(last - num_of_matches, last);
+            my_val.size -= num_of_matches;
+        }
+    }
+
+    return num_of_matches;
+}
+
+template<typename T, typename Allocator>
+Array<T, Allocator>::size_type Array<T, Allocator>::RemoveAllSwap(const std::function<bool(const param_type)>& predicate)
+{
+    size_type num_of_matches = 0;
+    if (Size() > 0)
+    {
+        const_iterator read = cbegin();
+        const_iterator last = cend();
+
+        while (read < last)
+        {
+            if (predicate(*read))
+            {
+                RemoveAtSwap(read);
+                ++num_of_matches;
+                --last;
+            }
+            else
+            {
+                ++read;
+            }
+        }
+    }
+
+    return num_of_matches;
 }
 
 template<typename T, typename Allocator>

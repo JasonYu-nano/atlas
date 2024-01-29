@@ -191,6 +191,16 @@ TEST(ArrayRemove, ArrayTest)
         auto ret = array.RemoveAtSwap(array.cbegin() + 1);
         EXPECT_TRUE(*ret == 5 && array.Size() == 4);
     }
+    {
+        Array<int32> array = { 1, 2, 3, 3, 5, 3, 6, 3 };
+        auto ret = array.RemoveAll(3);
+        EXPECT_TRUE(ret == 4 && array[2] == 5 && array[3] == 6);
+    }
+    {
+        Array<int32> array = { 1, 2, 3, 3, 5, 3, 6, 3 };
+        auto ret = array.RemoveAllSwap(3);
+        EXPECT_TRUE(ret == 4 && array[2] == 6 && array[3] == 5);
+    }
 }
 
 }
