@@ -152,19 +152,19 @@ TEST(ArrayInsert, ArrayTest)
     {
         Array<int32> array = { 1, 2, 3, 4, 5 };
         int32 insert[3] = {0, 0, 0};
-        array.Insert(array.cbegin() + 2, insert);
+        array.Insert(array.begin() + 2, insert);
         EXPECT_TRUE(array[1] == 2 && array[2] == 0 && array[4] == 0 && array[5] == 3);
     }
     {
         Array<int32> array = { 1, 2, 3, 4, 5 };
         Array<int32> insert = { 0, 0, 0 };
-        array.Insert(array.cbegin() + 2, insert);
+        array.Insert(array.begin() + 2, insert);
         EXPECT_TRUE(array[1] == 2 && array[2] == 0 && array[4] == 0 && array[5] == 3);
     }
     {
         Array<int32> array = { 1, 2, 3, 4, 5 };
         Array<int32> insert = { 0, 0, 0 };
-        array.Insert(array.cbegin() + 2, std::move(insert));
+        array.Insert(array.begin() + 2, std::move(insert));
         EXPECT_TRUE(array[1] == 2 && array[2] == 0 && array[4] == 0 && array[5] == 3);
     }
 }

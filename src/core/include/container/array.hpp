@@ -46,8 +46,8 @@ public:
     using const_reference = CallTraits<value_type>::const_reference;
     using param_type = CallTraits<value_type>::param_type;
     using const_param_type = const param_type;
-    using iterator = PointerIterator<pointer>;
-    using const_iterator = PointerIterator<const_pointer>;
+    using iterator = PointerIterator<value_type>;
+    using const_iterator = ConstPointerIterator<value_type>;
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 

@@ -136,8 +136,8 @@ public:
     using view_type = std::basic_string_view<char8_t>;
     using pointer = value_type*;
     using const_pointer = const value_type*;
-    using iterator = PointerIterator<pointer>;
-    using const_iterator = PointerIterator<const_pointer>;
+    using iterator = PointerIterator<value_type>;
+    using const_iterator = ConstPointerIterator<value_type>;
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 

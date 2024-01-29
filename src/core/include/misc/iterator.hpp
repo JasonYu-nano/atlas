@@ -10,57 +10,88 @@
 namespace atlas
 {
 
-template<typename Iter>
-class PointerIterator
+template<typename T>
+class ConstPointerIterator
 {
 public:
-    typedef Iter                                                            iterator_type;
-    typedef typename std::iterator_traits<iterator_type>::value_type        value_type;
-    typedef typename std::iterator_traits<iterator_type>::difference_type   difference_type;
-    typedef typename std::iterator_traits<iterator_type>::pointer           pointer;
-    typedef typename std::iterator_traits<iterator_type>::reference         reference;
-    typedef const reference                                                 const_reference;
-    typedef typename std::iterator_traits<iterator_type>::iterator_category iterator_category;
-    typedef std::contiguous_iterator_tag                                    iterator_concept;
+    typedef std::remove_cvref<T>::type                              value_type;
+    typedef ptrdiff_t                                               difference_type;
+    typedef const value_type*                                       pointer;
+    typedef const value_type&                                       reference;
+    typedef std::contiguous_iterator_tag                            iterator_category;
+    typedef std::contiguous_iterator_tag                            iterator_concept;
 
-    PointerIterator() : it_(Iter()) {}
-    explicit PointerIterator(const Iter& it) : it_(it) {}
-    PointerIterator(const PointerIterator& right) = default;
+    ConstPointerIterator() : it_(nullptr) {}
+    explicit ConstPointerIterator(pointer it) : it_(it) {}
+    ConstPointerIterator(const ConstPointerIterator& right) = default;
 
-    reference       operator*   () const { return *it_; }
+    reference               operator*   () const { return *it_; }
+    pointer                 operator->  () const { return std::to_address(it_); }
+    ConstPointerIterator&   operator++  () { ++it_; return *this; }
+    ConstPointerIterator    operator++  (int32) { ConstPointerIterator temp = *this; ++(*this); return temp; }
+    ConstPointerIterator&   operator--  () { --it_; return *this; }
+    ConstPointerIterator    operator--  (int32) { ConstPointerIterator temp = *this; --(*this); return temp; }
+    ConstPointerIterator    operator+   (difference_type n) const { ConstPointerIterator temp = *this; temp.it_ += n; return temp; }
+    friend ConstPointerIterator operator+(difference_type n, ConstPointerIterator it) noexcept { it += n; return it; }
+    ConstPointerIterator&   operator+=  (difference_type n) { it_ += n; return *this; }
+    ConstPointerIterator    operator-   (difference_type n) const { ConstPointerIterator temp = *this; temp.it_ -= n; return temp; }
+    friend ConstPointerIterator operator-(difference_type n, ConstPointerIterator it) noexcept { it -= n; return it; }
+    ConstPointerIterator&   operator-=  (difference_type n) { it_ -= n; return *this; }
 
-    pointer         operator->  () const { return std::to_address(it_); }
+    reference       operator[]  (difference_type n) const { return it_[n]; }
 
-    PointerIterator&   operator++  () { ++it_; return *this; }
-
-    PointerIterator    operator++  (int32) const { PointerIterator temp = *this; ++(*this); return temp; }
-
-    PointerIterator&   operator--  () { --it_; return *this; }
-    PointerIterator    operator--  (int32) const { PointerIterator temp = *this; --(*this); return temp; }
-
-    PointerIterator    operator+   (difference_type n) const { PointerIterator temp = *this; temp.it_ += n; return temp; }
-    friend PointerIterator operator+(difference_type n, PointerIterator it) noexcept { it += n; return it; }
-    PointerIterator&   operator+=  (difference_type n) { it_ += n; return *this; }
-
-    PointerIterator    operator-   (difference_type n) const { PointerIterator temp = *this; temp.it_ -= n; return temp; }
-    friend PointerIterator operator-(difference_type n, PointerIterator it) noexcept { it -= n; return it; }
-    PointerIterator&   operator-=  (difference_type n) { it_ -= n; return *this; }
-
-    reference       operator[]  (difference_type n) { return it_[n]; }
-    const_reference operator[]  (difference_type n) const { return it_[n]; }
-
-    bool            operator==  (const PointerIterator& right) const { return it_ == right.it_; }
-    bool            operator!=  (const PointerIterator& right) const { return it_ != right.it_; }
-    bool            operator<   (const PointerIterator& right) const { return it_ < right.it_; }
-    bool            operator>   (const PointerIterator& right) const { return it_ > right.it_; }
-    bool            operator<=  (const PointerIterator& right) const { return !(it_ > right.it_); }
-    bool            operator>=  (const PointerIterator& right) const { return !(it_ < right.it_); }
-    difference_type operator-   (const PointerIterator& right) const { return it_ - right.it_; }
+    bool            operator==  (const ConstPointerIterator& right) const { return it_ == right.it_; }
+    bool            operator!=  (const ConstPointerIterator& right) const { return it_ != right.it_; }
+    bool            operator<   (const ConstPointerIterator& right) const { return it_ < right.it_; }
+    bool            operator>   (const ConstPointerIterator& right) const { return it_ > right.it_; }
+    bool            operator<=  (const ConstPointerIterator& right) const { return it_ <= right.it_; }
+    bool            operator>=  (const ConstPointerIterator& right) const { return it_ >= right.it_; }
+    difference_type operator-   (const ConstPointerIterator& right) const { return it_ - right.it_; }
 
     pointer GetPointer() { return std::to_address(it_); }
 
-private:
-    iterator_type it_;
+protected:
+    pointer it_;
+};
+
+template<typename T>
+class PointerIterator : public ConstPointerIterator<T>
+{
+    using Super = ConstPointerIterator<T>;
+public:
+    typedef typename Super::value_type          value_type;
+    typedef typename Super::difference_type     difference_type;
+    typedef value_type*                         pointer;
+    typedef value_type&                         reference;
+    typedef typename Super::iterator_category   iterator_category;
+    typedef typename Super::iterator_concept    iterator_concept;
+
+    PointerIterator() : Super() {}
+    explicit PointerIterator(pointer it) : Super(it) {}
+    PointerIterator(const PointerIterator& right) = default;
+
+    // NOLINTBEGIN()
+    reference           operator*   () const { return const_cast<reference>(Super::operator*()); }
+    pointer             operator->  () const { return const_cast<pointer>(Super::operator->()); }
+    PointerIterator&    operator++  () { Super::operator++(); return *this; }
+    PointerIterator     operator++  (int32) { PointerIterator temp = *this; Super::operator++(); return temp; }
+    PointerIterator&    operator--  () { Super::operator--(); return *this; }
+    PointerIterator     operator--  (int32) { PointerIterator temp = *this; Super::operator--(); return temp; }
+    PointerIterator     operator+   (difference_type n) const { PointerIterator temp = *this; temp += n; return temp; }
+    friend PointerIterator operator+(difference_type n, PointerIterator it) noexcept { it += n; return it; }
+    PointerIterator&    operator+=  (difference_type n) { Super::operator+=(n); return *this; }
+    PointerIterator     operator-   (difference_type n) const { PointerIterator temp = *this; temp -= n; return temp; }
+    friend PointerIterator operator-(difference_type n, PointerIterator it) noexcept { it -= n; return it; }
+    PointerIterator&    operator-=  (difference_type n) { Super::operator-=(n); return *this; }
+    reference           operator[]  (difference_type n) const { return const_cast<reference>(Super::operator[]); }
+    // NOLINTEND()
+    bool            operator==  (const PointerIterator& right) const { return Super::operator==(right); }
+    bool            operator!=  (const PointerIterator& right) const { return Super::operator!=(right); }
+    bool            operator<   (const PointerIterator& right) const { return Super::operator<(right); }
+    bool            operator>   (const PointerIterator& right) const { return Super::operator>(right); }
+    bool            operator<=  (const PointerIterator& right) const { return Super::operator<=(right); }
+    bool            operator>=  (const PointerIterator& right) const { return Super::operator>=(right); }
+    difference_type operator-   (const PointerIterator& right) const { return Super::operator-(right); }
 };
 
 }
