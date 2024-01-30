@@ -78,6 +78,12 @@ TEST(ArrayAssign, ArrayTest)
         array = std::move(array_2);
         EXPECT_TRUE(array.Size() == 3 && array[2] == 5 && array_2.Size() == 0 && array_2.Data() == nullptr);
     }
+    {
+        Array<PodStruct> array = { {1}, {2} };
+        InlineArray<PodStruct, 10> array_2 = { {3}, {4}, {5} };
+        array = std::move(array_2);
+        EXPECT_TRUE(array.Size() == 3 && array[2] == 5 && array_2.Size() == 3);
+    }
 }
 
 TEST(ArrayAdd, ArrayTest)

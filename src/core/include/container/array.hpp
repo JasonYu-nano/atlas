@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <span>
 #include <type_traits>
 
 #include "memory/allocator.hpp"
@@ -49,19 +48,53 @@ private:
     using val_type = details::ArrayVal<value_type, size_type>;
 
 public:
+    /**
+     * @brief Constructor.
+     * @param alloc
+     */
     explicit Array(const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
         Reserve(GetInitializeCapacity());
     }
+    /**
+     * @brief Constructor, initialize with given capacity.
+     * @param capacity
+     * @param alloc
+     */
     explicit Array(size_type capacity, const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
         Reserve(math::Max(capacity, GetInitializeCapacity()));
     }
+    /**
+     * @brief Constructor from an initializer
+     * @param initializer
+     * @param alloc
+     */
     Array(const std::initializer_list<value_type>& initializer, const allocator_type& alloc = allocator_type()) : pair_(alloc) { Construct(initializer); }
+    /**
+     * @brief Constructor from a range
+     * @tparam RangeType
+     * @param range
+     * @param alloc
+     */
     template<std::ranges::forward_range RangeType>
     explicit Array(const RangeType& range, const allocator_type& alloc = allocator_type()) : pair_(alloc) { Construct(range); }
+    /**
+     * @brief Constructor from given number elements.
+     * @param value
+     * @param count
+     * @param alloc
+     */
     Array(const_param_type value, size_type count, const allocator_type& alloc = allocator_type()) : pair_(alloc) { Construct(value, count); }
+    /**
+     * @brief Copy constructor.
+     * @param right
+     */
     Array(const Array& right) : pair_(allocator_traits::select_on_container_copy_construction(right.GetAlloc())) { Construct(right); }
+    /**
+     * @brief Move constructor.
+     * @param right
+     */
     Array(Array&& right) noexcept
         : pair_(std::move(right.GetAlloc())
         , { std::exchange(right.GetVal().size, 0)
@@ -79,6 +112,7 @@ public:
         }
         return *this;
     }
+
     Array& operator= (Array&& right) noexcept
     {
         if (this != std::addressof(right))
@@ -88,74 +122,177 @@ public:
         }
         return *this;
     }
-    template<typename AllocatorType>
-    Array& operator= (const Array<value_type, AllocatorType>& right);
-    template<typename AllocatorType>
-    Array& operator= (const Array<value_type, AllocatorType>&& right);
 
+    template<typename AllocatorType>
+    Array& operator= (const Array<value_type, AllocatorType>& right)
+    {
+        CopyAssign(right);
+        return *this;
+    }
+
+    template<typename AllocatorType>
+    Array& operator= (const Array<value_type, AllocatorType>&& right)
+    {
+        MoveAssign(right);
+        return *this;
+    }
+    /**
+     * @brief Get reference to element at given index.
+     * @param index
+     * @return
+     */
     NODISCARD reference operator[] (size_type index)
     {
         ASSERT(IsValidIndex(index));
         return Data()[index];
     }
+    /**
+     * @brief Get const reference to element at given index.
+     * @param index
+     * @return
+     */
     NODISCARD const_reference operator[] (size_type index) const
     {
         ASSERT(IsValidIndex(index));
         return Data()[index];
     }
-
+    /**
+     * @brief Get number of elements in array.
+     * @return
+     */
     NODISCARD size_type Size() const { return GetVal().size; }
     NODISCARD DO_NOT_USE_DIRECTLY size_type size() const { return Size(); }
-
+    /**
+     * @brief Get maximum number of elements in array.
+     * @return
+     */
     NODISCARD constexpr size_type MaxSize() const { return allocator_traits::max_size(GetAlloc()); }
     NODISCARD DO_NOT_USE_DIRECTLY constexpr size_type max_size() const { return MaxSize(); }
-
+    /**
+     * @brief Returns pointer to the first array element.
+     * @return
+     */
     NODISCARD pointer Data() { return GetVal().ptr; }
+    /**
+     * @brief Returns const pointer to the first array element.
+     * @return
+     */
     NODISCARD const_pointer Data() const { return GetVal().ptr; }
     NODISCARD DO_NOT_USE_DIRECTLY pointer data() { return GetVal().ptr; }
     NODISCARD DO_NOT_USE_DIRECTLY const_pointer data() const { return GetVal().ptr; }
-
+    /**
+     * @brief Get last index of array.
+     * @return
+     */
     NODISCARD size_type LastIndex() const
     {
         ASSERT(Size() > 0);
         return Size() - 1;
     }
-    NODISCARD reference Last() { return Data()[LastIndex()]; }
-    NODISCARD const_reference Last() const { return Data()[LastIndex()]; }
-
+    /**
+     * @brief Get n-th last element from the array.
+     * @return
+     */
+    NODISCARD reference Last(size_type index_from_end = 0) { return Data()[LastIndex() - index_from_end]; }
+    /**
+     * @brief Get n-th last element from the array.
+     * @return
+     */
+    NODISCARD const_reference Last(size_type index_from_end = 0) const { return Data()[LastIndex() - index_from_end]; }
+    /**
+     * @brief Get capacity of array
+     * @return
+     */
     NODISCARD size_type Capacity() const { return GetVal().capacity; }
-    NODISCARD bool Empty() const { return Size() <= 0; }
+    /**
+     * @brief Returns true if the array is empty and contains no elements.
+     * @return
+     */
+    NODISCARD bool IsEmpty() const { return Size() <= 0; }
+    /**
+     * @brief Tests if index is valid.
+     * @return
+     */
     NODISCARD bool IsValidIndex(size_type index) const { return index >= 0 && index < Size(); }
-
+    /**
+     * @brief Copies a new element to the end of the array, possibly reallocating the whole array to fit.
+     * @param elem
+     * @return Index to the new element
+     */
     size_type Add(const param_type elem) { return Emplace(elem); }
+    /**
+     * @brief Moves a new element to the end of the array, possibly reallocating the whole array to fit.
+     * @param elem
+     * @return Index to the new element
+     */
     size_type Add(value_type&& elem) { return Emplace(elem); }
+    /**
+     * @brief Copies unique element to array if it doesn't exist.
+     * @param elem
+     * @return Index to the element
+     */
     size_type AddUnique(const param_type elem)
     {
         size_type index = Find(elem);
         return index != INDEX_NONE ? index : Emplace(elem);
     }
+    /**
+     * @brief Moves unique element to array if it doesn't exist.
+     * @param elem
+     * @return Index to the element
+     */
     size_type AddUnique(value_type&& elem)
     {
         size_type index = Find(elem);
         return index != INDEX_NONE ? index : Emplace(std::forward<value_type>(elem));
     }
-
+    /**
+     * @brief Constructs a new item at the end of the array, possibly reallocating the whole array to fit.
+     * @tparam Args
+     * @param args
+     * @return Index to the new element
+     */
     template<typename... Args>
     size_type Emplace(Args&&... args);
-
+    /**
+     * @brief Appends a range of elements to this array.
+     * @tparam RangeType
+     * @param others
+     * @return Index to the first append element
+     */
     template<std::ranges::forward_range RangeType>
     size_type Append(const RangeType& others);
+    /**
+     * @brief Appends a range of elements to this array.
+     * @tparam AllocatorType
+     * @param others
+     * @return Index to the first append element
+     */
     template<typename AllocatorType>
     size_type Append(Array<value_type, AllocatorType>&& others);
-
+    /**
+     * @brief Inserts given element into the array at given position.
+     * @param where
+     * @param elem
+     */
     void Insert(const_iterator where, const param_type elem)
     {
         InsertCountedRange(where, &elem, 1);
     }
+    /**
+     * @brief Inserts given element into the array at given position.
+     * @param where
+     * @param elem
+     */
     void Insert(const_iterator where, value_type&& elem)
     {
         InsertCountedRange(where, &elem, 1, true);
     }
+    /**
+     * @brief Inserts given elements into the array at given position.
+     * @param where
+     * @param elem
+     */
     template<std::ranges::range RangeType>
     void Insert(const_iterator where, const RangeType& elems)
     {
@@ -164,12 +301,21 @@ public:
             InsertCountedRange(where, std::ranges::begin(elems), std::ranges::distance(elems));
         }
     }
+    /**
+     * @brief Inserts other array into the array at given position.
+     * @param where
+     * @param elem
+     */
     template<typename AllocatorType>
     void Insert(const_iterator where, Array<value_type, AllocatorType>&& elems)
     {
         InsertCountedRange(where, elems.begin(), elems.Size(), true);
     }
-
+    /**
+     * @brief Removes first matched element in the array.
+     * @param elem
+     * @return Index of removed element
+     */
     size_type Remove(const param_type elem)
     {
         size_type index = Find(elem);
@@ -179,6 +325,11 @@ public:
         }
         return index;
     }
+    /**
+     * @brief Removes first matched element in the array.
+     * @param predicate
+     * @return Index of removed element
+     */
     size_type Remove(const std::function<bool(const param_type)>& predicate)
     {
         size_type index = Find(predicate);
@@ -188,6 +339,11 @@ public:
         }
         return index;
     }
+    /**
+     * @brief Removes first matched element in the array. It's faster than Remove but breaks the order
+     * @param elem
+     * @return Index of removed element
+     */
     size_type RemoveSwap(const param_type elem)
     {
         size_type index = Find(elem);
@@ -197,6 +353,11 @@ public:
         }
         return index;
     }
+    /**
+     * @brief Removes first matched element in the array. It's faster than Remove but breaks the order
+     * @param predicate
+     * @return Index of removed element
+     */
     size_type RemoveSwap(const std::function<bool(const param_type)>& predicate)
     {
         size_type index = Find(predicate);
@@ -206,50 +367,143 @@ public:
         }
         return index;
     }
+    /**
+     * @brief Removes all instances in the array that matched element.
+     * @param elem
+     * @return Numbers of removed elements
+     */
     size_type RemoveAll(const param_type elem)
     {
         return RemoveAll([&elem](const param_type value) { return value == elem; });
     }
+    /**
+     * @brief Removes all instances in the array that matched element.
+     * @param predicate
+     * @return Numbers of removed elements
+     */
     size_type RemoveAll(const std::function<bool(const param_type)>& predicate);
+    /**
+     * @brief Removes all instances in the array that matched element. It's faster than RemoveAll but breaks the order
+     * @param elem
+     * @return Numbers of removed elements
+     */
     size_type RemoveAllSwap(const param_type elem)
     {
         return RemoveAllSwap([&elem](const param_type value) { return value == elem; });
     }
+    /**
+     * @brief Removes all instances in the array that matched element. It's faster than RemoveAll but breaks the order
+     * @param predicate
+     * @return Numbers of removed elements
+     */
     size_type RemoveAllSwap(const std::function<bool(const param_type)>& predicate);
+    /**
+     * @brief Removes element at given position.
+     * @param where
+     * @return Next element iterator
+     */
     iterator RemoveAt(size_type where)
     {
         return RemoveAt(begin() + where, 1);
     }
+    /**
+     * @brief Removes multiple elements at given position.
+     * @param where
+     * @param count
+     * @return Next element iterator
+     */
     iterator RemoveAt(size_type where, size_type count)
     {
         return RemoveAt(begin() + where, count);
     }
+    /**
+     * @brief Removes element at given position.
+     * @param where
+     * @return Next element iterator
+     */
     iterator RemoveAt(const_iterator where)
     {
         return RemoveAt(where, 1);
     }
+    /**
+     * @brief Removes multiple elements at given position.
+     * @param where
+     * @param count
+     * @return Next element iterator
+     */
     iterator RemoveAt(const_iterator where, size_type count);
+    /**
+     * @brief Removes element at given position. It's faster than RemoveAt but breaks the order
+     * @param where
+     * @return Next element iterator
+     */
     iterator RemoveAtSwap(size_type where)
     {
         return RemoveAtSwap(begin() + where, 1);
     }
+    /**
+     * @brief Removes multiple elements at given position. It's faster than RemoveAt but breaks the order
+     * @param where
+     * @param count
+     * @return Next element iterator
+     */
     iterator RemoveAtSwap(size_type where, size_type count)
     {
         return RemoveAtSwap(begin() + where, count);
     }
+    /**
+     * @brief Removes element at given position. It's faster than RemoveAt but breaks the order
+     * @param where
+     * @return Next element iterator
+     */
     iterator RemoveAtSwap(const_iterator where)
     {
         return RemoveAtSwap(where, 1);
     }
+    /**
+     * @brief Removes multiple elements at given position. It's faster than RemoveAt but breaks the order
+     * @param where
+     * @param count
+     * @return Next element iterator
+     */
     iterator RemoveAtSwap(const_iterator where, size_type count);
-
+    /**
+     * @brief Finds element within the array.
+     * @param search
+     * @return Index of the found element. INDEX_NONE otherwise.
+     */
     NODISCARD size_type Find(const param_type search) const;
+    /**
+     * @brief Finds element within the array.
+     * @param predicate
+     * @return Index of the found element. INDEX_NONE otherwise.
+     */
     NODISCARD size_type Find(const std::function<bool(const param_type)>& predicate) const;
+    /**
+     * @brief Finds last element within the array.
+     * @param search
+     * @return Index of the found element. INDEX_NONE otherwise.
+     */
     NODISCARD size_type FindLast(const param_type search) const;
+    /**
+     * @brief Finds last element within the array.
+     * @param predicate
+     * @return Index of the found element. INDEX_NONE otherwise.
+     */
     NODISCARD size_type FindLast(const std::function<bool(const param_type)>& predicate) const;
-
+    /**
+     * @brief Reserves memory such that the array can contain at least number elements.
+     * @param capacity
+     */
     void Reserve(size_type capacity);
+    /**
+     * @brief Clear the array
+     * @param reset_capacity Deallocate the remain capacity. Default is false.
+     */
     void Clear(bool reset_capacity = false);
+    /**
+     * @brief Shrinks the array's used memory to smallest possible to store elements currently in it.
+     */
     void ShrinkToFit();
 
     NODISCARD iterator begin() { return iterator(Data()); }
@@ -288,6 +542,8 @@ private:
     void MoveAssignAllocator(allocator_type& alloc) noexcept(std::is_nothrow_move_assignable_v<allocator_type>);
     template<std::ranges::forward_range RangeType>
     void CopyAssign(const RangeType& range);
+    template<std::ranges::forward_range RangeType>
+    void MoveAssign(const RangeType& range) noexcept;
     void MoveAssign(Array& right, std::true_type) noexcept;
     void MoveAssign(Array& right, std::false_type) noexcept;
 
@@ -783,6 +1039,44 @@ void Array<T, Allocator>::CopyAssign(const RangeType& range)
         if (growing)
         {
             CopyToUninitialized(mid, last, next);
+        }
+        else
+        {
+            std::destroy(next, my_val.ptr + my_val.size);
+        }
+    }
+    my_val.size = new_size;
+}
+
+template<typename T, typename Allocator>
+template<std::ranges::forward_range RangeType>
+void Array<T, Allocator>::MoveAssign(const RangeType& range) noexcept
+{
+    auto&& my_val = GetVal();
+    size_type new_size = ConvertSize(std::ranges::distance(range));
+    if (new_size > my_val.capacity)
+    {
+        Clear();
+        Reallocate(my_val, CalculateGrowth(new_size));
+        MoveToUninitialized(std::ranges::begin(range), std::ranges::end(range), my_val.ptr);
+    }
+    else
+    {
+        bool growing = false;
+        auto&& first = std::ranges::begin(range);
+        auto&& last = std::ranges::end(range);
+        auto mid = last;
+        if (new_size > my_val.size)
+        {
+            growing = true;
+            mid = first;
+            std::ranges::advance(mid, my_val.size);
+        }
+
+        pointer next = std::move(first, mid, my_val.ptr);
+        if (growing)
+        {
+            MoveToUninitialized(mid, last, next);
         }
         else
         {
