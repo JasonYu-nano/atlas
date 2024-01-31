@@ -33,6 +33,7 @@ public:
     using allocator_type = Allocator::template Allocator<value_type>;
     using allocator_traits = AllocatorTraits<allocator_type>;
     using size_type = allocator_traits::size_type;
+    using difference_type = allocator_traits::difference_type;
     using pointer = value_type*;
     using const_pointer = const value_type*;
     using reference = CallTraits<value_type>::reference;
@@ -330,7 +331,8 @@ public:
      * @param predicate
      * @return Index of removed element
      */
-    size_type Remove(const std::function<bool(const param_type)>& predicate)
+    template<typename Predicate>
+    size_type Remove(const Predicate& predicate) requires std::predicate<Predicate, const param_type>
     {
         size_type index = Find(predicate);
         if (index != INDEX_NONE)
@@ -358,7 +360,8 @@ public:
      * @param predicate
      * @return Index of removed element
      */
-    size_type RemoveSwap(const std::function<bool(const param_type)>& predicate)
+    template<typename Predicate>
+    size_type RemoveSwap(const Predicate& predicate) requires std::predicate<Predicate, const param_type>
     {
         size_type index = Find(predicate);
         if (index != INDEX_NONE)
@@ -381,7 +384,8 @@ public:
      * @param predicate
      * @return Numbers of removed elements
      */
-    size_type RemoveAll(const std::function<bool(const param_type)>& predicate);
+    template<typename Predicate>
+    size_type RemoveAll(const Predicate& predicate) requires std::predicate<Predicate, const param_type>;
     /**
      * @brief Removes all instances in the array that matched element. It's faster than RemoveAll but breaks the order
      * @param elem
@@ -396,7 +400,8 @@ public:
      * @param predicate
      * @return Numbers of removed elements
      */
-    size_type RemoveAllSwap(const std::function<bool(const param_type)>& predicate);
+    template<typename Predicate>
+    size_type RemoveAllSwap(const Predicate& predicate) requires std::predicate<Predicate, const param_type>;
     /**
      * @brief Removes element at given position.
      * @param where
@@ -478,7 +483,8 @@ public:
      * @param predicate
      * @return Index of the found element. INDEX_NONE otherwise.
      */
-    NODISCARD size_type Find(const std::function<bool(const param_type)>& predicate) const;
+    template<typename Predicate>
+    NODISCARD size_type Find(const Predicate& predicate) const requires std::predicate<Predicate, const param_type>;
     /**
      * @brief Finds last element within the array.
      * @param search
@@ -490,7 +496,8 @@ public:
      * @param predicate
      * @return Index of the found element. INDEX_NONE otherwise.
      */
-    NODISCARD size_type FindLast(const std::function<bool(const param_type)>& predicate) const;
+    template<typename Predicate>
+    NODISCARD size_type FindLast(const Predicate& predicate) const requires std::predicate<Predicate, const param_type>;
     /**
      * @brief Reserves memory such that the array can contain at least number elements.
      * @param capacity
@@ -634,7 +641,9 @@ Array<T, Allocator>::size_type Array<T, Allocator>::Append(Array<value_type, All
 }
 
 template<typename T, typename Allocator>
-Array<T, Allocator>::size_type Array<T, Allocator>::RemoveAll(const std::function<bool(const param_type)>& predicate)
+template<typename Predicate>
+Array<T, Allocator>::size_type Array<T, Allocator>::RemoveAll(const Predicate& predicate)
+    requires std::predicate<Predicate, const param_type>
 {
     auto&& my_val = GetVal();
     size_type num_of_matches = 0;
@@ -679,7 +688,9 @@ Array<T, Allocator>::size_type Array<T, Allocator>::RemoveAll(const std::functio
 }
 
 template<typename T, typename Allocator>
-Array<T, Allocator>::size_type Array<T, Allocator>::RemoveAllSwap(const std::function<bool(const param_type)>& predicate)
+template<typename Predicate>
+Array<T, Allocator>::size_type Array<T, Allocator>::RemoveAllSwap(const Predicate& predicate)
+    requires std::predicate<Predicate, const param_type>
 {
     size_type num_of_matches = 0;
     if (Size() > 0)
@@ -757,7 +768,9 @@ Array<T, Allocator>::size_type Array<T, Allocator>::Find(const param_type search
 }
 
 template<typename T, typename Allocator>
-Array<T, Allocator>::size_type Array<T, Allocator>::Find(const std::function<bool(const param_type)>& predicate) const
+template<typename Predicate>
+Array<T, Allocator>::size_type Array<T, Allocator>::Find(const Predicate& predicate) const
+    requires std::predicate<Predicate, const param_type>
 {
     for (auto it = cbegin(); it < cend(); ++it)
     {
@@ -783,7 +796,9 @@ Array<T, Allocator>::size_type Array<T, Allocator>::FindLast(const param_type se
 }
 
 template<typename T, typename Allocator>
-Array<T, Allocator>::size_type Array<T, Allocator>::FindLast(const std::function<bool(const param_type)>& predicate) const
+template<typename Predicate>
+Array<T, Allocator>::size_type Array<T, Allocator>::FindLast(const Predicate& predicate) const
+    requires std::predicate<Predicate, const param_type>
 {
     for (auto it = crbegin(); it < crend(); ++it)
     {
