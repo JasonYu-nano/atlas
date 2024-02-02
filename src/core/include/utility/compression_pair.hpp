@@ -8,6 +8,9 @@
 
 namespace atlas
 {
+struct ZeroThenVariadicArgs {};
+struct OneThenVariadicArgs {};
+
 namespace details
 {
 
@@ -62,9 +65,16 @@ public:
     using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(first_param_type first) : first_(first) {}
-    explicit CompressionPairImpl(second_param_type second) : second_(second) {}
-    CompressionPairImpl(first_param_type first, second_param_type second) : first_(first), second_(second) {}
+
+    template<typename... Arg>
+    explicit CompressionPairImpl(Arg&&... arg) : first_(std::forward<Arg>(arg)...) {}
+
+    template<typename... Arg>
+    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_(std::forward<Arg>(arg)...) {}
+
+    template<typename Arg1, typename... Arg2>
+    CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
+        : first_(std::forward<Arg1>(arg1)), second_(std::forward<Arg2>(arg2)...) {}
 
     first_reference First() { return first_; }
     first_const_reference First() const { return first_; }
@@ -90,9 +100,16 @@ public:
     using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(first_param_type first) : first_type(first) {}
-    explicit CompressionPairImpl(second_param_type second) : second_(second) {}
-    CompressionPairImpl(first_param_type first, second_param_type second) : first_type(first), second_(second) {}
+
+    template<typename... Arg>
+    explicit CompressionPairImpl(Arg&&... arg) : first_type(std::forward<Arg>(arg)...) {}
+
+    template<typename... Arg>
+    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_(std::forward<Arg>(arg)...) {}
+
+    template<typename Arg1, typename... Arg2>
+    CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
+        : first_type(std::forward<Arg1>(arg1)), second_(std::forward<Arg2>(arg2)...) {}
 
     first_reference First() { return *this; }
     first_const_reference First() const { return *this; }
@@ -117,9 +134,16 @@ public:
     using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(first_param_type first) : first_(first) {}
-    explicit CompressionPairImpl(second_param_type second) : second_type(second) {}
-    CompressionPairImpl(first_param_type first, second_param_type second) : first_(first), second_type(second) {}
+
+    template<typename... Arg>
+    explicit CompressionPairImpl(Arg&&... arg) : first_(std::forward<Arg>(arg)...) {}
+
+    template<typename... Arg>
+    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_type(std::forward<Arg>(arg)...) {}
+
+    template<typename Arg1, typename... Arg2>
+    CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
+        : first_(std::forward<Arg1>(arg1)), second_type(std::forward<Arg2>(arg2)...) {}
 
     first_reference First() { return first_; }
     first_const_reference First() const { return first_; }
@@ -144,9 +168,16 @@ public:
     using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(first_param_type first) : first_type(first) {}
-    explicit CompressionPairImpl(second_param_type second) : second_type(second) {}
-    CompressionPairImpl(first_param_type first, second_param_type second) : first_type(first), second_type(second) {}
+
+    template<typename... Arg>
+    explicit CompressionPairImpl(Arg&&... arg) : first_type(std::forward<Arg>(arg)...) {}
+
+    template<typename... Arg>
+    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_type(std::forward<Arg>(arg)...) {}
+
+    template<typename Arg1, typename... Arg2>
+    CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
+        : first_type(std::forward<Arg1>(arg1)), second_type(std::forward<Arg2>(arg2)...) {}
 
     first_reference First() { return *this; }
     first_const_reference First() const { return *this; }
@@ -168,8 +199,13 @@ public:
     using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(first_param_type first) : first_(first), second_(first) {}
-    CompressionPairImpl(first_param_type first, second_param_type second) : first_(first), second_(second) {}
+
+    template<typename... Arg>
+    explicit CompressionPairImpl(Arg&&... arg) : first_(std::forward<Arg>(arg)...), second_(first_) {}
+
+    template<typename Arg1, typename... Arg2>
+    CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
+        : first_(std::forward<Arg1>(arg1)), second_(std::forward<Arg2>(arg2)...) {}
 
     first_reference First() { return first_; }
     first_const_reference First() const { return first_; }
@@ -195,8 +231,13 @@ public:
     using second_param_type      = CallTraits<second_type>::param_type;
 
     CompressionPairImpl() = default;
-    explicit CompressionPairImpl(first_param_type first) : first_type(first), second_(first) {}
-    CompressionPairImpl(first_param_type first, second_param_type second) : first_type(first), second_(second) {}
+
+    template<typename... Arg>
+    explicit CompressionPairImpl(Arg&&... arg) : first_type(std::forward<Arg>(arg)...), second_(static_cast<first_type>(*this)) {}
+
+    template<typename Arg1, typename... Arg2>
+    CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
+        : first_type(std::forward<Arg1>(arg1)), second_(std::forward<Arg2>(arg2)...) {}
 
     first_reference First() { return *this; }
     first_const_reference First() const { return *this; }
@@ -224,9 +265,16 @@ public:
     using second_param_type      = Super::second_param_type;
 
     CompressionPair() : Super() {}
-    explicit CompressionPair(first_param_type first) : Super(first) {}
-    explicit CompressionPair(second_param_type second) : Super(second) {}
-    CompressionPair(first_param_type first, second_param_type second) : Super(first, second) {}
+
+    template<typename... Arg>
+    explicit CompressionPair(Arg&&... arg) : Super(std::forward<Arg>(arg)...) {}
+
+    template<typename... Arg>
+    explicit CompressionPair(ZeroThenVariadicArgs tag, Arg&&... arg) : Super(tag, std::forward<Arg>(arg)...) {}
+
+    template<typename Arg1, typename... Arg2>
+    CompressionPair(OneThenVariadicArgs tag, Arg1&& arg1, Arg2&&... arg2)
+        : Super(tag, std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)...) {}
 
     using Super::First;
     using Super::Second;
@@ -247,8 +295,13 @@ public:
     using second_param_type      = Super::second_param_type;
 
     CompressionPair() : Super() {}
-    explicit CompressionPair(first_param_type first) : Super(first) {}
-    CompressionPair(first_param_type first, second_param_type second) : Super(first, second) {}
+
+    template<typename... Arg>
+    explicit CompressionPair(Arg&&... arg) : Super(std::forward<Arg>(arg)...) {}
+
+    template<typename Arg1, typename... Arg2>
+    CompressionPair(OneThenVariadicArgs tag, Arg1&& arg1, Arg2&&... arg2)
+        : Super(tag, std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)...) {}
 
     using Super::First;
     using Super::Second;

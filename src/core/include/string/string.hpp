@@ -190,10 +190,10 @@ public:
     {
         Construct(right, offset, size);
     }
-    String(String&& right) noexcept : pair_(std::move(right.GetAlloc())
-        , { std::exchange(right.GetVal().size_, 0)
+    String(String&& right) noexcept : pair_(OneThenVariadicArgs(), std::move(right.GetAlloc())
+        , std::exchange(right.GetVal().size_, 0)
         , std::exchange(right.GetVal().capacity_, 0)
-        , std::exchange(right.GetVal().u_, val_type::UnionBuffer()) })
+        , std::exchange(right.GetVal().u_, val_type::UnionBuffer()))
     {}
     String(String&& right, size_type offset, size_type size = MaxSize()) noexcept
     {

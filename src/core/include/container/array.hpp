@@ -97,10 +97,11 @@ public:
      * @param right
      */
     Array(Array&& right) noexcept
-        : pair_(std::move(right.GetAlloc())
-        , { std::exchange(right.GetVal().size, 0)
+        : pair_(OneThenVariadicArgs()
+        , std::move(right.GetAlloc())
+        , std::exchange(right.GetVal().size, 0)
         , std::exchange(right.GetVal().capacity, 0)
-        , std::exchange(right.GetVal().ptr, nullptr) })
+        , std::exchange(right.GetVal().ptr, nullptr))
     {}
     ~Array() noexcept { Clear(true); }
 
@@ -276,18 +277,18 @@ public:
      * @param where
      * @param elem
      */
-    void Insert(const_iterator where, const param_type elem)
+    iterator Insert(const_iterator where, const param_type elem)
     {
-        InsertCountedRange(where, &elem, 1);
+        return InsertCountedRange(where, &elem, 1);
     }
     /**
      * @brief Inserts given element into the array at given position.
      * @param where
      * @param elem
      */
-    void Insert(const_iterator where, value_type&& elem)
+    iterator Insert(const_iterator where, value_type&& elem)
     {
-        InsertCountedRange(where, &elem, 1, true);
+        return InsertCountedRange(where, &elem, 1, true);
     }
     /**
      * @brief Inserts given elements into the array at given position.
@@ -295,12 +296,13 @@ public:
      * @param elem
      */
     template<std::ranges::range RangeType>
-    void Insert(const_iterator where, const RangeType& elems)
+    iterator Insert(const_iterator where, const RangeType& elems)
     {
         if constexpr (std::ranges::sized_range<RangeType> || std::ranges::forward_range<RangeType>)
         {
-            InsertCountedRange(where, std::ranges::begin(elems), std::ranges::distance(elems));
+            return InsertCountedRange(where, std::ranges::begin(elems), std::ranges::distance(elems));
         }
+        return begin() + (where - cbegin());
     }
     /**
      * @brief Inserts other array into the array at given position.
@@ -308,9 +310,9 @@ public:
      * @param elem
      */
     template<typename AllocatorType>
-    void Insert(const_iterator where, Array<value_type, AllocatorType>&& elems)
+    iterator Insert(const_iterator where, Array<value_type, AllocatorType>&& elems)
     {
-        InsertCountedRange(where, elems.begin(), elems.Size(), true);
+        return InsertCountedRange(where, elems.begin(), elems.Size(), true);
     }
     /**
      * @brief Removes first matched element in the array.
@@ -539,7 +541,7 @@ private:
     template<std::forward_iterator InputIter, std::output_iterator<T> OutputIter>
     void CopyToUninitialized(InputIter first, InputIter last, OutputIter dest);
     template<typename Iter>
-    void InsertCountedRange(const_iterator where, Iter first, size_type count, bool move_assign = false);
+    iterator InsertCountedRange(const_iterator where, Iter first, size_type count, bool move_assign = false);
 
     template<std::ranges::forward_range RangeType>
     void Construct(const RangeType& range);
@@ -903,11 +905,11 @@ void Array<T, Allocator>::CopyToUninitialized(InputIter first, InputIter last, O
 
 template<typename T, typename Allocator>
 template<typename Iter>
-void Array<T, Allocator>::InsertCountedRange(const_iterator where, Iter first, size_type count, bool move_assign)
+Array<T, Allocator>::iterator Array<T, Allocator>::InsertCountedRange(const_iterator where, Iter first, size_type count, bool move_assign)
 {
     if (count <= 0)
     {
-        return;
+        return begin() + (where - cbegin());
     }
 
     auto&& my_val = GetVal();
@@ -938,6 +940,7 @@ void Array<T, Allocator>::InsertCountedRange(const_iterator where, Iter first, s
         MoveToUninitialized(first, first + count, data + offset) :
         CopyToUninitialized(first, first + count, data + offset);
         my_val.size += count;
+        return begin() + offset;;
     }
     else
     {
@@ -972,6 +975,7 @@ void Array<T, Allocator>::InsertCountedRange(const_iterator where, Iter first, s
         my_val.ptr = new_ptr;
         my_val.size = new_size;
         my_val.capacity = new_capacity;
+        return iterator(new_ptr + offset);
     }
 }
 
