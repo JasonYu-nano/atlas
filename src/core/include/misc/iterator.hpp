@@ -94,4 +94,16 @@ public:
     difference_type operator-   (const PointerIterator& right) const { return Super::operator-(right); }
 };
 
+template<typename Iter>
+Iter* IteratorToPointer(Iter* it)
+{
+    return it;
+}
+
+template<std::input_iterator Iter>
+std::iterator_traits<Iter>::pointer IteratorToPointer(Iter it)
+{
+    return it.operator->();
+}
+
 }

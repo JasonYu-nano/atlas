@@ -23,4 +23,30 @@
             </ArrayItems>
         </Expand>
     </Type>
+    <!-- Set visualizer -->
+    <Type Name="atlas::Set&lt;*,*&gt;">
+        <DisplayString Condition="pair_.second_.pair_.second_.size == 0">empty</DisplayString>
+        <DisplayString Condition="pair_.second_.pair_.second_.size &lt; 0">invalid</DisplayString>
+        <DisplayString Condition="pair_.second_.pair_.second_.capacity &lt; pair_.second_.pair_.second_.size">invalid</DisplayString>
+        <DisplayString Condition="pair_.second_.pair_.second_.capacity &gt;= pair_.second_.pair_.second_.size">size={pair_.second_.pair_.second_.size} capacity={pair_.second_.pair_.second_.capacity}</DisplayString>
+        <Expand>
+            <ArrayItems Condition="pair_.second_.pair_.second_.size &lt;= pair_.second_.pair_.second_.capacity">
+                <Size>pair_.second_.pair_.second_.size</Size>
+                <ValuePointer>($T1*)pair_.second_.pair_.second_.ptr</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <!-- MultiSet visualizer -->
+    <Type Name="atlas::MultiSet&lt;*,*&gt;">
+        <DisplayString Condition="pair_.second_.pair_.second_.size == 0">empty</DisplayString>
+        <DisplayString Condition="pair_.second_.pair_.second_.size &lt; 0">invalid</DisplayString>
+        <DisplayString Condition="pair_.second_.pair_.second_.capacity &lt; pair_.second_.pair_.second_.size">invalid</DisplayString>
+        <DisplayString Condition="pair_.second_.pair_.second_.capacity &gt;= pair_.second_.pair_.second_.size">size={pair_.second_.pair_.second_.size} capacity={pair_.second_.pair_.second_.capacity}</DisplayString>
+        <Expand>
+            <ArrayItems Condition="pair_.second_.pair_.second_.size &lt;= pair_.second_.pair_.second_.capacity">
+                <Size>pair_.second_.pair_.second_.size</Size>
+                <ValuePointer>($T1*)pair_.second_.pair_.second_.ptr</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
 </AutoVisualizer>

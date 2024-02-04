@@ -602,7 +602,7 @@ Array<T, Allocator>::size_type Array<T, Allocator>::Append(const RangeType& othe
     size_type index = AddUninitialized(increase_size);
     if constexpr (std::is_trivially_copyable<value_type>::value)
     {
-        std::memmove(Data() + index, std::to_address(std::ranges::begin(others)), increase_size * sizeof(value_type));
+        std::memmove(Data() + index, IteratorToPointer(std::ranges::begin(others)), increase_size * sizeof(value_type));
     }
     else
     {
@@ -867,7 +867,7 @@ void Array<T, Allocator>::MoveToUninitialized(InputIter first, InputIter last, O
 {
     if constexpr (std::is_trivially_copyable<value_type>::value)
     {
-        std::memmove(static_cast<void*>(std::to_address(dest)), static_cast<const void*>(std::to_address(first)), std::distance(first, last) * sizeof(value_type));
+        std::memmove(static_cast<void*>(IteratorToPointer(dest)), static_cast<const void*>(IteratorToPointer(first)), std::distance(first, last) * sizeof(value_type));
     }
     else
     {
@@ -875,7 +875,7 @@ void Array<T, Allocator>::MoveToUninitialized(InputIter first, InputIter last, O
         InputIter it = first;
         while (it != last)
         {
-            allocator_traits::construct(alloc, std::to_address(dest), std::move(*it));
+            allocator_traits::construct(alloc, IteratorToPointer(dest), std::move(*it));
             std::advance(it, 1);
             std::advance(dest, 1);
         }
@@ -888,7 +888,7 @@ void Array<T, Allocator>::CopyToUninitialized(InputIter first, InputIter last, O
 {
     if constexpr (std::is_trivially_copyable<value_type>::value)
     {
-        std::memmove(static_cast<void*>(std::to_address(dest)), static_cast<const void*>(std::to_address(first)), std::distance(first, last) * sizeof(value_type));
+        std::memmove(static_cast<void*>(IteratorToPointer(dest)), static_cast<const void*>(IteratorToPointer(first)), std::distance(first, last) * sizeof(value_type));
     }
     else
     {
@@ -896,7 +896,7 @@ void Array<T, Allocator>::CopyToUninitialized(InputIter first, InputIter last, O
         InputIter it = first;
         while (it != last)
         {
-            allocator_traits::construct(alloc, std::to_address(dest), *it);
+            allocator_traits::construct(alloc, IteratorToPointer(dest), *it);
             std::advance(it, 1);
             std::advance(dest, 1);
         }
