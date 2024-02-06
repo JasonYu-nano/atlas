@@ -57,41 +57,41 @@ protected:
 template<typename T>
 class PointerIterator : public ConstPointerIterator<T>
 {
-    using Super = ConstPointerIterator<T>;
+    using base = ConstPointerIterator<T>;
 public:
-    typedef typename Super::value_type          value_type;
-    typedef typename Super::difference_type     difference_type;
+    typedef typename base::value_type          value_type;
+    typedef typename base::difference_type     difference_type;
     typedef value_type*                         pointer;
     typedef value_type&                         reference;
-    typedef typename Super::iterator_category   iterator_category;
-    typedef typename Super::iterator_concept    iterator_concept;
+    typedef typename base::iterator_category   iterator_category;
+    typedef typename base::iterator_concept    iterator_concept;
 
-    PointerIterator() : Super() {}
-    explicit PointerIterator(pointer it) : Super(it) {}
+    PointerIterator() : base() {}
+    explicit PointerIterator(pointer it) : base(it) {}
     PointerIterator(const PointerIterator& right) = default;
 
     // NOLINTBEGIN()
-    reference           operator*   () const { return const_cast<reference>(Super::operator*()); }
-    pointer             operator->  () const { return const_cast<pointer>(Super::operator->()); }
-    PointerIterator&    operator++  () { Super::operator++(); return *this; }
-    PointerIterator     operator++  (int32) { PointerIterator temp = *this; Super::operator++(); return temp; }
-    PointerIterator&    operator--  () { Super::operator--(); return *this; }
-    PointerIterator     operator--  (int32) { PointerIterator temp = *this; Super::operator--(); return temp; }
+    reference           operator*   () const { return const_cast<reference>(base::operator*()); }
+    pointer             operator->  () const { return const_cast<pointer>(base::operator->()); }
+    PointerIterator&    operator++  () { base::operator++(); return *this; }
+    PointerIterator     operator++  (int32) { PointerIterator temp = *this; base::operator++(); return temp; }
+    PointerIterator&    operator--  () { base::operator--(); return *this; }
+    PointerIterator     operator--  (int32) { PointerIterator temp = *this; base::operator--(); return temp; }
     PointerIterator     operator+   (difference_type n) const { PointerIterator temp = *this; temp += n; return temp; }
     friend PointerIterator operator+(difference_type n, PointerIterator it) noexcept { it += n; return it; }
-    PointerIterator&    operator+=  (difference_type n) { Super::operator+=(n); return *this; }
+    PointerIterator&    operator+=  (difference_type n) { base::operator+=(n); return *this; }
     PointerIterator     operator-   (difference_type n) const { PointerIterator temp = *this; temp -= n; return temp; }
     friend PointerIterator operator-(difference_type n, PointerIterator it) noexcept { it -= n; return it; }
-    PointerIterator&    operator-=  (difference_type n) { Super::operator-=(n); return *this; }
-    reference           operator[]  (difference_type n) const { return const_cast<reference>(Super::operator[]); }
+    PointerIterator&    operator-=  (difference_type n) { base::operator-=(n); return *this; }
+    reference           operator[]  (difference_type n) const { return const_cast<reference>(base::operator[]); }
     // NOLINTEND()
-    bool            operator==  (const PointerIterator& right) const { return Super::operator==(right); }
-    bool            operator!=  (const PointerIterator& right) const { return Super::operator!=(right); }
-    bool            operator<   (const PointerIterator& right) const { return Super::operator<(right); }
-    bool            operator>   (const PointerIterator& right) const { return Super::operator>(right); }
-    bool            operator<=  (const PointerIterator& right) const { return Super::operator<=(right); }
-    bool            operator>=  (const PointerIterator& right) const { return Super::operator>=(right); }
-    difference_type operator-   (const PointerIterator& right) const { return Super::operator-(right); }
+    bool            operator==  (const PointerIterator& right) const { return base::operator==(right); }
+    bool            operator!=  (const PointerIterator& right) const { return base::operator!=(right); }
+    bool            operator<   (const PointerIterator& right) const { return base::operator<(right); }
+    bool            operator>   (const PointerIterator& right) const { return base::operator>(right); }
+    bool            operator<=  (const PointerIterator& right) const { return base::operator<=(right); }
+    bool            operator>=  (const PointerIterator& right) const { return base::operator>=(right); }
+    difference_type operator-   (const PointerIterator& right) const { return base::operator-(right); }
 };
 
 template<typename Iter>

@@ -73,9 +73,9 @@ template<typename CharType>
 struct FoldCaseUnsafe : private FoldCaseUnsafeImpl<CharType, FoldCaseUnsafeSwitcher<CharType>::value>
 {
 private:
-    using Super = FoldCaseUnsafeImpl<CharType, FoldCaseUnsafeSwitcher<CharType>::value>;
+    using base = FoldCaseUnsafeImpl<CharType, FoldCaseUnsafeSwitcher<CharType>::value>;
 public:
-    using Super::operator();
+    using base::operator();
 };
 
 class EqualsInsensitive

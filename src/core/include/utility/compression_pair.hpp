@@ -253,58 +253,58 @@ private:
 template<typename T1, typename T2, bool = std::is_same_v<T1, T2>>
 class CompressionPair : private details::CompressionPairImpl<T1, T2, details::CompressionPairSwitch<T1, T2>::value>
 {
-    using Super = details::CompressionPairImpl<T1, T2, details::CompressionPairSwitch<T1, T2>::value>;
+    using base = details::CompressionPairImpl<T1, T2, details::CompressionPairSwitch<T1, T2>::value>;
 public:
-    using first_type             = Super::first_type;
-    using second_type            = Super::second_type;
-    using first_reference        = Super::first_reference;
-    using second_reference       = Super::second_reference;
-    using first_const_reference  = Super::first_const_reference;
-    using second_const_reference = Super::second_const_reference;
-    using first_param_type       = Super::first_param_type;
-    using second_param_type      = Super::second_param_type;
+    using first_type             = base::first_type;
+    using second_type            = base::second_type;
+    using first_reference        = base::first_reference;
+    using second_reference       = base::second_reference;
+    using first_const_reference  = base::first_const_reference;
+    using second_const_reference = base::second_const_reference;
+    using first_param_type       = base::first_param_type;
+    using second_param_type      = base::second_param_type;
 
-    CompressionPair() : Super() {}
-
-    template<typename... Arg>
-    explicit CompressionPair(Arg&&... arg) : Super(std::forward<Arg>(arg)...) {}
+    CompressionPair() : base() {}
 
     template<typename... Arg>
-    explicit CompressionPair(ZeroThenVariadicArgs tag, Arg&&... arg) : Super(tag, std::forward<Arg>(arg)...) {}
+    explicit CompressionPair(Arg&&... arg) : base(std::forward<Arg>(arg)...) {}
+
+    template<typename... Arg>
+    explicit CompressionPair(ZeroThenVariadicArgs tag, Arg&&... arg) : base(tag, std::forward<Arg>(arg)...) {}
 
     template<typename Arg1, typename... Arg2>
     CompressionPair(OneThenVariadicArgs tag, Arg1&& arg1, Arg2&&... arg2)
-        : Super(tag, std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)...) {}
+        : base(tag, std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)...) {}
 
-    using Super::First;
-    using Super::Second;
+    using base::First;
+    using base::Second;
 };
 
 template<typename T1, typename T2>
 class CompressionPair<T1, T2, true> : private details::CompressionPairImpl<T1, T2, details::CompressionPairSwitch<T1, T2>::value>
 {
-    using Super = details::CompressionPairImpl<T1, T2, details::CompressionPairSwitch<T1, T2>::value>;
+    using base = details::CompressionPairImpl<T1, T2, details::CompressionPairSwitch<T1, T2>::value>;
 public:
-    using first_type             = Super::first_type;
-    using second_type            = Super::second_type;
-    using first_reference        = Super::first_reference;
-    using second_reference       = Super::second_reference;
-    using first_const_reference  = Super::first_const_reference;
-    using second_const_reference = Super::second_const_reference;
-    using first_param_type       = Super::first_param_type;
-    using second_param_type      = Super::second_param_type;
+    using first_type             = base::first_type;
+    using second_type            = base::second_type;
+    using first_reference        = base::first_reference;
+    using second_reference       = base::second_reference;
+    using first_const_reference  = base::first_const_reference;
+    using second_const_reference = base::second_const_reference;
+    using first_param_type       = base::first_param_type;
+    using second_param_type      = base::second_param_type;
 
-    CompressionPair() : Super() {}
+    CompressionPair() : base() {}
 
     template<typename... Arg>
-    explicit CompressionPair(Arg&&... arg) : Super(std::forward<Arg>(arg)...) {}
+    explicit CompressionPair(Arg&&... arg) : base(std::forward<Arg>(arg)...) {}
 
     template<typename Arg1, typename... Arg2>
     CompressionPair(OneThenVariadicArgs tag, Arg1&& arg1, Arg2&&... arg2)
-        : Super(tag, std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)...) {}
+        : base(tag, std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)...) {}
 
-    using Super::First;
-    using Super::Second;
+    using base::First;
+    using base::Second;
 };
 
 }

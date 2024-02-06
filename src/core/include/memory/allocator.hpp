@@ -44,9 +44,9 @@ template<typename AllocatorType>
 struct AllocatorTraits : public std::allocator_traits<AllocatorType>
 {
 private:
-    using Super = std::allocator_traits<AllocatorType>;
+    using base = std::allocator_traits<AllocatorType>;
 public:
-    static constexpr Super::size_type get_initialize_size(const AllocatorType& allocator)
+    static constexpr base::size_type get_initialize_size(const AllocatorType& allocator)
     {
         if constexpr (details::HasInitializeSize<AllocatorType>::value)
         {
@@ -55,17 +55,17 @@ public:
         return 0;
     }
 
-    static constexpr Super::pointer reallocate(AllocatorType& allocator, Super::pointer ptr, Super::size_type old_count, Super::size_type new_count)
+    static constexpr base::pointer reallocate(AllocatorType& allocator, base::pointer ptr, base::size_type old_count, base::size_type new_count)
     {
-        if constexpr (details::HasReallocate<AllocatorType, typename Super::pointer, typename Super::size_type>::value)
+        if constexpr (details::HasReallocate<AllocatorType, typename base::pointer, typename base::size_type>::value)
         {
             return allocator.reallocate(ptr, old_count, new_count);
         }
         else
         {
-            typename Super::pointer new_ptr = Super::allocate(allocator, new_count);
-            std::memmove(new_ptr, ptr, details::GetByteSize<sizeof(Super::value_type)>(math::Min(old_count, new_count)));
-            Super::deallocate(allocator, ptr, old_count);
+            typename base::pointer new_ptr = base::allocate(allocator, new_count);
+            std::memmove(new_ptr, ptr, details::GetByteSize<sizeof(base::value_type)>(math::Min(old_count, new_count)));
+            base::deallocate(allocator, ptr, old_count);
             return new_ptr;
         }
     }
