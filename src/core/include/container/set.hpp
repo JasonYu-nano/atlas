@@ -4,18 +4,13 @@
 #pragma once
 
 #include "container/flat_tree.hpp"
+#include "utility/concepts.hpp"
 
 namespace atlas
 {
 
 namespace details
 {
-
-template <class T>
-concept LessComparable = requires(const std::remove_reference_t<T>& t1, const std::remove_reference_t<T>& t2)
-{
-    { t1 <  t2 } -> std::same_as<bool>;
-};
 
 template<typename T>
 struct SetKeyOfValue
@@ -27,9 +22,10 @@ struct SetKeyOfValue
         return t;
     }
 };
+
 }
 
-template<details::LessComparable T, typename Allocator = StandardAllocator<size_t>>
+template<LessComparable T, typename Allocator = StandardAllocator<size_t>>
 class Set : private FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>
 {
     using base                      = FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>;
@@ -89,6 +85,13 @@ public:
     template<std::ranges::bidirectional_range RangeType>
     explicit Set(const RangeType& range, const allocator_type& alloc = allocator_type())
         : base(key_compare(), true, range, alloc) {}
+
+    template<typename AnyAllocator>
+    explicit Set(const Set<value_type, AnyAllocator>& right) : base(right) {}
+
+    template<typename AnyAllocator>
+    explicit Set(Set<value_type, AnyAllocator>&& right) noexcept
+    : base(std::forward<Set<value_type, AnyAllocator>>(right)) {}
 
     template<typename AnyAllocator>
     Set& operator= (const Set<value_type, AnyAllocator>& right)
@@ -180,7 +183,7 @@ public:
     }
 };
 
-template<details::LessComparable T, typename Allocator = StandardAllocator<size_t>>
+template<LessComparable T, typename Allocator = StandardAllocator<size_t>>
 class MultiSet : private FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>
 {
     using base                      = FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>;
@@ -241,6 +244,13 @@ public:
     template<std::ranges::bidirectional_range RangeType>
     explicit MultiSet(const RangeType& range, const allocator_type& alloc = allocator_type())
         : base(key_compare(), false, range, alloc) {}
+
+    template<typename AnyAllocator>
+    explicit MultiSet(const MultiSet<value_type, AnyAllocator>& right) : base(right) {}
+
+    template<typename AnyAllocator>
+    explicit MultiSet(MultiSet<value_type, AnyAllocator>&& right) noexcept
+    : base(std::forward<MultiSet<value_type, AnyAllocator>>(right)) {}
 
     template<typename AnyAllocator>
     MultiSet& operator= (const MultiSet<value_type, AnyAllocator>& right)

@@ -721,6 +721,10 @@ Array<T, Allocator>::size_type Array<T, Allocator>::RemoveAllSwap(const Predicat
 template<typename T, typename Allocator>
 Array<T, Allocator>::iterator Array<T, Allocator>::RemoveAt(const_iterator where, size_type count)
 {
+    if (count <= 0)
+    {
+        return iterator(const_cast<value_type*>(IteratorToPointer(where)));
+    }
     ASSERT(cbegin() <= where && where < cend() && where + count <= cend());
     auto&& my_val = GetVal();
     pointer data = my_val.ptr;

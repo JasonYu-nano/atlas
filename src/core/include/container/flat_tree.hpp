@@ -46,6 +46,7 @@ public:
     using const_reference           = typename container_type::const_reference;
     using param_type                = typename container_type::param_type;
     using key_type                  = typename KeyOfValue::type;
+    using key_param_type            = typename CallTraits<key_type>::param_type;
     using key_compare               = Compare;
     using allocator_type            = typename container_type::allocator_type;
     using allocator_traits          = typename container_type::allocator_traits;
@@ -114,8 +115,10 @@ public:
     {
         is_unique ? InsertUnique(range) : InsertEqual(range);
     }
-    FlatTree(const FlatTree& right) : pair_(right.pair_) {};
-    FlatTree(FlatTree&& right) noexcept : pair_(std::move(right.pair_)) {};
+    template<typename AnyCompare, typename AnyAllocator>
+    explicit FlatTree(const FlatTree<value_type, KeyOfValue, AnyCompare, AnyAllocator>& right) : pair_(right.pair_) {};
+    template<typename AnyCompare, typename AnyAllocator>
+    explicit FlatTree(FlatTree<value_type, KeyOfValue, AnyCompare, AnyAllocator>&& right) noexcept : pair_(std::move(right.pair_)) {};
 
     template<typename AnyCompare, typename AnyAllocator>
     FlatTree& operator= (const FlatTree<value_type, KeyOfValue, AnyCompare, AnyAllocator>& right)
@@ -266,7 +269,7 @@ public:
      * @param key
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    iterator Find(const key_type& key)
+    iterator Find(const key_param_type key)
     {
         const key_compare& key_cmp = GetKeyCompare();
         KeyOfValue key_extract;
@@ -283,7 +286,7 @@ public:
      * @param key
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    const_iterator Find(const key_type& key) const
+    const_iterator Find(const key_param_type key) const
     {
         const key_compare& key_cmp = GetKeyCompare();
         KeyOfValue key_extract;
@@ -300,7 +303,7 @@ public:
      * @param key
      * @return Number of elements with key equivalent to the given key.
      */
-    NODISCARD size_type Count(const key_type& key) const
+    NODISCARD size_type Count(const key_param_type key) const
     {
         const key_compare& key_cmp = GetKeyCompare();
         KeyOfValue key_extract;
@@ -327,7 +330,7 @@ public:
      * @param key
      * @return Number of removed element.
      */
-    size_type Remove(const key_type& key)
+    size_type Remove(const key_param_type key)
     {
         const key_compare& key_cmp = GetKeyCompare();
         KeyOfValue key_extract;
@@ -348,7 +351,7 @@ public:
      * @param key
      * @return Iterator to removed element. Iterator to the end otherwise.
      */
-    size_type RemoveUnique(const key_type& key)
+    size_type RemoveUnique(const key_param_type key)
     {
         const_iterator i = Find(key);
         size_type ret = i != this->cend() ? 1 : 0;
@@ -418,12 +421,12 @@ private:
         return pair_.Second();
     }
 
-    bool FindPositionToInsert(const key_type& key, const_iterator& position)
+    bool FindPositionToInsert(const key_param_type key, const_iterator& position)
     {
         return FindPositionToInsert(cbegin(), cend(), key, position);
     }
 
-    bool FindPositionToInsert(const_iterator begin, const_iterator end, const key_type& key, const_iterator& position)
+    bool FindPositionToInsert(const_iterator begin, const_iterator end, const key_param_type key, const_iterator& position)
     {
         const key_compare& key_cmp = GetKeyCompare();
         KeyOfValue key_extract;
