@@ -67,14 +67,14 @@ public:
     CompressionPairImpl() = default;
 
     template<typename... Arg>
-    explicit CompressionPairImpl(Arg&&... arg) : first_(std::forward<Arg>(arg)...) {}
+    explicit CompressionPairImpl(Arg&&... arg) : first_{std::forward<Arg>(arg)...} {}
 
     template<typename... Arg>
-    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_(std::forward<Arg>(arg)...) {}
+    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_{std::forward<Arg>(arg)...} {}
 
     template<typename Arg1, typename... Arg2>
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
-        : first_(std::forward<Arg1>(arg1)), second_(std::forward<Arg2>(arg2)...) {}
+        : first_(std::forward<Arg1>(arg1)), second_{std::forward<Arg2>(arg2)...} {}
 
     first_reference First() { return first_; }
     first_const_reference First() const { return first_; }
@@ -102,14 +102,14 @@ public:
     CompressionPairImpl() = default;
 
     template<typename... Arg>
-    explicit CompressionPairImpl(Arg&&... arg) : first_type(std::forward<Arg>(arg)...) {}
+    explicit CompressionPairImpl(Arg&&... arg) : first_type{std::forward<Arg>(arg)...} {}
 
     template<typename... Arg>
-    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_(std::forward<Arg>(arg)...) {}
+    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_{std::forward<Arg>(arg)...} {}
 
     template<typename Arg1, typename... Arg2>
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
-        : first_type(std::forward<Arg1>(arg1)), second_(std::forward<Arg2>(arg2)...) {}
+        : first_type(std::forward<Arg1>(arg1)), second_{std::forward<Arg2>(arg2)...} {}
 
     first_reference First() { return *this; }
     first_const_reference First() const { return *this; }
@@ -136,14 +136,14 @@ public:
     CompressionPairImpl() = default;
 
     template<typename... Arg>
-    explicit CompressionPairImpl(Arg&&... arg) : first_(std::forward<Arg>(arg)...) {}
+    explicit CompressionPairImpl(Arg&&... arg) : first_{std::forward<Arg>(arg)...} {}
 
     template<typename... Arg>
-    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_type(std::forward<Arg>(arg)...) {}
+    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_type{std::forward<Arg>(arg)...} {}
 
     template<typename Arg1, typename... Arg2>
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
-        : first_(std::forward<Arg1>(arg1)), second_type(std::forward<Arg2>(arg2)...) {}
+        : first_(std::forward<Arg1>(arg1)), second_type{std::forward<Arg2>(arg2)...} {}
 
     first_reference First() { return first_; }
     first_const_reference First() const { return first_; }
@@ -170,14 +170,14 @@ public:
     CompressionPairImpl() = default;
 
     template<typename... Arg>
-    explicit CompressionPairImpl(Arg&&... arg) : first_type(std::forward<Arg>(arg)...) {}
+    explicit CompressionPairImpl(Arg&&... arg) : first_type{std::forward<Arg>(arg)...} {}
 
     template<typename... Arg>
-    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_type(std::forward<Arg>(arg)...) {}
+    explicit CompressionPairImpl(ZeroThenVariadicArgs, Arg&&... arg) : second_type{std::forward<Arg>(arg)...} {}
 
     template<typename Arg1, typename... Arg2>
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
-        : first_type(std::forward<Arg1>(arg1)), second_type(std::forward<Arg2>(arg2)...) {}
+        : first_type(std::forward<Arg1>(arg1)), second_type{std::forward<Arg2>(arg2)...} {}
 
     first_reference First() { return *this; }
     first_const_reference First() const { return *this; }
@@ -201,11 +201,11 @@ public:
     CompressionPairImpl() = default;
 
     template<typename... Arg>
-    explicit CompressionPairImpl(Arg&&... arg) : first_(std::forward<Arg>(arg)...), second_(first_) {}
+    explicit CompressionPairImpl(Arg&&... arg) : first_{std::forward<Arg>(arg)...}, second_(first_) {}
 
     template<typename Arg1, typename... Arg2>
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
-        : first_(std::forward<Arg1>(arg1)), second_(std::forward<Arg2>(arg2)...) {}
+        : first_(std::forward<Arg1>(arg1)), second_{std::forward<Arg2>(arg2)...} {}
 
     first_reference First() { return first_; }
     first_const_reference First() const { return first_; }
@@ -233,11 +233,11 @@ public:
     CompressionPairImpl() = default;
 
     template<typename... Arg>
-    explicit CompressionPairImpl(Arg&&... arg) : first_type(std::forward<Arg>(arg)...), second_(static_cast<first_type>(*this)) {}
+    explicit CompressionPairImpl(Arg&&... arg) : first_type{std::forward<Arg>(arg)...}, second_(static_cast<first_type>(*this)) {}
 
     template<typename Arg1, typename... Arg2>
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
-        : first_type(std::forward<Arg1>(arg1)), second_(std::forward<Arg2>(arg2)...) {}
+        : first_type(std::forward<Arg1>(arg1)), second_{std::forward<Arg2>(arg2)...} {}
 
     first_reference First() { return *this; }
     first_const_reference First() const { return *this; }
