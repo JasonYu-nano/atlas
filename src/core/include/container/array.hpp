@@ -23,7 +23,7 @@ struct ArrayVal
     SizeType capacity{ 0 };
     ValueType* ptr{ nullptr };
 };
-}
+} // namespace details
 
 template<typename T, typename Allocator = StandardAllocator<size_t>>
 class Array
@@ -1221,4 +1221,4 @@ Array<T, Allocator>::size_type Array<T, Allocator>::AddUninitialized(Array::size
     return old_size;
 }
 
-}
+} // namespace atlas

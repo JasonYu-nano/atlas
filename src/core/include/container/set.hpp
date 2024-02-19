@@ -26,9 +26,9 @@ struct SetKeyOfValue
 }
 
 template<LessComparable T, typename Allocator = StandardAllocator<size_t>>
-class Set : private FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>
+class Set : private details::FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>
 {
-    using base                      = FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>;
+    using base                      = details::FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>;
     using underlying_container_type = typename base::container_type;
     using key_compare               = typename base::key_compare;
 
@@ -82,7 +82,7 @@ public:
      * @param range
      * @param alloc
      */
-    template<std::ranges::bidirectional_range RangeType>
+    template<std::ranges::forward_range RangeType>
     explicit Set(const RangeType& range, const allocator_type& alloc = allocator_type())
         : base(key_compare(), true, range, alloc) {}
 
@@ -184,9 +184,9 @@ public:
 };
 
 template<LessComparable T, typename Allocator = StandardAllocator<size_t>>
-class MultiSet : private FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>
+class MultiSet : private details::FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>
 {
-    using base                      = FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>;
+    using base                      = details::FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>;
     using underlying_container_type = typename base::container_type;
     using key_compare               = typename base::key_compare;
 
@@ -340,4 +340,4 @@ public:
     }
 };
 
-}
+} // namespace atlas

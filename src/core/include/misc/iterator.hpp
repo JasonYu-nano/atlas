@@ -61,8 +61,8 @@ class PointerIterator : public ConstPointerIterator<T>
 public:
     typedef typename base::value_type          value_type;
     typedef typename base::difference_type     difference_type;
-    typedef value_type*                         pointer;
-    typedef value_type&                         reference;
+    typedef value_type*                        pointer;
+    typedef value_type&                        reference;
     typedef typename base::iterator_category   iterator_category;
     typedef typename base::iterator_concept    iterator_concept;
 
@@ -106,4 +106,4 @@ std::iterator_traits<Iter>::pointer IteratorToPointer(Iter it)
     return it.operator->();
 }
 
-}
+} // namespace atlas

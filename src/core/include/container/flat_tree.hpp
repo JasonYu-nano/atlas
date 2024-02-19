@@ -9,10 +9,7 @@
 #include "container/array.hpp"
 #include "utility/algorithm.hpp"
 
-namespace atlas
-{
-
-namespace details
+namespace atlas::details
 {
 
 template<typename Value, typename KeyOfValue, typename Compare>
@@ -31,8 +28,6 @@ public:
     Compare& GetCompare() { return *this; }
     const Compare& GetCompare() const { return *this; }
 };
-
-}
 
 template<typename ValueType, typename KeyOfValue, typename Compare, typename Allocator>
 class FlatTree
@@ -109,7 +104,7 @@ public:
      * @param range
      * @param alloc
      */
-    template<std::ranges::bidirectional_range RangeType>
+    template<std::ranges::forward_range RangeType>
     FlatTree(const key_compare& compare, bool is_unique, const RangeType& range, const allocator_type& alloc)
         : pair_(OneThenVariadicArgs(), compare, alloc)
     {
@@ -437,4 +432,5 @@ private:
     CompressionPair<value_compare, container_type> pair_;
 };
 
-}
+} // namespace atlas::details
+

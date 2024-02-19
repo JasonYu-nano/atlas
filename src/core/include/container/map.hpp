@@ -27,9 +27,9 @@ struct KeyOfPair
 }
 
 template<LessComparable Key, typename Value, typename Allocator = StandardAllocator<size_t>>
-class Map : private FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>
+class Map : private details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>
 {
-    using base                      = FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>;
+    using base                      = details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>;
     using underlying_container_type = typename base::container_type;
     using key_compare               = typename base::key_compare;
     using key_param_type            = typename base::key_param_type;
@@ -85,7 +85,7 @@ public:
      * @param range
      * @param alloc
      */
-    template<std::ranges::bidirectional_range RangeType>
+    template<std::ranges::forward_range RangeType>
     explicit Map(const RangeType& range, const allocator_type& alloc = allocator_type())
         : base(key_compare(), true, range, alloc) {}
 
@@ -283,9 +283,9 @@ public:
 };
 
 template<LessComparable Key, typename Value, typename Allocator = StandardAllocator<size_t>>
-class MultiMap : private FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>
+class MultiMap : private details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>
 {
-    using base                      = FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>;
+    using base                      = details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>;
     using underlying_container_type = typename base::container_type;
     using key_compare               = typename base::key_compare;
     using key_param_type            = typename base::key_param_type;
@@ -534,4 +534,5 @@ public:
         return base::Remove(where);
     }
 };
-}
+
+} // namespace atlas
