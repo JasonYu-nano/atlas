@@ -5,6 +5,7 @@
 
 #include "container/set.hpp"
 #include "container/map.hpp"
+#include "container/unordered_set.hpp"
 
 namespace atlas::test
 {
@@ -73,7 +74,7 @@ TEST(SetRemove, SetTest)
     }
 };
 
-TEST(MultiSetCtor, SetTest)
+TEST(MultiSetCtor, MultiSetTest)
 {
     {
         MultiSet<SetElement> set;
@@ -93,7 +94,7 @@ TEST(MultiSetCtor, SetTest)
     }
 };
 
-TEST(MultiSetInsert, SetTest)
+TEST(MultiSetInsert, MultiSetTest)
 {
     {
         MultiSet<SetElement> set;
@@ -111,7 +112,7 @@ TEST(MultiSetInsert, SetTest)
     }
 };
 
-TEST(MultiSetFind, SetTest)
+TEST(MultiSetFind, MultiSetTest)
 {
     {
         MultiSet<SetElement> set = {{4}, {1}, {3}, {3}};
@@ -120,7 +121,7 @@ TEST(MultiSetFind, SetTest)
     }
 };
 
-TEST(MultiSetRemove, SetTest)
+TEST(MultiSetRemove, MultiSetTest)
 {
     {
         MultiSet<SetElement> set = {{4}, {1}, {3}, {3}};
@@ -128,7 +129,7 @@ TEST(MultiSetRemove, SetTest)
     }
 };
 
-TEST(MapCtor, SetTest)
+TEST(MapCtor, MapTest)
 {
     {
         Map<SetElement, int32> map;
@@ -155,7 +156,7 @@ TEST(MapCtor, SetTest)
     }
 };
 
-TEST(MapInsert, SetTest)
+TEST(MapInsert, MapTest)
 {
     {
         Map<SetElement, int32> map;
@@ -173,7 +174,7 @@ TEST(MapInsert, SetTest)
     }
 }
 
-TEST(MapRemove, SetTest)
+TEST(MapRemove, MapTest)
 {
     {
         Map<SetElement, int32> map = {{{4}, 0}, {{1}, 1}, {{3}, 0}};
@@ -182,7 +183,7 @@ TEST(MapRemove, SetTest)
     }
 };
 
-TEST(MultiMapCtor, SetTest)
+TEST(MultiMapCtor, MultiMapTest)
 {
     {
         MultiMap<SetElement, int32> map;
@@ -209,7 +210,7 @@ TEST(MultiMapCtor, SetTest)
     }
 };
 
-TEST(MultiMapInsert, SetTest)
+TEST(MultiMapInsert, MultiMapTest)
 {
     {
         MultiMap<SetElement, int32> map;
@@ -227,7 +228,7 @@ TEST(MultiMapInsert, SetTest)
     }
 }
 
-TEST(MultiMapRemove, SetTest)
+TEST(MultiMapRemove, MultiMapTest)
 {
     {
         MultiMap<SetElement, int32> map = {{{4}, 0}, {{1}, 1}, {{3}, 0}, {{3}, 1}};
@@ -235,5 +236,12 @@ TEST(MultiMapRemove, SetTest)
         EXPECT_TRUE(map.Size() == 2 && map.FindValue({3}) == nullptr);
     }
 };
+
+TEST(UnorderedSetCtor, UnorderedSetTest)
+{
+    UnorderedSet<int32> set;
+    set.Insert(5);
+    EXPECT_TRUE(set.Contains(5));
+}
 
 }

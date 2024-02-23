@@ -74,7 +74,7 @@ public:
      * @param initializer
      * @param alloc
      */
-    Set(const std::initializer_list<value_type >& initializer, const allocator_type& alloc = allocator_type())
+    Set(const std::initializer_list<value_type>& initializer, const allocator_type& alloc = allocator_type())
         : base(key_compare(), true, initializer, alloc) {}
     /**
      * @brief Constructor from a range
