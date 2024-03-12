@@ -30,7 +30,7 @@ class Array
 {
 public:
     using value_type = T;
-    using allocator_type = AllocatorTraits<Allocator>::template rebind_alloc<T>;
+    using allocator_type = AllocatorRebind<Allocator, T>::type;
     using allocator_traits = AllocatorTraits<allocator_type>;
     using size_type = allocator_traits::size_type;
     using difference_type = allocator_traits::difference_type;

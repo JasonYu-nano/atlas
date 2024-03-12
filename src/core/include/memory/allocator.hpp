@@ -73,6 +73,17 @@ public:
     }
 };
 
+/**
+ * @brief Helper template for std::rebind_alloc
+ * @tparam Allocator
+ * @tparam NewType
+ */
+template<typename Allocator, typename NewType>
+struct AllocatorRebind
+{
+    using type = AllocatorTraits<Allocator>::template rebind_alloc<NewType>;
+};
+
 template<typename T, typename SizeType = size_t>
 class HeapAllocator
 {
@@ -203,7 +214,7 @@ public:
     using value_type = T;
     using size_type = SizeType;
     using difference_type = std::make_signed_t<size_type>;
-    using secondary_allocator = AllocatorTraits<SecondaryAllocator>::template rebind_alloc<T>;
+    using secondary_allocator = AllocatorRebind<SecondaryAllocator, T>::type;
 
     template<typename Other>
     struct rebind
