@@ -61,9 +61,9 @@ TEST(OperatorNewDeleteTest, MemoryTest)
     delete(al_nothrow);
 }
 
-TEST(StandardAllocatorTest, MemoryTest)
+TEST(HeapAllocatorTest, MemoryTest)
 {
-    using AllocType = StandardAllocator<int32>::Allocator<std::string>;
+    using AllocType = HeapAllocator<std::string, int32>;
     using TraitsType = std::allocator_traits<AllocType>;
     static_assert(std::is_same_v<typename TraitsType::value_type, std::string>);
     static_assert(std::is_same_v<typename TraitsType::size_type , int32>);
@@ -74,9 +74,9 @@ TEST(StandardAllocatorTest, MemoryTest)
     TraitsType::deallocate(allocator, ptr, 100);
 }
 
-TEST(FixedAllocatorTest, MemoryTest)
+TEST(StackAllocatorTest, MemoryTest)
 {
-    using AllocType = FixedAllocator<int32, 10>::Allocator<std::string>;
+    using AllocType = StackAllocator<std::string, 10, int32>;
     using TraitsType = std::allocator_traits<AllocType>;
     static_assert(std::is_same_v<typename TraitsType::value_type, std::string>);
     static_assert(std::is_same_v<typename TraitsType::size_type , int32>);
@@ -90,7 +90,7 @@ TEST(FixedAllocatorTest, MemoryTest)
 
 TEST(InlineAllocatorTest, MemoryTest)
 {
-    using AllocType = InlineAllocator<int32, 10>::Allocator<std::string>;
+    using AllocType = InlineAllocator<std::string, 10, int32, HeapAllocator<void>>;
     using TraitsType = AllocatorTraits<AllocType>;
     static_assert(std::is_same_v<typename TraitsType::value_type, std::string>);
     static_assert(std::is_same_v<typename TraitsType::size_type , int32>);

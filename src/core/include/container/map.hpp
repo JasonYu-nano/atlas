@@ -26,7 +26,7 @@ struct KeyOfPair
 
 }
 
-template<LessComparable Key, typename Value, typename Allocator = StandardAllocator<size_t>>
+template<LessComparable Key, typename Value, typename Allocator = HeapAllocator<void>>
 class Map : private details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>
 {
     using base                      = details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>;
@@ -282,7 +282,7 @@ public:
     }
 };
 
-template<LessComparable Key, typename Value, typename Allocator = StandardAllocator<size_t>>
+template<LessComparable Key, typename Value, typename Allocator = HeapAllocator<void>>
 class MultiMap : private details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>
 {
     using base                      = details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>;

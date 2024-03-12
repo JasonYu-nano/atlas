@@ -12,7 +12,7 @@
 namespace atlas
 {
 
-template <typename Key, typename Allocator = std::allocator<Key>>
+template <typename Key, typename Allocator = HeapAllocator<Key>>
 class UnorderedSet
 {
     using set_types = boost::unordered::detail::foa::flat_set_types<Key>;

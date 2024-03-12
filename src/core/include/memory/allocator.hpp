@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "assertion.hpp"
 #include "memory/memory.hpp"
 #include "utility/untyped_data.hpp"
@@ -71,203 +73,198 @@ public:
     }
 };
 
-template<typename SizeTy>
-struct StandardAllocator
+template<typename T, typename SizeType = size_t>
+class HeapAllocator
 {
-    template <typename T>
-    class Allocator
+public:
+    using value_type = T;
+    using size_type = SizeType;
+    using difference_type = std::make_signed_t<size_type>;
+
+    constexpr HeapAllocator() noexcept = default;
+
+    constexpr HeapAllocator(const HeapAllocator&) noexcept = default;
+
+    template<typename Other>
+    constexpr explicit HeapAllocator(const HeapAllocator<SizeType, Other>&) noexcept {}
+
+    constexpr ~HeapAllocator() noexcept = default;
+
+    NODISCARD constexpr value_type* allocate(const size_type size)
     {
-    public:
-        using value_type = T;
-        using size_type = SizeTy;
-        using difference_type = size_type;
+        return static_cast<value_type*>(allocate_impl<alignof(T)>(details::GetByteSize<sizeof(T)>(size)));
+    }
 
-        constexpr Allocator() noexcept = default;
-        constexpr Allocator(const Allocator&) noexcept = default;
-        template<typename Other>
-        constexpr Allocator(const Allocator<Other>&) noexcept {}
-        constexpr ~Allocator() noexcept = default;
+    NODISCARD constexpr value_type* reallocate(value_type* ptr, const size_type old_size, const size_type size)
+    {
+        return static_cast<value_type*>(reallocate_impl<alignof(T)>(ptr, details::GetByteSize<sizeof(T)>(size)));
+    }
 
-        NODISCARD constexpr value_type* allocate(const size_type size)
-        {
-            return static_cast<value_type*>(allocate_impl<alignof(T)>(details::GetByteSize<sizeof(T)>(size)));
-        }
+    constexpr void deallocate(value_type* const ptr, const size_type size)
+    {
+        deallocate_impl<alignof(T)>(ptr);
+    }
 
-        NODISCARD constexpr value_type* reallocate(value_type* ptr, const size_type old_size, const size_type size)
-        {
-            return static_cast<value_type*>(reallocate_impl<alignof(T)>(ptr, details::GetByteSize<sizeof(T)>(size)));
-        }
+private:
+    template<size_t Align, std::enable_if_t<(Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
+    constexpr void* allocate_impl(size_t byte_size)
+    {
+        return Memory::Malloc(byte_size);
+    }
 
-        constexpr void deallocate(value_type* const ptr, const size_type size)
-        {
-            deallocate_impl<alignof(T)>(ptr);
-        }
+    template<size_t Align, std::enable_if_t<(Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
+    constexpr void* allocate_impl(size_t byte_size)
+    {
+        return Memory::AlignedMalloc(byte_size, Align);
+    }
 
-    private:
-        template <size_t Align, std::enable_if_t<(Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
-        constexpr void* allocate_impl(size_t byte_size)
-        {
-            return Memory::Malloc(byte_size);
-        }
+    template<size_t Align, std::enable_if_t<(Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
+    constexpr void* reallocate_impl(value_type* ptr, size_t byte_size)
+    {
+        return Memory::Realloc(ptr, byte_size);
+    }
 
-        template <size_t Align, std::enable_if_t<(Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
-        constexpr void* allocate_impl(size_t byte_size)
-        {
-            return Memory::AlignedMalloc(byte_size, Align);
-        }
+    template<size_t Align, std::enable_if_t<(Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
+    constexpr void* reallocate_impl(value_type* ptr, size_t byte_size)
+    {
+        return Memory::AlignedRealloc(ptr, byte_size, Align);
+    }
 
-        template <size_t Align, std::enable_if_t<(Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
-        constexpr void* reallocate_impl(value_type* ptr, size_t byte_size)
-        {
-            return Memory::Realloc(ptr, byte_size);
-        }
+    template<size_t Align, std::enable_if_t<(Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
+    constexpr void deallocate_impl(void* ptr)
+    {
+        Memory::Free(ptr);
+    }
 
-        template <size_t Align, std::enable_if_t<(Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
-        constexpr void* reallocate_impl(value_type* ptr, size_t byte_size)
-        {
-            return Memory::AlignedRealloc(ptr, byte_size, Align);
-        }
-
-        template <size_t Align, std::enable_if_t<(Align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
-        constexpr void deallocate_impl(void* ptr)
-        {
-            Memory::Free(ptr);
-        }
-
-        template <size_t Align, std::enable_if_t<(Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
-        constexpr void deallocate_impl(void* ptr)
-        {
-            Memory::AlignedFree(ptr);
-        }
-    };
-
-    StandardAllocator() = delete;
-    ~StandardAllocator() = delete;
+    template<size_t Align, std::enable_if_t<(Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
+    constexpr void deallocate_impl(void* ptr)
+    {
+        Memory::AlignedFree(ptr);
+    }
 };
 
-
-template<typename SizeTy, SizeTy MaxSize>
-struct FixedAllocator
+template<typename T, uint32 MaxSize, typename SizeType = size_t>
+class StackAllocator
 {
-    template <typename T>
-    class Allocator
+public:
+    using value_type = T;
+    using size_type = SizeType;
+    using difference_type = std::make_signed_t<size_type>;
+
+    template<typename Other>
+    struct rebind
     {
-    public:
-        using value_type = T;
-        using size_type = SizeTy;
-        using difference_type = size_type;
-
-        constexpr Allocator() noexcept = default;
-        constexpr Allocator(const Allocator& ) noexcept {}
-        constexpr ~Allocator() noexcept = default;
-
-        NODISCARD constexpr value_type* allocate(const size_type size)
-        {
-            ASSERT(size <= MaxSize);
-            return static_cast<value_type*>(buffer_->GetData());
-        }
-
-        NODISCARD constexpr value_type* reallocate(value_type* ptr, const size_type old_size, const size_type size)
-        {
-            ASSERT(size <= MaxSize);
-            return static_cast<value_type*>(buffer_->GetData());
-        }
-
-        constexpr void deallocate(value_type* const ptr, const size_type size)
-        {
-        }
-
-        constexpr size_type max_size() const
-        {
-            return MaxSize;
-        }
-
-        constexpr size_type get_initialize_size() const
-        {
-            return MaxSize;
-        }
-
-    private:
-        UntypedData<T> buffer_[MaxSize];
-
+        using other = StackAllocator<Other, MaxSize, size_type>;
     };
 
-    FixedAllocator() = delete;
-    ~FixedAllocator() = delete;
+    constexpr StackAllocator() noexcept = default;
+    constexpr StackAllocator(const StackAllocator& ) noexcept {}
+    constexpr ~StackAllocator() noexcept = default;
+
+    NODISCARD constexpr value_type* allocate(const size_type size)
+    {
+        ASSERT(size <= MaxSize);
+        return static_cast<value_type*>(buffer_->GetData());
+    }
+
+    NODISCARD constexpr value_type* reallocate(value_type* ptr, const size_type old_size, const size_type size)
+    {
+        ASSERT(size <= MaxSize);
+        return static_cast<value_type*>(buffer_->GetData());
+    }
+
+    constexpr void deallocate(value_type* const ptr, const size_type size)
+    {
+    }
+
+    constexpr size_type max_size() const
+    {
+        return MaxSize;
+    }
+
+    constexpr size_type get_initialize_size() const
+    {
+        return MaxSize;
+    }
+
+private:
+    UntypedData<T> buffer_[MaxSize];
 };
 
-template<typename SizeTy, SizeTy InlineSize, typename SecondaryAllocator = StandardAllocator<SizeTy>>
-struct InlineAllocator
+template<typename T, uint32 InlineSize, typename SizeType = size_t, typename SecondaryAllocator = HeapAllocator<T>>
+class InlineAllocator
 {
-    template<typename T>
-    class Allocator
+    struct InlineBuffer
     {
-        struct InlineBuffer
-        {
-            UntypedData<T> buffer_[InlineSize];
-        };
-
-    public:
-        using value_type = T;
-        using size_type = SizeTy;
-        using difference_type = size_type;
-        using secondary_allocator = SecondaryAllocator::template Allocator<T>;
-
-        constexpr Allocator() noexcept = default;
-        constexpr Allocator(const Allocator& ) noexcept {}
-        constexpr ~Allocator() noexcept = default;
-
-        NODISCARD constexpr value_type* allocate(const size_type size)
-        {
-            if (size <= InlineSize)
-            {
-                return static_cast<value_type*>(pair_.Second().buffer_->GetData());
-            }
-            else
-            {
-                return pair_.First().allocate(size);
-            }
-        }
-
-        NODISCARD constexpr value_type* reallocate(value_type* ptr, const size_type old_size, const size_type size)
-        {
-            if (old_size <= InlineSize && size <= InlineSize)
-            {
-                return static_cast<value_type*>(pair_.Second().buffer_->GetData());
-            }
-            if (old_size <= InlineSize && size > InlineSize)
-            {
-                value_type* new_ptr = pair_.First().allocate(size);
-                std::memmove(new_ptr, ptr, details::GetByteSize<sizeof(value_type)>(old_size));
-                return new_ptr;
-            }
-            if (old_size > InlineSize && size <= InlineSize)
-            {
-                value_type* new_ptr = static_cast<value_type*>(pair_.Second().buffer_->GetData());
-                std::memmove(new_ptr, ptr, details::GetByteSize<sizeof(value_type)>(size));
-                pair_.First().deallocate(ptr, old_size);
-                return new_ptr;
-            }
-
-            return pair_.First().reallocate(ptr, old_size, size);
-        }
-
-        constexpr void deallocate(value_type* const ptr, const size_type size)
-        {
-            if (size > InlineSize)
-            {
-                return pair_.First().deallocate(ptr, size);
-            }
-        }
-
-        constexpr size_type get_initialize_size() const
-        {
-            return InlineSize;
-        }
-
-    private:
-        CompressionPair<secondary_allocator, InlineBuffer> pair_;
+        UntypedData<T> buffer_[InlineSize];
     };
+
+public:
+    using value_type = T;
+    using size_type = SizeType;
+    using difference_type = std::make_signed_t<size_type>;
+    using secondary_allocator = AllocatorTraits<SecondaryAllocator>::template rebind_alloc<T>;
+
+    template<typename Other>
+    struct rebind
+    {
+        using other = InlineAllocator<Other, InlineSize, size_type, secondary_allocator>;
+    };
+
+    constexpr InlineAllocator() noexcept = default;
+    constexpr InlineAllocator(const InlineAllocator& ) noexcept {}
+    constexpr ~InlineAllocator() noexcept = default;
+
+    NODISCARD constexpr value_type* allocate(const size_type size)
+    {
+        if (size <= InlineSize)
+        {
+            return static_cast<value_type*>(pair_.Second().buffer_->GetData());
+        }
+        else
+        {
+            return pair_.First().allocate(size);
+        }
+    }
+
+    NODISCARD constexpr value_type* reallocate(value_type* ptr, const size_type old_size, const size_type size)
+    {
+        if (old_size <= InlineSize && size <= InlineSize)
+        {
+            return static_cast<value_type*>(pair_.Second().buffer_->GetData());
+        }
+        if (old_size <= InlineSize && size > InlineSize)
+        {
+            value_type* new_ptr = pair_.First().allocate(size);
+            std::memmove(new_ptr, ptr, details::GetByteSize<sizeof(value_type)>(old_size));
+            return new_ptr;
+        }
+        if (old_size > InlineSize && size <= InlineSize)
+        {
+            value_type* new_ptr = static_cast<value_type*>(pair_.Second().buffer_->GetData());
+            std::memmove(new_ptr, ptr, details::GetByteSize<sizeof(value_type)>(size));
+            pair_.First().deallocate(ptr, old_size);
+            return new_ptr;
+        }
+
+        return pair_.First().reallocate(ptr, old_size, size);
+    }
+
+    constexpr void deallocate(value_type* const ptr, const size_type size)
+    {
+        if (size > InlineSize)
+        {
+            return pair_.First().deallocate(ptr, size);
+        }
+    }
+
+    constexpr size_type get_initialize_size() const
+    {
+        return InlineSize;
+    }
+
+private:
+    CompressionPair<secondary_allocator, InlineBuffer> pair_;
 };
 
 }

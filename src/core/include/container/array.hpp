@@ -25,12 +25,12 @@ struct ArrayVal
 };
 } // namespace details
 
-template<typename T, typename Allocator = StandardAllocator<size_t>>
+template<typename T, typename Allocator = HeapAllocator<T>>
 class Array
 {
 public:
     using value_type = T;
-    using allocator_type = Allocator::template Allocator<value_type>;
+    using allocator_type = AllocatorTraits<Allocator>::template rebind_alloc<T>;
     using allocator_traits = AllocatorTraits<allocator_type>;
     using size_type = allocator_traits::size_type;
     using difference_type = allocator_traits::difference_type;
@@ -575,11 +575,11 @@ private:
     CompressionPair<allocator_type, val_type> pair_;
 };
 
-template<typename T, size_t N>
-using InlineArray = Array<T, InlineAllocator<size_t, N>>;
+template<typename T, uint32 N>
+using InlineArray = Array<T, InlineAllocator<T, N>>;
 
-template<typename T, size_t N>
-using FixedArray = Array<T, FixedAllocator<size_t, N>>;
+template<typename T, uint32 N>
+using FixedArray = Array<T, StackAllocator<T, N>>;
 
 template<typename T, typename Allocator>
 template<typename... Args>

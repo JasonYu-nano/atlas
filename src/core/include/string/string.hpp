@@ -130,7 +130,7 @@ class CORE_API String
 public:
     using value_type = char8_t;
     using char_traits = std::char_traits<value_type>;
-    using allocator_type = StandardAllocator<size_t>::Allocator<value_type>;
+    using allocator_type = HeapAllocator<value_type>;
     using allocator_traits = AllocatorTraits<allocator_type>;
     using size_type = allocator_traits::size_type;
     using view_type = std::basic_string_view<char8_t>;

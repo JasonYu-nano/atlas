@@ -25,7 +25,7 @@ struct SetKeyOfValue
 
 }
 
-template<LessComparable T, typename Allocator = StandardAllocator<size_t>>
+template<LessComparable T, typename Allocator = HeapAllocator<void>>
 class Set : private details::FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>
 {
     using base                      = details::FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>;
@@ -183,7 +183,7 @@ public:
     }
 };
 
-template<LessComparable T, typename Allocator = StandardAllocator<size_t>>
+template<LessComparable T, typename Allocator = HeapAllocator<void>>
 class MultiSet : private details::FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>
 {
     using base                      = details::FlatTree<T, details::SetKeyOfValue<T>, std::less<T>, Allocator>;
