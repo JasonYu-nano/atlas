@@ -7,7 +7,6 @@
 #include "boost/unordered/detail/foa/flat_set_types.hpp"
 
 #include "memory/allocator.hpp"
-#include "utility/concepts.hpp"
 
 namespace atlas
 {
@@ -19,20 +18,20 @@ class UnorderedSet
     using table_type = boost::unordered::detail::foa::table<set_types, std::hash<Key>, std::equal_to<Key>, Allocator>;
 
 public:
-    using key_type = Key;
-    using value_type = typename set_types::value_type;
-    using init_type = typename set_types::init_type;
-    using size_type = std::size_t;
-    using difference_type = std::ptrdiff_t;
-    using hasher = std::hash<Key>;
-    using key_equal = std::equal_to<Key>;
-    using allocator_type = Allocator;
-    using reference = value_type&;
-    using const_reference = const value_type&;
-    using pointer = typename boost::allocator_pointer<allocator_type>::type;
-    using const_pointer = typename boost::allocator_const_pointer<allocator_type>::type;
-    using iterator = typename table_type::iterator;
-    using const_iterator = typename table_type::const_iterator;
+    using key_type              = typename set_types::key_type;
+    using value_type            = typename set_types::value_type;
+    using init_type             = typename set_types::init_type;
+    using size_type             = typename table_type::size_type;
+    using difference_type       = typename table_type::difference_type;
+    using hasher                = typename table_type::hasher;
+    using key_equal             = typename table_type::key_equal;
+    using allocator_type        = typename table_type::allocator_type;
+    using reference             = typename table_type::reference;
+    using const_reference       = typename table_type::const_reference;
+    using pointer               = typename table_type::pointer;
+    using const_pointer         = typename table_type::const_pointer;
+    using iterator              = typename table_type::iterator;
+    using const_iterator        = typename table_type::const_iterator;
 
 private:
     using param_type = typename CallTraits<value_type>::param_type;
@@ -88,6 +87,52 @@ public:
     {
         table_ = std::move(right.table_);
         return *this;
+    }
+    /**
+     * @brief Get number of elements in set.
+     * @return
+     */
+    NODISCARD size_type Size() const
+    {
+        return table_.size();
+    }
+    /**
+     * @brief Get number of elements in set.
+     * @return
+     */
+    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
+    {
+        return table_.size();
+    }
+    /**
+     * @brief Get maximum number of elements in set.
+     * @return
+     */
+    NODISCARD constexpr size_type MaxSize() const { return table_.max_size(); }
+    /**
+     * @brief Get maximum number of elements in set.
+     * @return
+     */
+    NODISCARD DO_NOT_USE_DIRECTLY constexpr size_type max_size() const { return table_.max_size(); }
+    /**
+     * @brief Get capacity of set.
+     * @return
+     */
+    NODISCARD size_type Capacity() const
+    {
+        return table_.capacity();
+    }
+    /**
+     * @brief Reserves memory such that the set can contain at least number elements.
+     * @param new_capacity
+     */
+    void Reserve(size_type new_capacity)
+    {
+        table_.reserve(new_capacity);
+    }
+    void Clear()
+    {
+        table_.clear();
     }
     /**
      * @brief Inserts element only if there is no element equivalently.

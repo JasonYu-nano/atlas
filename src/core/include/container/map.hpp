@@ -4,7 +4,6 @@
 #pragma once
 
 #include "container/flat_tree.hpp"
-#include "utility/concepts.hpp"
 
 namespace atlas
 {
@@ -26,59 +25,43 @@ struct KeyOfPair
 
 }
 
-template<LessComparable Key, typename Value, typename Allocator = HeapAllocator<void>>
-class Map : private details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>
+template<typename Key, typename Value, typename Allocator = HeapAllocator<void>, typename Compare = std::less<Key>>
+class Map
 {
-    using base                      = details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>;
-    using underlying_container_type = typename base::container_type;
-    using key_compare               = typename base::key_compare;
-    using key_param_type            = typename base::key_param_type;
+    using tree_type                 = details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, Compare, Allocator>;
+    using key_compare               = typename tree_type::key_compare;
+    using key_param_type            = typename tree_type::key_param_type;
 
 public:
-    using key_type                  = typename base::key_type;
+    using key_type                  = typename tree_type::key_type;
     using value_type                = Value;
-    using pair_type                 = typename base::value_type;
-    using size_type                 = typename base::size_type;
-    using allocator_type            = typename base::allocator_type;
-    using iterator                  = typename base::iterator;
-    using const_iterator            = typename base::const_iterator;
-    using reverse_iterator          = typename base::reverse_iterator;
-    using const_reverse_iterator    = typename base::const_reverse_iterator;
+    using pair_type                 = typename tree_type::value_type;
+    using size_type                 = typename tree_type::size_type;
+    using allocator_type            = typename tree_type::allocator_type;
+    using iterator                  = typename tree_type::iterator;
+    using const_iterator            = typename tree_type::const_iterator;
+    using reverse_iterator          = typename tree_type::reverse_iterator;
+    using const_reverse_iterator    = typename tree_type::const_reverse_iterator;
 
-    using base::begin;
-    using base::end;
-    using base::cbegin;
-    using base::cend;
-    using base::rbegin;
-    using base::rend;
-    using base::crbegin;
-    using base::crend;
-
-    using base::Size;
-    using base::size;
-    using base::Capacity;
-    using base::Reserve;
-    using base::Clear;
-    using base::ShrinkToFit;
     /**
      * @brief Constructor, initialize allocator.
      * @param alloc
      */
-    explicit Map(const allocator_type& alloc = allocator_type()) : base(alloc) {};
+    explicit Map(const allocator_type& alloc = allocator_type()) : tree_(alloc) {};
     /**
      * @brief Constructor, initialize with given capacity.
      * @param capacity
      * @param alloc
      */
     explicit Map(size_type capacity, const allocator_type& alloc = allocator_type())
-        : base(key_compare(), capacity, alloc) {};
+        : tree_(key_compare(), capacity, alloc) {};
     /**
      * @brief Constructor from an initializer
      * @param initializer
      * @param alloc
      */
     Map(const std::initializer_list<pair_type>& initializer, const allocator_type& alloc = allocator_type())
-        : base(key_compare(), true, initializer, alloc) {}
+        : tree_(key_compare(), true, initializer, alloc) {}
     /**
      * @brief Constructor from a range
      * @tparam RangeType
@@ -87,30 +70,92 @@ public:
      */
     template<std::ranges::forward_range RangeType>
     explicit Map(const RangeType& range, const allocator_type& alloc = allocator_type())
-        : base(key_compare(), true, range, alloc) {}
+        : tree_(key_compare(), true, range, alloc) {}
 
     template<typename AnyAllocator>
-    explicit Map(const Map<key_type, value_type, AnyAllocator>& right) : base(right) {}
+    explicit Map(const Map<key_type, value_type, AnyAllocator>& right) : tree_(right) {}
 
     template<typename AnyAllocator>
     explicit Map(Map<key_type, value_type, AnyAllocator>&& right) noexcept
-        : base(std::forward<Map<key_type, value_type, AnyAllocator>>(right)) {}
+        : tree_(std::forward<Map<key_type, value_type, AnyAllocator>>(right)) {}
 
 
     template<typename AnyAllocator>
     Map& operator= (const Map<key_type, value_type, AnyAllocator>& right)
     {
-        base::operator=(right);
+        tree_ = right.tree_;
         return *this;
     }
 
     template<typename AnyAllocator>
     Map& operator= (Map<key_type, value_type, AnyAllocator>&& right)
     {
-        base::operator=(std::forward<Map<key_type, value_type, AnyAllocator>>(right));
+        tree_ = std::move(right.tree_);
         return *this;
     }
-
+    /**
+     * @brief Get number of elements in map.
+     * @return
+     */
+    NODISCARD size_type Size() const
+    {
+        return tree_.Size();
+    }
+    /**
+     * @brief Get number of elements in map.
+     * @return
+     */
+    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
+    {
+        return tree_.Size();
+    }
+    /**
+     * @brief Get maximum number of elements in map.
+     * @return
+     */
+    NODISCARD size_type MaxSize() const
+    {
+        return tree_.MaxSize();
+    }
+    /**
+     * @brief Get maximum number of elements in map.
+     * @return
+     */
+    NODISCARD DO_NOT_USE_DIRECTLY size_type max_size() const
+    {
+        return tree_.max_size();
+    }
+    /**
+     * @brief Get capacity of map.
+     * @return
+     */
+    NODISCARD size_type Capacity() const
+    {
+        return tree_.Capacity();
+    }
+    /**
+     * @brief Reserves memory such that the map can contain at least number elements.
+     * @param new_capacity
+     */
+    void Reserve(size_type new_capacity)
+    {
+        tree_.Reserve(new_capacity);
+    }
+    /**
+     * @brief Clear all elements.
+     * @param reset_capacity Deallocate the remain capacity. Default is false.
+     */
+    void Clear(bool reset_capacity = false)
+    {
+        tree_.Clear(reset_capacity);
+    }
+    /**
+     * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
+     */
+    void ShrinkToFit()
+    {
+        tree_.ShrinkToFit();
+    }
     /**
      * @brief Inserts value only if there is no key equivalently.
      * @param key
@@ -120,7 +165,7 @@ public:
      */
     iterator Insert(const key_type& key, const value_type& value, bool* already_in_map = nullptr)
     {
-        return base::InsertUnique(pair_type(key, value), already_in_map);
+        return tree_.InsertUnique(pair_type(key, value), already_in_map);
     }
     /**
      * @brief Inserts value only if there is no key equivalently.
@@ -131,7 +176,7 @@ public:
      */
     iterator Insert(key_type&& key, const value_type& value, bool* already_in_map = nullptr)
     {
-        return base::InsertUnique(pair_type(std::forward<key_type>(key), value), already_in_map);
+        return tree_.InsertUnique(pair_type(std::forward<key_type>(key), value), already_in_map);
     }
     /**
      * @brief Inserts value only if there is no key equivalently.
@@ -142,7 +187,7 @@ public:
      */
     iterator Insert(const key_type& key, value_type&& value, bool* already_in_map = nullptr)
     {
-        return base::InsertUnique(pair_type(key, std::forward<value_type>(value)), already_in_map);
+        return tree_.InsertUnique(pair_type(key, std::forward<value_type>(value)), already_in_map);
     }
     /**
      * @brief Inserts value only if there is no key equivalently.
@@ -153,7 +198,7 @@ public:
      */
     iterator Insert(key_type&& key, value_type&& value, bool* already_in_map = nullptr)
     {
-        return base::InsertUnique(pair_type(std::forward<key_type>(key), std::forward<value_type>(value)), already_in_map);
+        return tree_.InsertUnique(pair_type(std::forward<key_type>(key), std::forward<value_type>(value)), already_in_map);
     }
     /**
      * @brief Inserts each element from the range to map.
@@ -163,7 +208,7 @@ public:
     template<std::ranges::forward_range RangeType>
     void Insert(const RangeType& range)
     {
-        base::InsertUnique(range);
+        tree_.InsertUnique(range);
     }
     /**
      * @brief Finds the element associated with given key, or if none exists, adds a value using the default constructor.
@@ -172,10 +217,10 @@ public:
      */
     iterator FindOrInsert(const key_type& key)
     {
-        iterator it = base::Find(key);
-        if (it == base::end())
+        iterator it = tree_.Find(key);
+        if (it == tree_.end())
         {
-            it = base::InsertUnique(pair_type(key, value_type()));
+            it = tree_.InsertUnique(pair_type(key, value_type()));
         }
         return it;
     }
@@ -186,10 +231,10 @@ public:
      */
     iterator FindOrInsert(key_type&& key)
     {
-        iterator it = base::Find(key);
-        if (it == base::end())
+        iterator it = tree_.Find(key);
+        if (it == tree_.end())
         {
-            it = base::InsertUnique(pair_type(std::forward<key_type>(key), value_type()));
+            it = tree_.InsertUnique(pair_type(std::forward<key_type>(key), value_type()));
         }
         return it;
     }
@@ -200,7 +245,7 @@ public:
      */
     NODISCARD bool Contains(const key_param_type key) const
     {
-        return base::Find(key) != end();
+        return tree_.Find(key) != end();
     }
     /**
      * @brief Finds the element associated with given key.
@@ -209,7 +254,7 @@ public:
      */
     NODISCARD iterator Find(const key_param_type key)
     {
-        return base::Find(key);
+        return tree_.Find(key);
     }
     /**
      * @brief Finds the element associated with given key.
@@ -218,7 +263,7 @@ public:
      */
     NODISCARD const_iterator Find(const key_param_type key) const
     {
-        return base::Find(key);
+        return tree_.Find(key);
     }
     /**
      * @brief Finds the value associated with given key.
@@ -227,8 +272,8 @@ public:
      */
     NODISCARD value_type* FindValue(const key_param_type key)
     {
-        iterator it = base::Find(key);
-        return it == base::end() ? nullptr : &it->second;
+        iterator it = tree_.Find(key);
+        return it == tree_.end() ? nullptr : &it->second;
     }
     /**
      * @brief Finds the value associated with given key.
@@ -237,8 +282,8 @@ public:
      */
     NODISCARD const value_type* FindValue(const key_param_type key) const
     {
-        iterator it = base::Find(key);
-        return it == base::end() ? nullptr : &it->second;
+        iterator it = tree_.Find(key);
+        return it == tree_.end() ? nullptr : &it->second;
     }
     /**
      * @brief Finds the value associated with given key.
@@ -247,8 +292,8 @@ public:
      */
     NODISCARD value_type& FindValueRef(const key_param_type key)
     {
-        iterator it = base::Find(key);
-        ASSERT(it != base::end());
+        iterator it = tree_.Find(key);
+        ASSERT(it != tree_.end());
         return it->second;
     }
     /**
@@ -258,8 +303,8 @@ public:
      */
     NODISCARD const value_type& FindValueRef(const key_param_type key) const
     {
-        iterator it = base::Find(key);
-        ASSERT(it != base::end());
+        iterator it = tree_.Find(key);
+        ASSERT(it != tree_.end());
         return it->second;
     }
     /**
@@ -269,7 +314,7 @@ public:
      */
     bool Remove(const key_param_type key)
     {
-        return base::RemoveUnique(key) > 0;
+        return tree_.RemoveUnique(key) > 0;
     }
     /**
      * @brief Removes element at given position.
@@ -278,64 +323,60 @@ public:
      */
     iterator Remove(const_iterator where)
     {
-        return base::Remove(where);
+        return tree_.Remove(where);
     }
+
+    NODISCARD iterator begin() { return tree_.begin(); }
+    NODISCARD const_iterator begin() const{ return tree_.cbegin(); }
+    NODISCARD iterator end() { return tree_.end(); }
+    NODISCARD const_iterator end() const { return tree_.cend(); }
+    NODISCARD const_iterator cbegin() const { return tree_.cbegin(); }
+    NODISCARD const_iterator cend() const { return tree_.cend(); }
+    NODISCARD reverse_iterator rbegin() const { return tree_.rbegin(); }
+    NODISCARD reverse_iterator rend() const { return tree_.rend(); }
+    NODISCARD const_reverse_iterator crbegin() const { return tree_.crbegin(); }
+    NODISCARD const_reverse_iterator crend() const { return tree_.crend(); }
+private:
+    tree_type tree_;
 };
 
-template<LessComparable Key, typename Value, typename Allocator = HeapAllocator<void>>
-class MultiMap : private details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>
+template<typename Key, typename Value, typename Allocator = HeapAllocator<void>, typename Compare = std::less<Key>>
+class MultiMap
 {
-    using base                      = details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, std::less<Key>, Allocator>;
-    using underlying_container_type = typename base::container_type;
-    using key_compare               = typename base::key_compare;
-    using key_param_type            = typename base::key_param_type;
+    using tree_type                 = details::FlatTree<std::pair<Key, Value>, details::KeyOfPair<Key>, Compare, Allocator>;
+    using key_compare               = typename tree_type::key_compare;
+    using key_param_type            = typename tree_type::key_param_type;
 
 public:
-    using key_type                  = typename base::key_type;
+    using key_type                  = typename tree_type::key_type;
     using value_type                = Value;
-    using pair_type                 = typename base::value_type;
-    using size_type                 = typename base::size_type;
-    using allocator_type            = typename base::allocator_type;
-    using iterator                  = typename base::iterator;
-    using const_iterator            = typename base::const_iterator;
-    using reverse_iterator          = typename base::reverse_iterator;
-    using const_reverse_iterator    = typename base::const_reverse_iterator;
+    using pair_type                 = typename tree_type::value_type;
+    using size_type                 = typename tree_type::size_type;
+    using allocator_type            = typename tree_type::allocator_type;
+    using iterator                  = typename tree_type::iterator;
+    using const_iterator            = typename tree_type::const_iterator;
+    using reverse_iterator          = typename tree_type::reverse_iterator;
+    using const_reverse_iterator    = typename tree_type::const_reverse_iterator;
 
-    using base::begin;
-    using base::end;
-    using base::cbegin;
-    using base::cend;
-    using base::rbegin;
-    using base::rend;
-    using base::crbegin;
-    using base::crend;
-
-    using base::Size;
-    using base::size;
-    using base::Capacity;
-    using base::Count;
-    using base::Reserve;
-    using base::Clear;
-    using base::ShrinkToFit;
     /**
      * @brief Constructor, initialize allocator.
      * @param alloc
      */
-    explicit MultiMap(const allocator_type& alloc = allocator_type()) : base(alloc) {};
+    explicit MultiMap(const allocator_type& alloc = allocator_type()) : tree_(alloc) {};
     /**
      * @brief Constructor, initialize with given capacity.
      * @param capacity
      * @param alloc
      */
     explicit MultiMap(size_type capacity, const allocator_type& alloc = allocator_type())
-        : base(key_compare(), capacity, alloc) {};
+        : tree_(key_compare(), capacity, alloc) {};
     /**
      * @brief Constructor from an initializer
      * @param initializer
      * @param alloc
      */
     MultiMap(const std::initializer_list<pair_type>& initializer, const allocator_type& alloc = allocator_type())
-        : base(key_compare(), false, initializer, alloc) {}
+        : tree_(key_compare(), false, initializer, alloc) {}
     /**
      * @brief Constructor from a range
      * @tparam RangeType
@@ -344,30 +385,92 @@ public:
      */
     template<std::ranges::bidirectional_range RangeType>
     explicit MultiMap(const RangeType& range, const allocator_type& alloc = allocator_type())
-        : base(key_compare(), false, range, alloc) {}
+        : tree_(key_compare(), false, range, alloc) {}
 
     template<typename AnyAllocator>
-    explicit MultiMap(const MultiMap<key_type, value_type, AnyAllocator>& right) : base(right) {}
+    explicit MultiMap(const MultiMap<key_type, value_type, AnyAllocator>& right) : tree_(right) {}
 
     template<typename AnyAllocator>
     explicit MultiMap(MultiMap<key_type, value_type, AnyAllocator>&& right) noexcept
-        : base(std::forward<MultiMap<key_type, value_type, AnyAllocator>>(right)) {}
+        : tree_(std::forward<MultiMap<key_type, value_type, AnyAllocator>>(right)) {}
 
 
     template<typename AnyAllocator>
     MultiMap& operator= (const MultiMap<key_type, value_type, AnyAllocator>& right)
     {
-        base::operator=(right);
+        tree_ = right.tree_;
         return *this;
     }
 
     template<typename AnyAllocator>
     MultiMap& operator= (MultiMap<key_type, value_type, AnyAllocator>&& right)
     {
-        base::operator=(std::forward<MultiMap<key_type, value_type, AnyAllocator>>(right));
+        tree_ = std::move(right.tree_);
         return *this;
     }
-
+    /**
+     * @brief Get number of elements in map.
+     * @return
+     */
+    NODISCARD size_type Size() const
+    {
+        return tree_.Size();
+    }
+    /**
+     * @brief Get number of elements in map.
+     * @return
+     */
+    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
+    {
+        return tree_.Size();
+    }
+    /**
+     * @brief Get maximum number of elements in map.
+     * @return
+     */
+    NODISCARD size_type MaxSize() const
+    {
+        return tree_.MaxSize();
+    }
+    /**
+     * @brief Get maximum number of elements in map.
+     * @return
+     */
+    NODISCARD DO_NOT_USE_DIRECTLY size_type max_size() const
+    {
+        return tree_.max_size();
+    }
+    /**
+     * @brief Get capacity of map.
+     * @return
+     */
+    NODISCARD size_type Capacity() const
+    {
+        return tree_.Capacity();
+    }
+    /**
+     * @brief Reserves memory such that the map can contain at least number elements.
+     * @param new_capacity
+     */
+    void Reserve(size_type new_capacity)
+    {
+        tree_.Reserve(new_capacity);
+    }
+    /**
+     * @brief Clear all elements.
+     * @param reset_capacity Deallocate the remain capacity. Default is false.
+     */
+    void Clear(bool reset_capacity = false)
+    {
+        tree_.Clear(reset_capacity);
+    }
+    /**
+     * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
+     */
+    void ShrinkToFit()
+    {
+        tree_.ShrinkToFit();
+    }
     /**
      * @brief Inserts value.
      * @param key
@@ -376,7 +479,7 @@ public:
      */
     iterator Insert(const key_type& key, const value_type& value)
     {
-        return base::InsertEqual(pair_type(key, value));
+        return tree_.InsertEqual(pair_type(key, value));
     }
     /**
      * @brief Inserts value.
@@ -386,7 +489,7 @@ public:
      */
     iterator Insert(key_type&& key, const value_type& value)
     {
-        return base::InsertEqual(pair_type(std::forward<key_type>(key), value));
+        return tree_.InsertEqual(pair_type(std::forward<key_type>(key), value));
     }
     /**
      * @brief Inserts value.
@@ -396,7 +499,7 @@ public:
      */
     iterator Insert(const key_type& key, value_type&& value)
     {
-        return base::InsertEqual(pair_type(key, std::forward<value_type>(value)));
+        return tree_.InsertEqual(pair_type(key, std::forward<value_type>(value)));
     }
     /**
      * @brief Inserts value.
@@ -406,7 +509,7 @@ public:
      */
     iterator Insert(key_type&& key, value_type&& value)
     {
-        return base::InsertEqual(pair_type(std::forward<key_type>(key), std::forward<value_type>(value)));
+        return tree_.InsertEqual(pair_type(std::forward<key_type>(key), std::forward<value_type>(value)));
     }
     /**
      * @brief Inserts each element from the range to map.
@@ -416,7 +519,7 @@ public:
     template<std::ranges::forward_range RangeType>
     void Insert(const RangeType& range)
     {
-        base::InsertEqual(range);
+        tree_.InsertEqual(range);
     }
     /**
      * @brief Finds the element associated with given key, or if none exists, adds a value using the default constructor.
@@ -425,10 +528,10 @@ public:
      */
     iterator FindOrInsert(const key_type& key)
     {
-        iterator it = base::Find(key);
-        if (it == base::end())
+        iterator it = tree_.Find(key);
+        if (it == tree_.end())
         {
-            it = base::InsertEqual(pair_type(key, value_type()));
+            it = tree_.InsertEqual(pair_type(key, value_type()));
         }
         return it;
     }
@@ -439,10 +542,10 @@ public:
      */
     iterator FindOrInsert(key_type&& key)
     {
-        iterator it = base::Find(key);
-        if (it == base::end())
+        iterator it = tree_.Find(key);
+        if (it == tree_.end())
         {
-            it = base::InsertEqual(pair_type(std::forward<key_type>(key), value_type()));
+            it = tree_.InsertEqual(pair_type(std::forward<key_type>(key), value_type()));
         }
         return it;
     }
@@ -453,7 +556,16 @@ public:
      */
     NODISCARD bool Contains(const key_param_type key) const
     {
-        return base::Find(key) != end();
+        return tree_.Find(key) != end();
+    }
+    /**
+     * @brief Get number of elements equivalent to the given one.
+     * @param value
+     * @return
+     */
+    size_type Count(const key_param_type value) const
+    {
+        return tree_.Count(value);
     }
     /**
      * @brief Finds first element associated with given key.
@@ -462,7 +574,7 @@ public:
      */
     NODISCARD iterator Find(const key_param_type key)
     {
-        return base::Find(key);
+        return tree_.Find(key);
     }
     /**
      * @brief Finds first element associated with given key.
@@ -471,7 +583,7 @@ public:
      */
     NODISCARD const_iterator Find(const key_param_type key) const
     {
-        return base::Find(key);
+        return tree_.Find(key);
     }
     /**
      * @brief Finds first value associated with given key.
@@ -480,8 +592,8 @@ public:
      */
     NODISCARD value_type* FindValue(const key_param_type key)
     {
-        iterator it = base::Find(key);
-        return it == base::end() ? nullptr : &it->second;
+        iterator it = tree_.Find(key);
+        return it == tree_.end() ? nullptr : &it->second;
     }
     /**
      * @brief Finds first value associated with given key.
@@ -490,8 +602,8 @@ public:
      */
     NODISCARD const value_type* FindValue(const key_param_type key) const
     {
-        iterator it = base::Find(key);
-        return it == base::end() ? nullptr : &it->second;
+        iterator it = tree_.Find(key);
+        return it == tree_.end() ? nullptr : &it->second;
     }
     /**
      * @brief Finds first value associated with given key.
@@ -500,8 +612,8 @@ public:
      */
     NODISCARD value_type& FindValueRef(const key_param_type key)
     {
-        iterator it = base::Find(key);
-        ASSERT(it != base::end());
+        iterator it = tree_.Find(key);
+        ASSERT(it != tree_.end());
         return it->second;
     }
     /**
@@ -511,8 +623,8 @@ public:
      */
     NODISCARD const value_type& FindValueRef(const key_param_type key) const
     {
-        iterator it = base::Find(key);
-        ASSERT(it != base::end());
+        iterator it = tree_.Find(key);
+        ASSERT(it != tree_.end());
         return it->second;
     }
     /**
@@ -522,7 +634,7 @@ public:
      */
     size_type Remove(const key_param_type key)
     {
-        return base::Remove(key);
+        return tree_.Remove(key);
     }
     /**
      * @brief Removes element at given position.
@@ -531,8 +643,21 @@ public:
      */
     iterator Remove(const_iterator where)
     {
-        return base::Remove(where);
+        return tree_.Remove(where);
     }
+
+    NODISCARD iterator begin() { return tree_.begin(); }
+    NODISCARD const_iterator begin() const{ return tree_.cbegin(); }
+    NODISCARD iterator end() { return tree_.end(); }
+    NODISCARD const_iterator end() const { return tree_.cend(); }
+    NODISCARD const_iterator cbegin() const { return tree_.cbegin(); }
+    NODISCARD const_iterator cend() const { return tree_.cend(); }
+    NODISCARD reverse_iterator rbegin() const { return tree_.rbegin(); }
+    NODISCARD reverse_iterator rend() const { return tree_.rend(); }
+    NODISCARD const_reverse_iterator crbegin() const { return tree_.crbegin(); }
+    NODISCARD const_reverse_iterator crend() const { return tree_.crend(); }
+private:
+    tree_type tree_;
 };
 
 } // namespace atlas

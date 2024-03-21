@@ -143,6 +143,8 @@ public:
      */
     NODISCARD size_type Size() const { return GetUnderlyingContainer().Size(); }
     NODISCARD DO_NOT_USE_DIRECTLY size_type size() const { return Size(); }
+    NODISCARD size_type MaxSize() const { return GetUnderlyingContainer().MaxSize(); }
+    NODISCARD DO_NOT_USE_DIRECTLY size_type max_size() const { return GetUnderlyingContainer().max_size(); }
     /**
      * @brief Get capacity of container.
      * @return

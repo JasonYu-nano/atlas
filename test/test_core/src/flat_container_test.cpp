@@ -6,6 +6,7 @@
 #include "container/set.hpp"
 #include "container/map.hpp"
 #include "container/unordered_set.hpp"
+#include "container/unordered_map.hpp"
 
 namespace atlas::test
 {
@@ -242,6 +243,13 @@ TEST(UnorderedSetCtor, UnorderedSetTest)
     UnorderedSet<int32> set;
     set.Insert(5);
     EXPECT_TRUE(set.Contains(5));
+}
+
+TEST(UnorderedMapCtor, UnorderedMapTest)
+{
+    UnorderedMap<std::string, int32> map;
+    map.Insert("atlas", 5);
+    EXPECT_TRUE(map.Contains("atlas"));
 }
 
 }
