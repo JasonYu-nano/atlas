@@ -282,7 +282,7 @@ public:
      */
     NODISCARD const value_type* FindValue(const key_param_type key) const
     {
-        iterator it = table_.find(key);
+        const_iterator it = table_.find(key);
         return it == end() ? nullptr : &it->second;
     }
     /**

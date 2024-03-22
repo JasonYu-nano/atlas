@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 
 #include "string/string.hpp"
+#include "string/string_name.hpp"
 
 namespace atlas::test
 {
@@ -238,6 +239,30 @@ TEST(StringIter, StringTest)
         EXPECT_TRUE(std::distance(str.crbegin(), str.crend()) == 5);
         EXPECT_TRUE(std::distance(str.cbegin(), str.cbegin() + 5) == 5);
     }
+}
+
+TEST(StringNameTest, StringNameTest)
+{
+    {
+        StringName name("atlas");
+        EXPECT_TRUE(name.ToString() == "atlas");
+    }
+    {
+        StringName name("atlas_12");
+        EXPECT_TRUE(name.ToString() == "atlas_12");
+    }
+    {
+        StringName name("_12");
+        EXPECT_TRUE(name.IsNone() && name.ToString() == "none" && name.GetNumber() == 0);
+    }
+    {
+        EXPECT_TRUE(StringName("") == StringName("_12"));
+    }
+#if !STRING_NAME_CASE_SENSITIVE
+    {
+        EXPECT_TRUE(StringName("atlas_12") == StringName("ATLAS_12"));
+    };
+#endif
 }
 
 }
