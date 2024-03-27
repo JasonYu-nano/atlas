@@ -11,6 +11,7 @@
 #include "boost/algorithm/string/find.hpp"
 #include "boost/algorithm/string/finder.hpp"
 
+#include "string/string_utility.hpp"
 #include "utility/compression_pair.hpp"
 #include "memory/allocator.hpp"
 #include "string/locale.hpp"
@@ -133,7 +134,7 @@ public:
     using allocator_type = HeapAllocator<value_type>;
     using allocator_traits = AllocatorTraits<allocator_type>;
     using size_type = allocator_traits::size_type;
-    using view_type = std::basic_string_view<char8_t>;
+    using view_type = StringView<char8_t>;// std::basic_string_view<char8_t>;
     using pointer = value_type*;
     using const_pointer = const value_type*;
     using iterator = PointerIterator<value_type>;

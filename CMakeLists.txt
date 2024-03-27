@@ -10,6 +10,7 @@ set(dotnet_sdk_version "net7.0")
 # compile option
 option(shared           "build with dynamic link"                   ON)
 option(unicode          "build with unicode string"                 ON)
+option(with_editor      "build with game editor"                    ON)
 option(with_test        "build with unit test"                      OFF)
 option(with_benchmark   "build with benchmark"                      OFF)
 option(with_ispc        "use ispc compiler to generate simd code"   OFF)
@@ -21,6 +22,10 @@ endif()
 if(unicode)
     add_compile_definitions(UNICODE)
 endif()
+
+if(with_editor)
+    add_compile_definitions(WITH_EDITOR=1)
+endif ()
 
 if (MSVC)
     if (shared)

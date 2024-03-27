@@ -8,3 +8,7 @@ add_atlas_library(
         PRIVATE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
         PUBLIC_LINK_LIB spdlog::spdlog Boost::locale
 )
+
+if (with_editor)
+    target_compile_definitions(core PUBLIC NAME_PRESERVING_CASE_SENSITIVE=1)
+endif ()

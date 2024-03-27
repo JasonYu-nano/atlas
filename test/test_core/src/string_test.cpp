@@ -246,10 +246,17 @@ TEST(StringNameTest, StringNameTest)
     {
         StringName name("atlas");
         EXPECT_TRUE(name.ToString() == "atlas");
+
+        StringName name2 = name;
+        EXPECT_TRUE(name2 == name);
     }
     {
         StringName name("atlas_12");
-        EXPECT_TRUE(name.ToString() == "atlas_12");
+        EXPECT_TRUE(name.ToString() == "atlas_12" && name.GetNumber() == 12);
+    }
+    {
+        StringName name("atlas_012");
+        EXPECT_TRUE(name.ToString() == "atlas_012" && name.GetNumber() == 0);
     }
     {
         StringName name("_12");
@@ -263,6 +270,9 @@ TEST(StringNameTest, StringNameTest)
         EXPECT_TRUE(StringName("atlas_12") == StringName("ATLAS_12"));
     };
 #endif
+    {
+        EXPECT_TRUE(StringName("atlas_12").CompareLexical(StringName("BTLAS_12")) < 0);
+    }
 }
 
 }
