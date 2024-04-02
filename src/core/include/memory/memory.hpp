@@ -77,8 +77,14 @@ public:
 private:
     static MallocBase* GetMallocInstance()
     {
-        static std::unique_ptr<MallocBase> malloc_instance = PlatformMemory::GetDefaultMalloc();
-        return malloc_instance.get();
+        if (!malloc_instance_)
+        {
+            malloc_instance_ = PlatformMemory::GetDefaultMalloc();
+        }
+
+        return malloc_instance_.get();
     }
+
+    static inline std::unique_ptr<MallocBase> malloc_instance_;
 };
 }
