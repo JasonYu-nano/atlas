@@ -31,11 +31,14 @@ public:
         std::string_view view(name);
         Construct(view);
     }
+
+#if CHAR8T_SUPPORT
     explicit StringName(const char8_t* name)
     {
         std::u8string_view view(name);
         Construct(view);
     }
+#endif
     StringName(const StringName& rhs) noexcept = default;
 
     StringName& operator= (const StringName& rhs) noexcept = default;

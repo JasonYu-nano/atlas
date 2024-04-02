@@ -19,43 +19,43 @@ TEST(StringCtor, StringTest)
     }
 
     {
-        String str(u8'a');
+        String str('a');
         EXPECT_TRUE(str.Length() == 1);
         EXPECT_TRUE(str == String('a'));
     }
 
     {
-        String str(u8'b', 64);
+        String str('b', 64);
         EXPECT_TRUE(str.Length() == 64);
         EXPECT_TRUE(str == String('b', 64));
     }
 
     {
-        auto raw_str = u8"this is an utf-8 string";
+        auto raw_str = "this is an utf-8 string";
         String str(raw_str);
-        EXPECT_TRUE(str.Length() == std::char_traits<char8_t>::length(raw_str));
+        EXPECT_TRUE(str.Length() == std::char_traits<char>::length(raw_str));
         EXPECT_TRUE(str == String("this is an utf-8 string"));
     }
 
     {
-        auto raw_str = u8"this is an utf-8 string";
+        auto raw_str = "this is an utf-8 string";
         String str(raw_str, 16);
         EXPECT_TRUE(str.Length() == 16);
         EXPECT_TRUE(str == String("this is an utf-8"));
     }
 
     {
-        String str(u8"💖");
+        String str("💖");
         EXPECT_TRUE(str.Count() == 1 && str.Length() == 4);
     }
 
     {
-        String str(u8"你好atlas");
+        String str("你好atlas");
         EXPECT_TRUE(str.Count() == 7 && str.Length() == 11);
     }
 
     {
-        String str_0(u8"你好atlas");
+        String str_0("你好atlas");
         String str_1(std::move(str_0));
         EXPECT_TRUE(str_1.Length() == 11);
 
@@ -70,13 +70,13 @@ TEST(StringCtor, StringTest)
     }
 
     {
-        String str_0 = u8"你好atlas";
-        String str_1 = u8"test";
+        String str_0 = "你好atlas";
+        String str_1 = "test";
         str_1 = str_0;
         EXPECT_TRUE(str_1 == str_0);
 
         str_1 = std::move(str_0);
-        EXPECT_TRUE(str_1 == u8"你好atlas");
+        EXPECT_TRUE(str_1 == "你好atlas");
 
         str_1 = "";
         EXPECT_TRUE(str_1.Length() == 0);
@@ -92,12 +92,12 @@ TEST(StringFormat, StringTest)
     }
 
     {
-        String str = String::Format(u8"my id is {0}", 1);
+        String str = String::Format("my id is {0}", 1);
         EXPECT_TRUE(str == "my id is 1");
     }
 
     {
-        String name = u8"阿特拉斯";
+        String name = "阿特拉斯";
         String str = String::Format("my name is {0}", name);
         EXPECT_TRUE(str == "my name is 阿特拉斯");
     }
@@ -106,7 +106,7 @@ TEST(StringFormat, StringTest)
 TEST(StringAt, StringTest)
 {
     {
-        String name = u8"阿特拉斯";
+        String name = "阿特拉斯";
         EXPECT_TRUE(String::char_traits::to_int_type(name[3]) == 231);
         EXPECT_TRUE(name.CodePointAt(1) == 29305);
         EXPECT_TRUE(name.CodePointAt(4) == CodePoint::incomplete);
@@ -117,17 +117,17 @@ TEST(StringConvert, StringTest)
 {
     {
         String name = String::FromUtf16(u"阿特拉斯");
-        EXPECT_TRUE(name == u8"阿特拉斯");
+        EXPECT_TRUE(name == "阿特拉斯");
     }
 
     {
         String name = String::FromUtf32(U"阿特拉斯");
-        EXPECT_TRUE(name == u8"阿特拉斯");
+        EXPECT_TRUE(name == "阿特拉斯");
     }
 
     {
         String name = String::From(std::wstring(L"阿特拉斯"));
-        EXPECT_TRUE(name == u8"阿特拉斯");
+        EXPECT_TRUE(name == "阿特拉斯");
     }
 
     {
@@ -159,21 +159,21 @@ TEST(StringSearch, StringTest)
         EXPECT_FALSE(name.StartsWith(String("atlas")));
         EXPECT_TRUE(name.StartsWith("Atlas"));
         EXPECT_FALSE(name.StartsWith(String("Atlas阿特拉斯A")));
-        EXPECT_TRUE(name.StartsWith(u8"atlas", ECaseSensitive::Insensitive));
+        EXPECT_TRUE(name.StartsWith("atlas", ECaseSensitive::Insensitive));
     }
     {
         String name = "阿特拉斯Atlas";
         EXPECT_FALSE(name.EndsWith(String("atlas")));
         EXPECT_TRUE(name.EndsWith("Atlas"));
         EXPECT_FALSE(name.EndsWith(String("阿特拉斯AtlasA")));
-        EXPECT_TRUE(name.EndsWith(u8"atlas", ECaseSensitive::Insensitive));
+        EXPECT_TRUE(name.EndsWith("atlas", ECaseSensitive::Insensitive));
     }
     {
         String name = "Atlas";
-        EXPECT_TRUE(name.IndexOf(u8"la") == 2);
+        EXPECT_TRUE(name.IndexOf("la") == 2);
         EXPECT_TRUE(name.IndexOf("al") == INDEX_NONE);
         EXPECT_TRUE(name.IndexOf("at", ECaseSensitive::Insensitive) == 0);
-        EXPECT_TRUE(name.IndexOf(String::view_type(u8"at")) == INDEX_NONE);
+        EXPECT_TRUE(name.IndexOf(String::view_type(CHAR_T("at"))) == INDEX_NONE);
         std::shared_ptr<String> a;
     }
 }
@@ -182,28 +182,28 @@ TEST(StringModify, StringTest)
 {
     {
         String name = "Atlas";
-        String::view_type view = u8"阿特拉斯";
+        String::view_type view = CHAR_T("阿特拉斯");
         name.Append(view);
         EXPECT_TRUE(name == "Atlas阿特拉斯" && name.Length() == 17);
     }
     {
         String name = "Atlas";
-        name.Prepend(String(u8"阿特拉斯"));
+        name.Prepend(String("阿特拉斯"));
         EXPECT_TRUE(name == "阿特拉斯Atlas" && name.Length() == 17);
     }
     {
         String name = "Atlas";
-        String new_name = name.Concat(u8"阿特拉斯");
+        String new_name = name.Concat("阿特拉斯");
         EXPECT_TRUE(name == "Atlas" && new_name == "Atlas阿特拉斯" && new_name.Length() == 17);
     }
     {
         String name = "Atlas";
-        name.Insert(5, u8"阿特拉斯");
+        name.Insert(5, "阿特拉斯");
         EXPECT_TRUE(name == "Atlas阿特拉斯" && name.Length() == 17);
     }
     {
         String name = "Atlas";
-        name.Insert(0, u8"阿特拉斯");
+        name.Insert(0, "阿特拉斯");
         EXPECT_TRUE(name == "阿特拉斯Atlas" && name.Length() == 17);
     }
     {
