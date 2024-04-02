@@ -148,7 +148,7 @@ public:
         auto ret = table_.insert({key, value});
         if (already_in_set)
         {
-            *already_in_set = ret.second;
+            *already_in_set = !ret.second;
         }
         return ret.first;
     }
@@ -164,7 +164,7 @@ public:
         auto ret = table_.insert({key, std::forward<value_type>(value)});
         if (already_in_set)
         {
-            *already_in_set = ret.second;
+            *already_in_set = !ret.second;
         }
         return ret.first;
     }
@@ -180,7 +180,7 @@ public:
         auto ret = table_.insert({std::forward<key_type>(key), value});
         if (already_in_set)
         {
-            *already_in_set = ret.second;
+            *already_in_set = !ret.second;
         }
         return ret.first;
     }
@@ -196,7 +196,7 @@ public:
         auto ret = table_.insert({std::forward<key_type>(key), std::forward<value_type>(value)});
         if (already_in_set)
         {
-            *already_in_set = ret.second;
+            *already_in_set = !ret.second;
         }
         return ret.first;
     }

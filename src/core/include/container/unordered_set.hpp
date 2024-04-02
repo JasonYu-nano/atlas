@@ -145,7 +145,7 @@ public:
         auto ret = table_.insert(value);
         if (already_in_set)
         {
-            *already_in_set = ret.second;
+            *already_in_set = !ret.second;
         }
         return ret.first;
     }
@@ -160,7 +160,7 @@ public:
         auto ret = table_.insert(std::forward<value_type>(value));
         if (already_in_set)
         {
-            *already_in_set = ret.second;
+            *already_in_set = !ret.second;
         }
         return ret.first;
     }
