@@ -451,6 +451,12 @@ public:
     String& Append(const char* str) { return Append(std::string_view(str)); }
 #endif
     /**
+     * @brief Append the specified characters to the current string.
+     * @param ch
+     * @return
+     */
+    String& Append(value_type ch)  { return Append(view_type(&ch, 1)); }
+    /**
      * @brief Append the specified string to the current string.
      * @param str
      * @return Current string
@@ -473,6 +479,12 @@ public:
     String& Prepend(const char* str) { return Prepend(std::string_view(str)); }
 #endif
     /**
+     * @brief Prepend the specified characters to the current string.
+     * @param ch
+     * @return
+     */
+    String& Prepend(value_type ch) { return Prepend(view_type(&ch, 1)); }
+    /**
      * @brief Prepend the specified string to the current string.
      * @param str
      * @return Current string
@@ -494,6 +506,12 @@ public:
      */
     NODISCARD String Concat(const char* str) const { return Concat(std::string_view(str)); }
 #endif
+    /**
+     * @brief Concatenates specified const string and characters.
+     * @param ch
+     * @return
+     */
+    NODISCARD String Concat(value_type ch) const { return Concat(view_type(&ch, 1)); }
     /**
      * @brief Concatenates two specified const string.
      * @param str
@@ -618,6 +636,16 @@ public:
         return Replace(std::string_view(old_value), std::string_view(new_value));
     }
 #endif
+    /**
+     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
+     * @param old_value
+     * @param new_value
+     * @return
+     */
+    String& Replace(value_type old_value, value_type new_value)
+    {
+        return Replace(view_type(&old_value, 1), view_type(&new_value, 1));
+    }
     /**
      * @brief Replace all occurrences of a specified string in the current instance with another specified string.
      * @param old_value
