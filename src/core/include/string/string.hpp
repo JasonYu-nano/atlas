@@ -153,7 +153,7 @@ public:
     using allocator_type = HeapAllocator<value_type>;
     using allocator_traits = AllocatorTraits<allocator_type>;
     using size_type = allocator_traits::size_type;
-    using view_type = StringView<value_type>;
+    using view_type = BasicStringView<value_type>;
     using pointer = value_type*;
     using const_pointer = const value_type*;
     using iterator = PointerIterator<value_type>;
@@ -251,6 +251,11 @@ public:
         Assign(right, char_traits::length(right));
         return *this;
     }
+    String& operator= (view_type right)
+    {
+        Assign(right.data(), right.length());
+        return *this;
+    }
 
     bool operator== (const String& right) const { return Equals(right, ECaseSensitive::Sensitive); }
     bool operator!= (const String& right) const { return !Equals(right, ECaseSensitive::Sensitive); }
@@ -266,6 +271,38 @@ public:
     {
         ASSERT(IsValidIndex(index));
         return GetVal().GetPtr()[index];
+    }
+
+    String operator+ (value_type ch) const
+    {
+        return Concat(view_type(&ch, 1));
+    }
+
+    String operator+ (const_pointer ptr) const
+    {
+        return Concat(ptr);
+    }
+
+    template<std::ranges::contiguous_range Range>
+    String operator+ (const Range& range) const
+    {
+        return Concat(range);
+    }
+
+    String& operator+= (value_type ch)
+    {
+        return Append(view_type(&ch, 1));
+    }
+
+    String& operator+= (const_pointer ptr)
+    {
+        return Append(ptr);
+    }
+
+    template<std::ranges::contiguous_range Range>
+    String& operator+= (const Range& range)
+    {
+        return Append(range);
     }
 
     NODISCARD inline pointer Data()                    { return GetVal().GetPtr(); }
@@ -305,7 +342,15 @@ public:
     DO_NOT_USE_DIRECTLY size_type size() const { return Size(); }
 
     DO_NOT_USE_DIRECTLY constexpr size_type max_size() { return MaxSize(); }
-
+    /**
+     * @brief Check if the string is empty.
+     * @return
+     */
+    NODISCARD bool IsEmpty() const
+    {
+        auto&& my_val = GetVal();
+        return my_val.size_ <= 0;
+    }
     /**
      * @brief Get the number of code points contained in the string.
      * @return
@@ -869,6 +914,10 @@ String& String::Append(const RangeType& range)
     {
         ReallocateGrowth(increase_size);
     }
+    else
+    {
+        Eos(length + increase_size);
+    }
 
     char_traits::copy(my_val.GetPtr() + length, reinterpret_cast<const_pointer>(range.data()), increase_size);
     return *this;
@@ -883,6 +932,10 @@ String& String::Prepend(const RangeType& range)
     if (increase_size > my_val.capacity_ - my_val.size_)
     {
         ReallocateGrowth(increase_size);
+    }
+    else
+    {
+        Eos(length + increase_size);
     }
 
     pointer ptr = my_val.GetPtr();
@@ -1094,6 +1147,8 @@ inline String::size_type String::CalculateGrowth(size_type requested) const
 
     return math::Max(requested, old + old / 2);
 }
+
+using StringView = BasicStringView<String::value_type>;
 
 }
 

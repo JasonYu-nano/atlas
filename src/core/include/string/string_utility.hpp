@@ -36,27 +36,27 @@ constexpr CharType ToUpper(CharType ch)
 }
 
 template<typename CharType>
-class StringView : public std::basic_string_view<CharType>
+class BasicStringView : public std::basic_string_view<CharType>
 {
     using base = std::basic_string_view<CharType>;
 public:
-    constexpr StringView() noexcept : base() {}
+    constexpr BasicStringView() noexcept : base() {}
 
-    constexpr StringView(const StringView& view) noexcept : base(view) {}
+    constexpr BasicStringView(const BasicStringView& view) noexcept : base(view) {}
 
-    constexpr StringView(const typename base::const_pointer str) noexcept : base(str) {}
+    constexpr BasicStringView(const typename base::const_pointer str) noexcept : base(str) {}
 
-    StringView(nullptr_t) = delete;
+    BasicStringView(nullptr_t) = delete;
 
-    constexpr StringView(const typename base::const_pointer str, const typename base::size_type count) noexcept : base(str, count) {}
+    constexpr BasicStringView(const typename base::const_pointer str, const typename base::size_type count) noexcept : base(str, count) {}
 
     template <std::contiguous_iterator Iter, std::sized_sentinel_for<Iter> Sent>
-    constexpr StringView(Iter first, Sent last) noexcept : base(first, last) {}
+    constexpr BasicStringView(Iter first, Sent last) noexcept : base(first, last) {}
 
     template <class RangeType>
-    constexpr explicit StringView(RangeType&& range) noexcept : base(std::forward<RangeType>(range)) {}
+    constexpr explicit BasicStringView(RangeType&& range) noexcept : base(std::forward<RangeType>(range)) {}
 
-    constexpr int32 compare_insensitive(const StringView rhs) const
+    constexpr int32 compare_insensitive(const BasicStringView rhs) const
     {
         auto first = this->data();
         auto second = rhs.data();

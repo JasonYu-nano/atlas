@@ -122,12 +122,12 @@ public:
         return {};
     }
 
-    String::view_type GetEntryView(const NameEntryID& entry_id) const
+    StringView GetEntryView(const NameEntryID& entry_id) const
     {
         std::shared_lock lock(mutex_);
         if (const String* val = entry_map_.FindValue(entry_id.GetDisplayID()))
         {
-            return String::view_type(*val);
+            return StringView(*val);
         }
         return {};
     }

@@ -23,7 +23,7 @@ public:
     StringName() noexcept = default;
     explicit StringName(const String& name)
     {
-        String::view_type view(name);
+        StringView view(name);
         Construct(view);
     }
     explicit StringName(const char* name)
