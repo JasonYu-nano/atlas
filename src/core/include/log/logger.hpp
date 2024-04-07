@@ -26,14 +26,13 @@ static void Log(spdlog::logger& logger, spdlog::source_loc src, level_enum level
     logger.log(src, level, fmt, std::forward<Args>(args)...);
 }
 
-#define DEFINE_LOGGER_DETAILED(logger_name, file_to_save)   \
-class Logger_##logger_name                                  \
-{                                                           \
-public:                                                     \
-    Logger_##logger_name() = delete;                        \
-    static std::unique_ptr<spdlog::logger> logger_;         \
-};                                                          \
-std::unique_ptr<spdlog::logger> Logger_##logger_name::logger_ = CreateLogger(#logger_name, #file_to_save)
+#define DEFINE_LOGGER_DETAILED(logger_name, file_to_save)                                                       \
+class Logger_##logger_name                                                                                      \
+{                                                                                                               \
+public:                                                                                                         \
+    Logger_##logger_name() = delete;                                                                            \
+    static inline std::unique_ptr<spdlog::logger> logger_ = atlas::CreateLogger(#logger_name, #file_to_save);   \
+};
 
 #define DEFINE_LOGGER(logger_name) DEFINE_LOGGER_DETAILED(logger_name, game)
 
@@ -55,3 +54,5 @@ std::unique_ptr<spdlog::logger> Logger_##logger_name::logger_ = CreateLogger(#lo
 #define CLOG_CRITICAL(expression, logger, fmt, ...) if (expression) LOG_CRITICAL(logger, fmt, ## __VA_ARGS__)
 
 }
+
+DEFINE_LOGGER(temp);
