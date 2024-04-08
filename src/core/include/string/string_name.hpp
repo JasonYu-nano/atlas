@@ -26,7 +26,7 @@ public:
         StringView view(name);
         Construct(view);
     }
-    explicit StringName(const char* name)
+    StringName(const char* name)
     {
         std::string_view view(name);
         Construct(view);
@@ -77,6 +77,19 @@ public:
 
         String prefix_name = details::NameEntryPool::Get().GetEntry(name_entry_id_);
         return String::Format("{0}_{1}", prefix_name, SUFFIX_TO_ACTUAL(number_));
+    }
+    /**
+     * @brief Convert StringName to String, excludes number part.
+     * @return
+     */
+    NODISCARD String ToLexical() const
+    {
+        if (name_entry_id_.IsNone())
+        {
+            return name_none_;
+        }
+
+        return details::NameEntryPool::Get().GetEntry(name_entry_id_);
     }
     /**
      * @brief Judges whether StringName is illegal or not.
