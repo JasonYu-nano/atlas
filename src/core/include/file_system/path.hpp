@@ -49,7 +49,7 @@ public:
      * @param other
      * @return
      */
-    Path operator/ (const String& other)
+    Path operator/ (const String& other) const
     {
         Path result = *this;
         result /= other;
@@ -61,7 +61,7 @@ public:
      * @param other
      * @return
      */
-    Path operator/ (const Path& other)
+    Path operator/ (const Path& other) const
     {
         Path result = *this;
         result /= other;
@@ -135,7 +135,7 @@ public:
      * @param other
      * @return
      */
-    Path operator+ (const Path& other)
+    Path operator+ (const Path& other) const
     {
         Path result = *this;
         result += other;
@@ -147,7 +147,7 @@ public:
      * @param other
      * @return
      */
-    Path operator+ (const String& other)
+    Path operator+ (const String& other) const
     {
         Path result = *this;
         result += other;
