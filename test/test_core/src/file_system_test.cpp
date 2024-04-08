@@ -3,7 +3,7 @@
 
 #include "gtest/gtest.h"
 
-#include "file_system/path.hpp"
+#include "file_system/directory.hpp"
 
 namespace atlas::test
 {
