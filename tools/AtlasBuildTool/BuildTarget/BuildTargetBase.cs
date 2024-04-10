@@ -10,7 +10,7 @@ class BuildTargetException : Exception
     }
 }
 
-public abstract class BuildTargetBase
+public abstract class BuildTargetBase : IComparable<BuildTargetBase>
 {
     public string TargetName { get; }
     
@@ -42,4 +42,23 @@ public abstract class BuildTargetBase
     }
 
     public abstract bool NeedExportSymbol();
+
+    public void GetAllDependenciesBuildTargets(SortedSet<BuildTargetBase> dependencies)
+    {
+        foreach (var linkTarget in PublicLinkBuildTargets)
+        {
+            linkTarget.GetAllDependenciesBuildTargets(dependencies);
+            dependencies.Add(linkTarget);
+        }
+        foreach (var linkTarget in PrivateLinkBuildTargets)
+        {
+            linkTarget.GetAllDependenciesBuildTargets(dependencies);
+            dependencies.Add(linkTarget);
+        }
+    }
+
+    public int CompareTo(BuildTargetBase? obj)
+    {
+        return String.Compare(TargetName, obj?.TargetName, StringComparison.Ordinal);
+    }
 }

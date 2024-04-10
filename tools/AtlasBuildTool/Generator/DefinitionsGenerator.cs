@@ -100,12 +100,9 @@ public class DefinitionsGenerator
             stringBuilder.AppendLine($"#define {upperName}_API ");
         }
 
-        foreach (var linkTarget in buildTarget.PublicLinkBuildTargets)
-        {
-            stringBuilder.AppendLine($"#define {linkTarget.TargetName.ToUpper()}_API DLL_IMPORT");
-        }
-        
-        foreach (var linkTarget in buildTarget.PrivateLinkBuildTargets)
+        var dependencies = new SortedSet<BuildTargetBase>();
+        buildTarget.GetAllDependenciesBuildTargets(dependencies);
+        foreach (var linkTarget in dependencies)
         {
             stringBuilder.AppendLine($"#define {linkTarget.TargetName.ToUpper()}_API DLL_IMPORT");
         }
