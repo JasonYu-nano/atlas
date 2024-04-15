@@ -25,6 +25,11 @@ public:
      * @return
      */
     static Path GetModuleDirectory();
+    /**
+     * @brief Gets directory of engine plugins.
+     * @return
+     */
+    static Path GetEnginePluginsDirectory();
 };
 
 }

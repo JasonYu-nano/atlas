@@ -20,4 +20,11 @@ Path Directory::GetModuleDirectory()
     return dir;
 }
 
+Path Directory::GetEnginePluginsDirectory()
+{
+    Path engine_root = GetEngineDirectory();
+    Path dir = engine_root / "plugins\\";
+    return dir;
+}
+
 }
