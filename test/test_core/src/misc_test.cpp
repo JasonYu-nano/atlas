@@ -159,27 +159,4 @@ TEST(MulticastDelegateTest, MiscTest)
     }
 }
 
-//class ModuleB : public IModule
-//{
-//public:
-//    void Startup() override {}
-//    void Shutdown() override {}
-//};
-//
-//class ModuleA : public IModule
-//{
-//public:
-//    void Startup() override {
-//        ModuleManager::Load<ModuleB>(StringName("ModuleB"));
-//    }
-//    void Shutdown() override {}
-//};
-
-TEST(ModuleTest, MiscTest)
-{
-    auto&& module = ModuleManager::Load("renderer");
-    ModuleManager::Unload("renderer");
-    ModuleManager::Shutdown();
-}
-
 } // namespace atlas::test

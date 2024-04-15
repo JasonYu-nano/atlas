@@ -1,0 +1,25 @@
+// Copyright(c) 2023-present, Atlas.
+// Distributed under the MIT License (http://opensource.org/licenses/MIT)
+
+#pragma once
+
+#include <memory>
+
+#include "module/module_interface.hpp"
+#include "platform_application.hpp"
+
+namespace atlas
+{
+
+class APPLICATION_API ApplicationModule : public IModule
+{
+public:
+    void Startup() override;
+
+    void Shutdown() override;
+
+private:
+    std::unique_ptr<PlatformApplication> application_{ nullptr };
+};
+
+}// namespace atlas

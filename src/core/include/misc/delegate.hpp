@@ -311,7 +311,7 @@ public:
      * @param args
      * @return
      */
-    NODISCARD RetType Execute(Args&&... args)
+    NODISCARD RetType Execute(Args... args)
     {
         return instance_->Execute(std::forward<Args>(args)...);
     }
@@ -319,7 +319,7 @@ public:
      * @brief Executes only if it is safe.
      * @param args
      */
-    void ExecuteSafe(Args&&... args)
+    void ExecuteSafe(Args... args)
     {
         if (IsSafeToExecute())
         {
