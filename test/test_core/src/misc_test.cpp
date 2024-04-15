@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 
 #include "misc/delegate_fwd.hpp"
+#include "module/module_manager.hpp"
 
 namespace atlas::test
 {
@@ -156,6 +157,29 @@ TEST(MulticastDelegateTest, MiscTest)
         EXPECT_TRUE(count == 5);
         EXPECT_FALSE(delegate.IsBound());
     }
+}
+
+//class ModuleB : public IModule
+//{
+//public:
+//    void Startup() override {}
+//    void Shutdown() override {}
+//};
+//
+//class ModuleA : public IModule
+//{
+//public:
+//    void Startup() override {
+//        ModuleManager::Load<ModuleB>(StringName("ModuleB"));
+//    }
+//    void Shutdown() override {}
+//};
+
+TEST(ModuleTest, MiscTest)
+{
+    auto&& module = ModuleManager::Load("renderer");
+    ModuleManager::Unload("renderer");
+    ModuleManager::Shutdown();
 }
 
 } // namespace atlas::test
