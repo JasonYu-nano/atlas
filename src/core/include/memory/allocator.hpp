@@ -101,6 +101,11 @@ public:
 
     constexpr ~HeapAllocator() noexcept = default;
 
+    bool operator==(const HeapAllocator&) const
+    {
+        return true;
+    }
+
     NODISCARD constexpr value_type* allocate(const size_type size)
     {
         return static_cast<value_type*>(allocate_impl<alignof(T)>(details::GetByteSize<sizeof(T)>(size)));
@@ -172,6 +177,11 @@ public:
     constexpr StackAllocator(const StackAllocator& ) noexcept {}
     constexpr ~StackAllocator() noexcept = default;
 
+    bool operator==(const StackAllocator&) const
+    {
+        return false;
+    }
+
     NODISCARD constexpr value_type* allocate(const size_type size)
     {
         ASSERT(size <= MaxSize);
@@ -225,6 +235,11 @@ public:
     constexpr InlineAllocator() noexcept = default;
     constexpr InlineAllocator(const InlineAllocator& ) noexcept {}
     constexpr ~InlineAllocator() noexcept = default;
+
+    bool operator==(const InlineAllocator&) const
+    {
+        return false;
+    }
 
     NODISCARD constexpr value_type* allocate(const size_type size)
     {
