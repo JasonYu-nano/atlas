@@ -257,6 +257,11 @@ public:
         return *this;
     }
 
+    operator view_type() const
+    {
+        return {Data(), Length()};
+    }
+
     bool operator== (const String& right) const { return Equals(right, ECaseSensitive::Sensitive); }
     bool operator!= (const String& right) const { return !Equals(right, ECaseSensitive::Sensitive); }
     bool operator< (const String& right) const  { return Compare(right, ECaseSensitive::Sensitive) < 0; }
