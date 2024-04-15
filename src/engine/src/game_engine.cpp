@@ -9,6 +9,7 @@ namespace atlas
 void GameEngine::Startup()
 {
     base::Startup();
+    ModuleManager::Load("application");
 }
 
 void GameEngine::Shutdown()
@@ -18,7 +19,10 @@ void GameEngine::Shutdown()
 
 void GameEngine::Loop()
 {
-    base::Loop();
+    // Process system event first.
+    UpdateTickTime();
+
+    tick_task_manager_->Tick(static_cast<float>(delta_time_));
 }
 
 

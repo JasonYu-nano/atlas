@@ -5,6 +5,7 @@
 
 #include "module/module_manager.hpp"
 #include "plugin_manager.hpp"
+#include "tickable/tick_task_manager.hpp"
 
 namespace atlas
 {
@@ -26,10 +27,7 @@ public:
 
     virtual void Shutdown();
 
-    virtual void Loop()
-    {
-
-    }
+    virtual void Loop();
 
     virtual void RequestShutdown()
     {
@@ -41,8 +39,20 @@ public:
         return is_shutdown_requested_;
     }
 
+    virtual void UpdateTickTime();
+
+    double GetDeletaTime() const{ return delta_time_; }
+
+    TickTaskManager* GetTickTaskManager() const { return tick_task_manager_.get(); }
+
 protected:
     bool is_shutdown_requested_{ false };
+
+    std::chrono::nanoseconds last_time_{ 0 };
+    std::chrono::nanoseconds current_time_{ 0 };
+    double delta_time_{ 0.0 };
+
+    std::unique_ptr<TickTaskManager> tick_task_manager_{ nullptr };
     std::unique_ptr<PluginManager> plugin_manager_{ nullptr };
 };
 
