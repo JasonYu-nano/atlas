@@ -53,6 +53,8 @@ public:
     template <std::contiguous_iterator Iter, std::sized_sentinel_for<Iter> Sent>
     constexpr BasicStringView(Iter first, Sent last) noexcept : base(first, last) {}
 
+    constexpr BasicStringView(std::basic_string_view<CharType> view) noexcept : base(view) {}
+
     template <class RangeType>
     constexpr explicit BasicStringView(RangeType&& range) noexcept : base(std::forward<RangeType>(range)) {}
 
