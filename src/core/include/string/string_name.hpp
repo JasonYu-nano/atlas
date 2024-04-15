@@ -28,8 +28,13 @@ public:
     }
     StringName(const char* name)
     {
-        std::string_view view(name);
+        StringView view(name);
         Construct(view);
+    }
+
+    StringName(StringView name)
+    {
+        Construct(name);
     }
 
 #if CHAR8T_SUPPORT
@@ -42,6 +47,11 @@ public:
     StringName(const StringName& rhs) noexcept = default;
 
     StringName& operator= (const StringName& rhs) noexcept = default;
+    StringName& operator= (StringView rhs)
+    {
+        Construct(rhs);
+        return *this;
+    };
 
     NODISCARD uint32 GetCompressID() const
     {
