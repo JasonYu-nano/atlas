@@ -4,6 +4,7 @@
 #pragma once
 
 #include <filesystem>
+#include <list>
 
 #include "string/string.hpp"
 
@@ -442,7 +443,7 @@ public:
      */
     NODISCARD std::string ToOSPath() const
     {
-        return { path_.data() };
+        return { text_.data() };
     }
 #endif
 
