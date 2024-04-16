@@ -49,28 +49,6 @@ public:
         GetMallocInstance()->AlignedFree(ptr);
     }
 
-    static void Memcpy(void* dest, const void* src, size_t size)
-    {
-        PlatformMemory::Memcpy(dest, src, size);
-    }
-
-    static void Memmove(void* dest, const void* src, size_t size)
-    {
-        PlatformMemory::Memmove(dest, src, size);
-    }
-
-    static void Memset(void* dest, byte value, size_t size)
-    {
-        PlatformMemory::Memset(dest, value, size);
-    }
-
-    static bool Memcmp(void* left, void* right, size_t size)
-    {
-        return PlatformMemory::Memcmp(left, right, size);
-    }
-
-    static void MemmoveBits(uint32* dest, int32 dest_offset, uint32* src, int32 src_offset, uint32 bit_count);
-
     Memory() = delete;
     ~Memory() = delete;
 

@@ -6,9 +6,6 @@
 namespace atlas
 {
 
-void Memory::MemmoveBits(uint32* dest, int32 dest_offset, uint32* src, int32 src_offset, uint32 bit_count)
-{
 
-}
 
 }

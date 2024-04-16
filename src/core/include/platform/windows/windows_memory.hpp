@@ -6,21 +6,17 @@
 #include <memory>
 
 #include "memory/malloc_base.hpp"
+#include "memory/standard_malloc.hpp"
 
 namespace atlas
 {
     class CORE_API WindowsMemory
     {
     public:
-        static std::unique_ptr<MallocBase> GetDefaultMalloc();
-
-        static void Memcpy(void* dest, const void* src, size_t size);
-
-        static void Memmove(void* dest, const void* src, size_t size);
-
-        static void Memset(void* dest, byte value, size_t size);
-
-        static bool Memcmp(void* left, void* right, size_t size);
+        static std::unique_ptr<MallocBase> GetDefaultMalloc()
+        {
+            return std::make_unique<StandardMalloc>() ;
+        }
 
         WindowsMemory() = delete;
     };
