@@ -17,13 +17,14 @@ public static class CMakeTypes
     public const string PublicLinkLib = "PUBLIC_LINK_LIB";
     public const string PrivateLinkLib = "PRIVATE_LINK_LIB";
     public const string DependencyTargets = "DEPENDENCY_TARGETS";
+    public const string PlatformCodeDirs = "PLATFORM_CODE_DIRS";
 
     public static readonly string[] Options = { EditorOnly, SkipMoc, TestTarget, GameTarget };
     public static readonly string[] OneValueArgs = { Target };
     public static readonly string[] MultiValueArgs =
     {
         PublicDefinitions, PrivateDefinitions, PublicIncludeDirs, PrivateIncludeDirs,
-        PublicLinkLib, PrivateLinkLib, DependencyTargets
+        PublicLinkLib, PrivateLinkLib, DependencyTargets, PlatformCodeDirs
     };
 
     public const string AddLibraryFunction = "add_atlas_library";
