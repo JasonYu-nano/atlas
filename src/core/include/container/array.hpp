@@ -4,12 +4,16 @@
 #pragma once
 
 #include <type_traits>
+#if PLATFORM_APPLE
+#include <__bit_reference>
+#endif
 
 #include "memory/allocator.hpp"
 #include "core_macro.hpp"
 #include "misc/iterator.hpp"
 #include "utility/compression_pair.hpp"
 #include "utility/untyped_data.hpp"
+
 
 namespace atlas
 {
