@@ -5,30 +5,29 @@ project(atlas LANGUAGES CXX)
 enable_language(C)
 
 set(CMAKE_CXX_STANDARD 23)
-set(dotnet_sdk_version "net7.0")
+set(DOTNET_SDK_VERSION "net7.0")
 
 # compile option
-option(shared           "build with dynamic link"                   ON)
-option(unicode          "build with unicode string"                 ON)
-option(with_editor      "build with game editor"                    ON)
-option(with_test        "build with unit test"                      OFF)
-option(with_benchmark   "build with benchmark"                      OFF)
-option(with_ispc        "use ispc compiler to generate simd code"   OFF)
+option(SHARED           "build with dynamic link"                   ON)
+option(UNICODE          "build with UNICODE string"                 ON)
+option(WITH_EDITOR      "build with game editor"                    ON)
+option(WITH_TEST        "build with unit test"                      OFF)
+option(WITH_BENCHMARK   "build with benchmark"                      OFF)
 
-if(shared)
+if(SHARED)
     add_compile_definitions(AE_SHARED)
 endif()
 
-if(unicode)
+if(UNICODE)
     add_compile_definitions(UNICODE)
 endif()
 
-if(with_editor)
+if(WITH_EDITOR)
     add_compile_definitions(WITH_EDITOR=1)
 endif ()
 
 if (MSVC)
-    if (shared)
+    if (SHARED)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     else ()
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
@@ -56,47 +55,51 @@ endif()
 
 # set output
 set(CMAKE_DEBUG_POSTFIX "d")
-set(output_dir ${CMAKE_BINARY_DIR}/out)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${output_dir}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${output_dir}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${output_dir}/bin)
+set(ENGINE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
 
 ## set absolute path
-set(atlas_tool_dir ${CMAKE_SOURCE_DIR}/tools)
+set(ATLAS_TOOL_DIRECTORY ${CMAKE_SOURCE_DIR}/tools)
 
 include(${CMAKE_SOURCE_DIR}/cmake/detect_platform.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
 
 ## run build tool
-set(abt_exist 0)
+set(ABT_EXIST 0)
 
-set(atlas_build_tool_dir ${output_dir}/${dotnet_sdk_version})
+set(ATLAS_BUILD_TOOL_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/${DOTNET_SDK_VERSION})
 
 if (${PLATFORM_WINDOWS})
-    if (EXISTS ${atlas_build_tool_dir}/AtlasBuildTool.exe)
-        set(abt_exist 1)
+    if (EXISTS ${ATLAS_BUILD_TOOL_DIRECTORY}/AtlasBuildTool.exe)
+        set(ABT_EXIST 1)
     endif ()
 elseif (${PLATFORM_APPLE})
-    if (EXISTS ${atlas_build_tool_dir}/AtlasBuildTool)
-        set(abt_exist 1)
+    if (EXISTS ${ATLAS_BUILD_TOOL_DIRECTORY}/AtlasBuildTool)
+        set(ABT_EXIST 1)
     endif ()
 endif ()
 
-if (abt_exist)
+if (ABT_EXIST)
     execute_process(
-            COMMAND ${atlas_build_tool_dir}/AtlasBuildTool
-            RESULT_VARIABLE exit_code
+            COMMAND ${ATLAS_BUILD_TOOL_DIRECTORY}/AtlasBuildTool
+            RESULT_VARIABLE EXIT_CODE
     )
 
-    if (exit_code)
+    if (EXIT_CODE)
         message(FATAL_ERROR "Atlas: some errors occurred while running atlas build tool")
     endif ()
 else ()
-    message(FATAL_ERROR "Atlas: can't find atlas build tool in ${atlas_build_tool_dir}. please make sure tools are built first")
+    message(FATAL_ERROR "Atlas: can't find atlas build tool in ${ATLAS_BUILD_TOOL_DIRECTORY}. please make sure tools are built first")
 endif ()
 
 add_subdirectory(src)
-add_subdirectory(benchmark)
-if (with_test)
+
+if (WITH_BENCHMARK)
+    add_subdirectory(benchmark)
+endif ()
+
+if (WITH_TEST)
     add_subdirectory(test)
 endif ()

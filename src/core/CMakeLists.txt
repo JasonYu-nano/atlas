@@ -10,6 +10,6 @@ add_atlas_library(
         PLATFORM_CODE_DIRS "include/platform" "src/platform"
 )
 
-if (with_editor)
+if (WITH_EDITOR)
     target_compile_definitions(core PUBLIC NAME_PRESERVING_CASE_SENSITIVE=1)
 endif ()
