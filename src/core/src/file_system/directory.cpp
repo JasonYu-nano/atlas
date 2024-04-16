@@ -16,7 +16,11 @@ Path Directory::GetEngineDirectory()
 Path Directory::GetModuleDirectory()
 {
     Path engine_root = GetEngineDirectory();
+#if PLATFORM_WINDOWS
     Path dir = engine_root / "build\\debug\\out\\bin\\";
+#else
+    Path dir = engine_root / "build/debug/out/bin/";
+#endif
     return dir;
 }
 

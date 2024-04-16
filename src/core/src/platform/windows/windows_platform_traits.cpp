@@ -15,8 +15,8 @@ void* WindowsPlatformTraits::LoadDynamicLibrary(const Path& path)
     void* handle = ::LoadLibrary(sys_path.data());
     if (handle == nullptr)
     {
-        DWORD err_cod = ::GetLastError();
-        LOG_ERROR(core_module, "Load library {0} failed. error code: {1}", path.ToString(), err_cod);
+        DWORD err_code = ::GetLastError();
+        LOG_ERROR(core_module, "Load library {0} failed. error code: {1}", path.ToString(), err_code);
     }
 
     return handle;
