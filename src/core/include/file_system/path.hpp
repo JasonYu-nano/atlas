@@ -6,7 +6,6 @@
 #include <filesystem>
 
 #include "string/string.hpp"
-#include "utility/range_utility.hpp"
 
 namespace atlas
 {
