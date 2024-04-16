@@ -19,4 +19,9 @@ void ApplicationModule::Shutdown()
     application_->DeInitialize();
 }
 
+void ApplicationModule::Tick(float delta_time)
+{
+    application_->Tick(delta_time);
+}
+
 }// namespace atlas

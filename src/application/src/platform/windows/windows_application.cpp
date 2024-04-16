@@ -20,7 +20,7 @@ void WindowsApplication::DeInitialize()
 
 }
 
-void WindowsApplication::Tick()
+void WindowsApplication::Tick(float delta_time)
 {
     MSG msg;
     // we use PeekMessage instead of GetMessage here

@@ -12,6 +12,9 @@ namespace atlas
 #define IMPLEMENT_MODULE(module_class, module_name) \
 extern "C" DLL_EXPORT IModule* CreateModule() { return new module_class(); }
 
+/**
+ * @brief Interfaces for all modules managed by the ModuleManager.
+ */
 class CORE_API IModule
 {
 public:
@@ -25,6 +28,19 @@ public:
      * @brief Called before the module is unloaded, right before the module object is destroyed.
      */
     virtual void Shutdown() = 0;
+};
+
+/**
+ * @brief The module interface that needs to be manually called tick by the engine.
+ */
+class CORE_API IManualTickableModule : public IModule
+{
+public:
+    /**
+     * @brief 
+     * @param delta_time 
+     */
+    virtual void Tick(float delta_time) = 0;
 };
 
 } // namespace atlas

@@ -19,6 +19,9 @@ public:
     void Startup() override;
     void Shutdown() override;
     void Loop() override;
+
+private:
+    IManualTickableModule* application_module_;
 };
 
 } // namespace atlas

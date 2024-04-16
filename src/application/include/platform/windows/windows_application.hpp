@@ -14,7 +14,7 @@ class APPLICATION_API WindowsApplication
 public:
     void Initialize();
     void DeInitialize();
-    void Tick();
+    void Tick(float delta_time);
 private:
     void RegisterWinClass();
     void ShowWindow();

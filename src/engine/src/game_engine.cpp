@@ -9,7 +9,7 @@ namespace atlas
 void GameEngine::Startup()
 {
     base::Startup();
-    ModuleManager::Load("application");
+    application_module_ = static_cast<IManualTickableModule*>(ModuleManager::Load("application"));
 }
 
 void GameEngine::Shutdown()
@@ -22,6 +22,7 @@ void GameEngine::Loop()
     // Process system event first.
     UpdateTickTime();
 
+    application_module_->Tick(delta_time_);
     tick_task_manager_->Tick(static_cast<float>(delta_time_));
 }
 
