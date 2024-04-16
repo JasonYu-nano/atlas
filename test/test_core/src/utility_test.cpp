@@ -10,7 +10,7 @@
 namespace atlas::test
 {
 
-TEST(CallTraitsTest, UtilityTest)
+TEST(UtilityTest, CallTraitsTest)
 {
     struct CT
     {
@@ -21,7 +21,7 @@ TEST(CallTraitsTest, UtilityTest)
     EXPECT_TRUE(std::is_reference_v<CallTraits<CT>::param_type>);
 }
 
-TEST(CompressionPairTest, UtilityTest)
+TEST(UtilityTest, CompressionPairTest)
 {
     struct CPA
     {
@@ -60,7 +60,7 @@ TEST(CompressionPairTest, UtilityTest)
     EXPECT_TRUE(static_cast<void*>(&pair_3.First()) != static_cast<void*>(&pair_3.Second()));
 }
 
-TEST(UntypedDataTest, UtilityTest)
+TEST(UtilityTest, UntypedDataTest)
 {
     static_assert(alignof(UntypedData<bool>) == 1 && sizeof(UntypedData<bool>) == 1);
     static_assert(alignof(UntypedData<int16>) == 2 && sizeof(UntypedData<int16>) == 2);

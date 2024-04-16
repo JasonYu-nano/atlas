@@ -8,7 +8,7 @@
 namespace atlas::test
 {
 
-TEST(PathTest, FileSystemTest)
+TEST(FileSystemTest, PathTest)
 {
 #if PLATFORM_WINDOWS
     {

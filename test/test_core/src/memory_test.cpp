@@ -14,7 +14,7 @@ struct alignas(32) Alignment32
     bool flag;
 };
 
-TEST(StandardMallocTest, MemoryTest)
+TEST(MemoryTest, StandardMallocTest)
 {
     StandardMalloc standard_malloc;
 
@@ -36,7 +36,7 @@ TEST(StandardMallocTest, MemoryTest)
     standard_malloc.AlignedFree(ptr);
 }
 
-TEST(OperatorNewDeleteTest, MemoryTest)
+TEST(MemoryTest, OperatorNewDeleteTest)
 {
     // aligned new
     auto al = new Alignment32();
@@ -61,7 +61,7 @@ TEST(OperatorNewDeleteTest, MemoryTest)
     delete(al_nothrow);
 }
 
-TEST(HeapAllocatorTest, MemoryTest)
+TEST(MemoryTest, HeapAllocatorTest)
 {
     using AllocType = HeapAllocator<std::string, int32>;
     using TraitsType = std::allocator_traits<AllocType>;
@@ -74,7 +74,7 @@ TEST(HeapAllocatorTest, MemoryTest)
     TraitsType::deallocate(allocator, ptr, 100);
 }
 
-TEST(StackAllocatorTest, MemoryTest)
+TEST(MemoryTest, StackAllocatorTest)
 {
     using AllocType = StackAllocator<std::string, 10, int32>;
     using TraitsType = std::allocator_traits<AllocType>;
@@ -88,7 +88,7 @@ TEST(StackAllocatorTest, MemoryTest)
     TraitsType::deallocate(allocator, ptr, 2);
 }
 
-TEST(InlineAllocatorTest, MemoryTest)
+TEST(MemoryTest, InlineAllocatorTest)
 {
     using AllocType = InlineAllocator<std::string, 10, int32, HeapAllocator<void>>;
     using TraitsType = AllocatorTraits<AllocType>;

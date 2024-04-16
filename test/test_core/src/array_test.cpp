@@ -21,7 +21,7 @@ struct NonPodStruct
     std::string str;
 };
 
-TEST(ArrayCtor, ArrayTest)
+TEST(ArrayTest, ArrayCtor)
 {
     {
         Array<int32> array;
@@ -52,7 +52,7 @@ TEST(ArrayCtor, ArrayTest)
     }
 }
 
-TEST(ArrayAssign, ArrayTest)
+TEST(ArrayTest, ArrayAssign)
 {
     {
         Array<PodStruct> array = { {1}, {2} };
@@ -86,7 +86,7 @@ TEST(ArrayAssign, ArrayTest)
     }
 }
 
-TEST(ArrayAdd, ArrayTest)
+TEST(ArrayTest, ArrayAdd)
 {
     {
         Array<PodStruct> array;
@@ -128,7 +128,7 @@ TEST(ArrayAdd, ArrayTest)
     }
 }
 
-TEST(ArrayFind, ArrayTest)
+TEST(ArrayTest, ArrayFind)
 {
     Array<int32> array = { 1, 2, 3, 4, 5 };
     EXPECT_TRUE(array.Find(0) == INDEX_NONE);
@@ -144,7 +144,7 @@ TEST(ArrayFind, ArrayTest)
     EXPECT_TRUE(array.FindLast([](auto&& elem) { return elem > 3; }) == 4);
 }
 
-TEST(ArrayInsert, ArrayTest)
+TEST(ArrayTest, ArrayInsert)
 {
     {
         Array<NonPodStruct> array = { {"a"}, {"b"}, {"c"} };
@@ -174,7 +174,7 @@ TEST(ArrayInsert, ArrayTest)
     }
 }
 
-TEST(ArrayRemove, ArrayTest)
+TEST(ArrayTest, ArrayRemove)
 {
     {
         Array<int32> array = { 1, 2, 3, 4, 5 };

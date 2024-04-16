@@ -34,7 +34,7 @@ struct DelegateListener
 
 DECLARE_DELEGATE_ONE_PARAM_RET(OneParamDelegate, int, int, integer);
 
-TEST(DelegateTest, MiscTest)
+TEST(MiscTest, DelegateTest)
 {
     {
         auto delegate = OneParamDelegate::CreateStatic(&ForwardInteger);
@@ -125,7 +125,7 @@ struct DelegateListener2
 
 DECLARE_MULTICAST_DELEGATE_ONE_PARAM(OneParamMulticastDelegate, int, 1);
 
-TEST(MulticastDelegateTest, MiscTest)
+TEST(MiscTest, MulticastDelegateTest)
 {
     {
         OneParamMulticastDelegate delegate;

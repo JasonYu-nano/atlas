@@ -18,7 +18,7 @@ struct SetElement
     bool operator<(SetElement right) const { return integer < right.integer; }
 };
 
-TEST(SetCtor, SetTest)
+TEST(SetTest, SetCtor)
 {
     {
         Set<SetElement> set;
@@ -38,7 +38,7 @@ TEST(SetCtor, SetTest)
     }
 };
 
-TEST(SetInsert, SetTest)
+TEST(SetTest, SetInsert)
 {
     {
         Set<SetElement> set;
@@ -55,7 +55,7 @@ TEST(SetInsert, SetTest)
     }
 };
 
-TEST(SetFind, SetTest)
+TEST(SetTest, SetFind)
 {
     {
         Set<SetElement> set;
@@ -66,7 +66,7 @@ TEST(SetFind, SetTest)
     }
 };
 
-TEST(SetRemove, SetTest)
+TEST(SetTest, SetRemove)
 {
     {
         Set<SetElement> set;
@@ -75,7 +75,7 @@ TEST(SetRemove, SetTest)
     }
 };
 
-TEST(MultiSetCtor, MultiSetTest)
+TEST(MultiSetTest, MultiSetCtor)
 {
     {
         MultiSet<SetElement> set;
@@ -95,7 +95,7 @@ TEST(MultiSetCtor, MultiSetTest)
     }
 };
 
-TEST(MultiSetInsert, MultiSetTest)
+TEST(MultiSetTest, MultiSetInsert)
 {
     {
         MultiSet<SetElement> set;
@@ -113,7 +113,7 @@ TEST(MultiSetInsert, MultiSetTest)
     }
 };
 
-TEST(MultiSetFind, MultiSetTest)
+TEST(MultiSetTest, MultiSetFind)
 {
     {
         MultiSet<SetElement> set = {{4}, {1}, {3}, {3}};
@@ -122,7 +122,7 @@ TEST(MultiSetFind, MultiSetTest)
     }
 };
 
-TEST(MultiSetRemove, MultiSetTest)
+TEST(MultiSetTest, MultiSetRemove)
 {
     {
         MultiSet<SetElement> set = {{4}, {1}, {3}, {3}};
@@ -130,7 +130,7 @@ TEST(MultiSetRemove, MultiSetTest)
     }
 };
 
-TEST(MapCtor, MapTest)
+TEST(MapTest, MapCtor)
 {
     {
         Map<SetElement, int32> map;
@@ -157,7 +157,7 @@ TEST(MapCtor, MapTest)
     }
 };
 
-TEST(MapInsert, MapTest)
+TEST(MapTest, MapInsert)
 {
     {
         Map<SetElement, int32> map;
@@ -175,7 +175,7 @@ TEST(MapInsert, MapTest)
     }
 }
 
-TEST(MapRemove, MapTest)
+TEST(MapTest, MapRemove)
 {
     {
         Map<SetElement, int32> map = {{{4}, 0}, {{1}, 1}, {{3}, 0}};
@@ -184,7 +184,7 @@ TEST(MapRemove, MapTest)
     }
 };
 
-TEST(MultiMapCtor, MultiMapTest)
+TEST(MultiMapTest, MultiMapCtor)
 {
     {
         MultiMap<SetElement, int32> map;
@@ -211,7 +211,7 @@ TEST(MultiMapCtor, MultiMapTest)
     }
 };
 
-TEST(MultiMapInsert, MultiMapTest)
+TEST(MultiMapTest, MultiMapInsert)
 {
     {
         MultiMap<SetElement, int32> map;
@@ -229,7 +229,7 @@ TEST(MultiMapInsert, MultiMapTest)
     }
 }
 
-TEST(MultiMapRemove, MultiMapTest)
+TEST(MultiMapTest, MultiMapRemove)
 {
     {
         MultiMap<SetElement, int32> map = {{{4}, 0}, {{1}, 1}, {{3}, 0}, {{3}, 1}};
@@ -238,14 +238,14 @@ TEST(MultiMapRemove, MultiMapTest)
     }
 };
 
-TEST(UnorderedSetCtor, UnorderedSetTest)
+TEST(UnorderedSetTest, UnorderedSetCtor)
 {
     UnorderedSet<int32> set;
     set.Insert(5);
     EXPECT_TRUE(set.Contains(5));
 }
 
-TEST(UnorderedMapCtor, UnorderedMapTest)
+TEST(UnorderedMapTest, UnorderedMapCtor)
 {
     UnorderedMap<std::string, int32> map;
     map.Insert("atlas", 5);

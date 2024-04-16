@@ -9,7 +9,7 @@
 namespace atlas::test
 {
 
-TEST(StringCtor, StringTest)
+TEST(StringTest, StringCtor)
 {
     {
         String str;
@@ -83,7 +83,7 @@ TEST(StringCtor, StringTest)
     }
 }
 
-TEST(StringFormat, StringTest)
+TEST(StringTest, StringFormat)
 {
     {
         String name = "atlas";
@@ -103,7 +103,7 @@ TEST(StringFormat, StringTest)
     }
 }
 
-TEST(StringAt, StringTest)
+TEST(StringTest, StringAt)
 {
     {
         String name = "阿特拉斯";
@@ -113,7 +113,7 @@ TEST(StringAt, StringTest)
     }
 }
 
-TEST(StringConvert, StringTest)
+TEST(StringTest, StringConvert)
 {
     {
         String name = String::FromUtf16(u"阿特拉斯");
@@ -143,7 +143,7 @@ TEST(StringConvert, StringTest)
     }
 }
 
-TEST(StringEquals, StringTest)
+TEST(StringTest, StringEquals)
 {
     {
         String name = "Atlas";
@@ -152,7 +152,7 @@ TEST(StringEquals, StringTest)
     }
 }
 
-TEST(StringSearch, StringTest)
+TEST(StringTest, StringSearch)
 {
     {
         String name = "Atlas阿特拉斯";
@@ -178,7 +178,7 @@ TEST(StringSearch, StringTest)
     }
 }
 
-TEST(StringModify, StringTest)
+TEST(StringTest, StringModify)
 {
     {
         String name = "Atlas";
@@ -229,7 +229,7 @@ TEST(StringModify, StringTest)
 
 }
 
-TEST(StringIter, StringTest)
+TEST(StringTest, StringIter)
 {
     {
         String str("atlas");
