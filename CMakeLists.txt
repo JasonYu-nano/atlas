@@ -64,6 +64,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${output_dir}/bin)
 ## set absolute path
 set(atlas_tool_dir ${CMAKE_SOURCE_DIR}/tools)
 
+include(${CMAKE_SOURCE_DIR}/cmake/detect_platform.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
 
 ## run build tool
@@ -71,11 +72,11 @@ set(abt_exist 0)
 
 set(atlas_build_tool_dir ${output_dir}/${dotnet_sdk_version})
 
-if (WIN32)
+if (${PLATFORM_WINDOWS})
     if (EXISTS ${atlas_build_tool_dir}/AtlasBuildTool.exe)
         set(abt_exist 1)
     endif ()
-elseif (APPLE)
+elseif (${PLATFORM_APPLE})
     if (EXISTS ${atlas_build_tool_dir}/AtlasBuildTool)
         set(abt_exist 1)
     endif ()
@@ -88,10 +89,10 @@ if (abt_exist)
     )
 
     if (exit_code)
-        message(FATAL_ERROR "some errors occurred while running atlas build tool")
+        message(FATAL_ERROR "Atlas: some errors occurred while running atlas build tool")
     endif ()
 else ()
-    message(FATAL_ERROR "can't find atlas build tool in ${atlas_build_tool_dir}. please make sure tools are built first")
+    message(FATAL_ERROR "Atlas: can't find atlas build tool in ${atlas_build_tool_dir}. please make sure tools are built first")
 endif ()
 
 add_subdirectory(src)
@@ -99,5 +100,3 @@ add_subdirectory(benchmark)
 if (with_test)
     add_subdirectory(test)
 endif ()
-
-message(${CMAKE_BINARY_DIR})

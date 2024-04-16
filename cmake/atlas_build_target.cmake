@@ -1,7 +1,8 @@
 macro(_build_target_parse_arguments)
     set(options EDITOR_ONLY SKIP_MOC GAME_TARGET TEST_TARGET)
     set(one_value_args TARGET)
-    set(multi_value_args PUBLIC_DEFINITIONS PRIVATE_DEFINITIONS PUBLIC_INCLUDE_DIRS PRIVATE_INCLUDE_DIRS PUBLIC_LINK_LIB PRIVATE_LINK_LIB DEPENDENCY_TARGETS)
+    set(multi_value_args PUBLIC_DEFINITIONS PRIVATE_DEFINITIONS PUBLIC_INCLUDE_DIRS PRIVATE_INCLUDE_DIRS
+            PUBLIC_LINK_LIB PRIVATE_LINK_LIB DEPENDENCY_TARGETS PLATFORM_CODE_DIRS)
     cmake_parse_arguments(ARG "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 endmacro()
 
@@ -48,6 +49,52 @@ macro(_add_dependency)
         endforeach ()
     endif ()
 endmacro()
+
+function(_TEST_FILE_NEED_EXCLUDE FILE_PATH OUT_RESULT)
+    set(RESULT "FALSE")
+
+    foreach (DIR ${ARG_PLATFORM_CODE_DIRS})
+
+        if (${FILE_PATH} MATCHES ${DIR})
+            if (${PLATFORM_WINDOWS})
+                if (${FILE_PATH} MATCHES "mac|linux")
+                    set(RESULT "TRUE")
+                endif ()
+
+            elseif (${PLATFORM_APPLE})
+                if (${FILE_PATH} MATCHES "windows|linux")
+                    set(RESULT "TRUE")
+                endif ()
+
+            elseif (${PLATFORM_LINUX})
+                if (${FILE_PATH} MATCHES "windows|mac")
+                    set(RESULT "TRUE")
+                endif ()
+
+            endif ()
+
+            break()
+        endif ()
+
+    endforeach ()
+
+    set(${OUT_RESULT} ${RESULT} PARENT_SCOPE)
+endfunction()
+
+function(_EXCLUDE_PLATFORM_FILES FILES)
+    set(TEMP_RESULT "")
+
+    foreach(FILE_PATH ${${FILES}})
+        _TEST_FILE_NEED_EXCLUDE(${FILE_PATH} NEED_EXCLUDE)
+        if (NEED_EXCLUDE STREQUAL "FALSE")
+            LIST(APPEND TEMP_RESULT ${FILE_PATH})
+        else ()
+            message(STATUS "Atlas: exclude platform file: ${FILE_PATH}")
+        endif ()
+    endforeach()
+
+    set(${FILES} ${TEMP_RESULT} PARENT_SCOPE)
+endfunction()
 
 macro(_setup_ide)
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${project_files})
@@ -109,6 +156,8 @@ macro(add_atlas_library)
     set(project_dir "${CMAKE_CURRENT_SOURCE_DIR}")
 
     file(GLOB_RECURSE project_files *.hpp *.cpp)
+
+    _EXCLUDE_PLATFORM_FILES(project_files)
 
     if(shared)
         add_library(${ARG_TARGET} SHARED ${project_files})

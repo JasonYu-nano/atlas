@@ -7,6 +7,7 @@ add_atlas_library(
         PUBLIC_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
         PRIVATE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
         PUBLIC_LINK_LIB spdlog::spdlog Boost::locale tomlplusplus::tomlplusplus
+        PLATFORM_CODE_DIRS "include/platform" "src/platform"
 )
 
 if (with_editor)
