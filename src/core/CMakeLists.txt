@@ -1,6 +1,6 @@
-find_package(spdlog)
-find_package(Boost)
-find_package(tomlplusplus)
+find_package(spdlog REQUIRED)
+find_package(Boost COMPONENTS locale REQUIRED)
+find_package(tomlplusplus REQUIRED)
 
 add_atlas_library(
         TARGET core
