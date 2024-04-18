@@ -155,7 +155,11 @@ macro(add_atlas_library)
 
     set(MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp)
+    if (${PLATFORM_APPLE})
+        file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp *.h *.mm)
+    else ()
+        file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp)
+    endif ()
 
     _exclude_platform_files(MODULE_FILES)
 
@@ -180,7 +184,11 @@ macro(add_atlas_executable)
 
     set(MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp)
+    if (${PLATFORM_APPLE})
+        file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp *.h *.mm)
+    else ()
+        file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp)
+    endif ()
 
     _exclude_platform_files(MODULE_FILES)
 

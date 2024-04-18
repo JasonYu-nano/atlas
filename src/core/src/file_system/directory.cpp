@@ -27,7 +27,7 @@ Path Directory::GetModuleDirectory()
 Path Directory::GetEnginePluginsDirectory()
 {
     Path engine_root = GetEngineDirectory();
-    Path dir = engine_root / "plugins\\";
+    Path dir = engine_root / "plugins";
     return dir;
 }
 

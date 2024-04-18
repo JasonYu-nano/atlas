@@ -4,6 +4,7 @@
 #include "toml++/toml.hpp"
 
 #include "plugin_manager.hpp"
+#include "engine_log.hpp"
 #include "file_system/directory.hpp"
 
 namespace atlas
@@ -18,6 +19,12 @@ void PluginManager::Initialize()
 
 void PluginManager::ScanPlugins(const Path& directory)
 {
+    if (!std::filesystem::exists(directory))
+    {
+        LOG_INFO(engine, "plugin directory {0} is not exists", directory.ToString());
+        return;
+    }
+
     for (auto const& dir_entry : std::filesystem::directory_iterator(directory))
     {
         if (dir_entry.is_directory())

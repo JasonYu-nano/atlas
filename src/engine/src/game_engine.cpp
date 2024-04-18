@@ -22,7 +22,7 @@ void GameEngine::Loop()
     // Process system event first.
     UpdateTickTime();
 
-    application_module_->Tick(delta_time_);
+    application_module_->Tick(static_cast<float>(delta_time_));
     tick_task_manager_->Tick(static_cast<float>(delta_time_));
 }
 

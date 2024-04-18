@@ -3,4 +3,10 @@ add_atlas_library(
         PUBLIC_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
         PRIVATE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
         PUBLIC_LINK_LIB engine
+        PLATFORM_CODE_DIRS "include/platform" "src/platform"
 )
+
+if (${PLATFORM_APPLE})
+    find_library(COCOA_LIBRARY Cocoa)
+    target_link_libraries(application PRIVATE ${COCOA_LIBRARY})
+endif ()
