@@ -4,3 +4,8 @@ add_atlas_executable(
         PUBLIC_LINK_LIB engine
         PLATFORM_CODE_DIRS src
 )
+
+if (${PLATFORM_APPLE})
+    find_library(COCOA_LIBRARY Cocoa)
+    target_link_libraries(launcher PRIVATE ${COCOA_LIBRARY})
+endif ()
