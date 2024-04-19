@@ -3,18 +3,18 @@
 
 #pragma once
 
-#include "core_def.hpp"
+#include "application_implement.hpp"
 #include "platform/windows/windows_minimal_api.hpp"
 
 namespace atlas
 {
 
-class APPLICATION_API WindowsApplication
+class APPLICATION_API WindowsApplication : public ApplicationImplement
 {
 public:
-    void Initialize();
-    void DeInitialize();
-    void Tick(float delta_time);
+    void Initialize() override;
+    void Deinitialize() override;
+    void Tick(float delta_time) override;
 private:
     void RegisterWinClass();
     void ShowWindow();
@@ -24,7 +24,5 @@ private:
     HWND hwnd_{ nullptr };
     HDC hdc_{ nullptr };
 };
-
-using PlatformApplication = WindowsApplication;
 
 } // namespace atlas

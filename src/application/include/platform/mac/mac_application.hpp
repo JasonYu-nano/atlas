@@ -3,19 +3,17 @@
 
 #pragma once
 
-#include "core_def.hpp"
+#include "application_implement.hpp"
 
 namespace atlas
 {
 
-class APPLICATION_API MacApplication
+class APPLICATION_API MacApplication : public ApplicationImplement
 {
 public:
-    void Initialize();
-    void DeInitialize();
-    void Tick(float delta_time);
+    void Initialize() override;
+    void Deinitialize() override;
+    void Tick(float delta_time) override;
 };
-
-using PlatformApplication = MacApplication;
 
 } // namespace atlas
