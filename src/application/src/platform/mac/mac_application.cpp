@@ -11,7 +11,7 @@ void MacApplication::Initialize()
 
 }
 
-void MacApplication::DeInitialize()
+void MacApplication::Deinitialize()
 {
 
 }

@@ -10,13 +10,13 @@ IMPLEMENT_MODULE(ApplicationModule, "application");
 
 void ApplicationModule::Startup()
 {
-    application_ = std::make_unique<PlatformApplication>();
+    application_ = PlatformApplication::Create();
     application_->Initialize();
 }
 
 void ApplicationModule::Shutdown()
 {
-    application_->DeInitialize();
+    application_->Deinitialize();
 }
 
 void ApplicationModule::Tick(float delta_time)

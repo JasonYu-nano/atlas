@@ -15,7 +15,7 @@ void WindowsApplication::Initialize()
     ShowWindow();
 }
 
-void WindowsApplication::DeInitialize()
+void WindowsApplication::Deinitialize()
 {
 
 }
