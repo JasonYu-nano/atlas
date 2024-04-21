@@ -534,7 +534,7 @@ public:
         invocation_list_.Clear();
     }
 
-    void Broadcast(Args&&... args)
+    void Broadcast(Args... args)
     {
         if (IsBound())
         {

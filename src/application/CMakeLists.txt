@@ -5,8 +5,3 @@ add_atlas_library(
         PUBLIC_LINK_LIB engine
         PLATFORM_CODE_DIRS "include/platform" "src/platform"
 )
-
-if (${PLATFORM_APPLE})
-    find_library(COCOA_LIBRARY Cocoa)
-    target_link_libraries(application PRIVATE ${COCOA_LIBRARY})
-endif ()

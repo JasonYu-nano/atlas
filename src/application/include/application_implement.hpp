@@ -19,7 +19,7 @@ public:
     virtual void Deinitialize() = 0;
     virtual void Tick(float delta_time) {};
 
-    std::shared_ptr<ApplicationWindow> MakeWindow() { return nullptr; }
+    virtual std::shared_ptr<ApplicationWindow> MakeWindow() { return nullptr; }
 };
 
 }// namespace atlas

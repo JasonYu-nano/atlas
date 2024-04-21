@@ -32,6 +32,11 @@ public:
         implement_->Tick(delta_time);
     }
 
+    std::shared_ptr<ApplicationWindow> MakeWindow()
+    {
+        return implement_->MakeWindow();
+    }
+
 private:
     explicit PlatformApplication(ApplicationImplement* implement) : implement_(implement) {}
 
