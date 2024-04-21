@@ -13,3 +13,11 @@
 #else
 #define CPP_EXCEPTIONS 0
 #endif
+
+#ifndef FORWARD_DECLARE_OBJC_CLASS
+#ifdef __OBJC__
+#define FORWARD_DECLARE_OBJC_CLASS(classname) @class classname
+#else
+#define FORWARD_DECLARE_OBJC_CLASS(classname) class classname
+#endif
+#endif

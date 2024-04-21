@@ -12,11 +12,14 @@ void ApplicationModule::startup()
 {
     application_ = PlatformApplication::Create();
     application_->Initialize();
+
+    application_->MakeWindow();
 }
 
 void ApplicationModule::shutdown()
 {
     application_->Deinitialize();
+    application_.reset();
 }
 
 void ApplicationModule::tick(float delta_time)

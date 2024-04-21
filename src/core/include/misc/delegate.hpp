@@ -533,7 +533,7 @@ public:
         invocation_list_.clear();
     }
 
-    void broadcast(Args&&... args)
+    void broadcast(Args... args)
     {
         if (is_bound())
         {

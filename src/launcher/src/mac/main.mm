@@ -48,7 +48,11 @@ static int32 g_engine_main_error_code = 0;
 {
     [self requestQuit:self];
 }
-
+/**
+ * @brief This method is called after the application’s Quit menu item has been selected, or after the terminate: method has been called.
+ * @param Sender
+ * @return
+ */
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)Sender;
 {
     return NSTerminateNow;
@@ -61,7 +65,8 @@ int main(int argc, const char* argv[])
     // create an autorelease pool
     @autoreleasepool {
         [NSApplication sharedApplication];
-        [NSApp setDelegate:[AppDelegate new]];
+        [NSApp setDelegate:[AppDelegate alloc]];
+        [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
         [NSApp run];
     }
     // execution never gets here

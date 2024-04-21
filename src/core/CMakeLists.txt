@@ -14,3 +14,8 @@ add_atlas_library(
 if (WITH_EDITOR)
     target_compile_definitions(core PUBLIC NAME_PRESERVING_CASE_SENSITIVE=1)
 endif ()
+
+if (${PLATFORM_APPLE})
+    find_library(COCOA_LIBRARY Cocoa)
+    target_link_libraries(core PUBLIC ${COCOA_LIBRARY})
+endif ()
