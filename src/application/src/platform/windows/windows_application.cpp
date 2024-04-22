@@ -49,9 +49,9 @@ void WindowsApplication::Tick(float delta_time)
     }
 }
 
-std::shared_ptr<ApplicationWindow> WindowsApplication::MakeWindow()
+std::shared_ptr<ApplicationWindow> WindowsApplication::MakeWindow(const WindowDescription& description)
 {
-    auto&& window = WindowsWindow::Create(this);
+    auto&& window = WindowsWindow::Create(*this, description);
     managed_windows_.Add(window);
 
     if (primary_window_.expired() && window->CanBecomePrimary())

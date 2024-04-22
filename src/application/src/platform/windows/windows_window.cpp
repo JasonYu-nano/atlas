@@ -8,10 +8,10 @@
 namespace atlas
 {
 
-std::shared_ptr<WindowsWindow> WindowsWindow::Create(WindowsApplication* application)
+std::shared_ptr<WindowsWindow> WindowsWindow::Create(const WindowsApplication& application, const WindowDescription& description, std::shared_ptr<ApplicationWindow> parent)
 {
     auto window = std::make_shared<WindowsWindow>(Private{});
-    window->Initialize(application);
+    window->Initialize(application, description, parent);
     return window;
 }
 
@@ -24,27 +24,63 @@ void WindowsWindow::Destroy()
     }
 }
 
-void WindowsWindow::Initialize(ApplicationImplement* application)
+void WindowsWindow::Initialize(const WindowsApplication& application, const WindowDescription& description, std::shared_ptr<ApplicationWindow> parent)
 {
-    base::Initialize(application);
+    uint32 window_style = 0;
+    uint32 window_ex_style = 0;
+    int32 additional_width = 0;
+    int32 additional_height = 0;
 
-    int heightAdjust = (GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CXPADDEDBORDER));
-    int widthAdjust = (GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER));
+    if (description.is_frameless)
+    {
 
-    WindowsApplication* win_application = static_cast<WindowsApplication*>(application);
+    }
+    else
+    {
+        if (description.is_closeable)
+        {
+            window_style |= WS_CAPTION|WS_SYSMENU;
+        }
+
+        if (description.is_miniaturizable)
+        {
+            window_style |= WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX;
+        }
+    }
+
+    if (description.is_maximize)
+    {
+        window_style |= WS_MAXIMIZE;
+    }
+    else if (description.is_minimize)
+    {
+        window_style |= WS_MINIMIZE;
+    }
+
+    if (window_style & (WS_SYSMENU|WS_CAPTION))
+    {
+        additional_height += ::GetSystemMetrics(SM_CYCAPTION);
+    }
+
+    if (description.is_frameless)
+    {
+        additional_width += ::GetSystemMetrics(SM_CXSIZEFRAME);
+        additional_height += ::GetSystemMetrics(SM_CYSIZEFRAME);
+    }
+
     window_handle_ = CreateWindowEx(
-        0,
-        window_class_name_,                               // name of the window class
-        L"Title1",                                // title of the window TODO:
-        WS_OVERLAPPEDWINDOW,                        // window style
-        CW_USEDEFAULT,                              // x-position of the window
-        CW_USEDEFAULT,                              // y-position of the window
-        800 + heightAdjust,           // width of the window
-        600 + widthAdjust,         // height of the window
-        NULL,                                       // we have no parent window, NULL
-        NULL,                                       // we aren't using menus, NULL
-        win_application->GetInstanceHandle(),                                   // application handle
-        NULL);                                      // pass pointer to current object
+        window_ex_style,
+        window_class_name_,
+        description.title.ToWide().data(),
+        window_style,
+        description.x,
+        description.y,
+        description.width + additional_width,
+        description.height + additional_height,
+        parent ? static_cast<HWND>(parent->GetNativeHandle()) : nullptr,
+        NULL,
+        application.GetInstanceHandle(),
+        NULL);
 
     if (!window_handle_)
     {
@@ -56,6 +92,8 @@ void WindowsWindow::Initialize(ApplicationImplement* application)
 
     // display the window on the screen
     ::ShowWindow(window_handle_, SW_SHOW);
+
+    initialized_ = true;
 }
 
 void WindowsWindow::Deinitialize()
@@ -67,7 +105,7 @@ void WindowsWindow::Deinitialize()
             HWND handle = std::exchange(window_handle_, nullptr);
             DestroyWindow(handle);
         }
-        base::Deinitialize();
+        initialized_ = false;
     }
 }
 
