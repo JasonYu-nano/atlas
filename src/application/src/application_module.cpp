@@ -13,7 +13,9 @@ void ApplicationModule::Startup()
     application_ = PlatformApplication::Create();
     application_->Initialize();
 
-    application_->MakeWindow();
+    WindowDescription desc;
+    desc.title = "Atlas Game";
+    application_->MakeWindow(desc);
 }
 
 void ApplicationModule::Shutdown()

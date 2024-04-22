@@ -32,9 +32,9 @@ public:
         implement_->Tick(delta_time);
     }
 
-    std::shared_ptr<ApplicationWindow> MakeWindow()
+    std::shared_ptr<ApplicationWindow> MakeWindow(const WindowDescription& description)
     {
-        return implement_->MakeWindow();
+        return implement_->MakeWindow(description);
     }
 
 private:

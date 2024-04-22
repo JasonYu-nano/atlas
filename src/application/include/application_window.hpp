@@ -5,11 +5,27 @@
 
 #include "core_def.hpp"
 #include "misc/delegate_fwd.hpp"
+#include "string/string.hpp"
 
 namespace atlas
 {
 
 class ApplicationImplement;
+
+struct APPLICATION_API WindowDescription
+{
+    String title = "";
+    bool is_closeable = false;
+    bool is_resizeable = true;
+    bool is_miniaturizable = true;
+    bool is_frameless = false;
+    bool is_maximize = false;
+    bool is_minimize = false;
+    int32 x = 100;
+    int32 y = 100;
+    int32 width = 800;
+    int32 height = 600;
+};
 
 /**
  * @brief The base class of native window.
@@ -23,10 +39,7 @@ public:
      * @brief Manually destroy the window. Can be called repeatedly.
      * If the window is a primary window, Destroy() may cause engine shutdown.
      */
-    virtual void Destroy()
-    {
-        Deinitialize();
-    }
+    virtual void Destroy() {}
     /**
      * @brief Determines whether the window can become the main window.
      * @return
@@ -52,15 +65,6 @@ public:
     static inline OnWindowDestroyed on_window_destroyed_;
 
 protected:
-    virtual void Initialize(ApplicationImplement* application)
-    {
-        initialized_ = true;
-    }
-
-    virtual void Deinitialize()
-    {
-        initialized_ = false;
-    }
 
     bool initialized_{ false };
 };
