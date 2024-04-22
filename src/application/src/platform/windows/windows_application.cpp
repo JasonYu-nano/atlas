@@ -4,20 +4,33 @@
 #include "platform/windows/windows_application.hpp"
 
 #include "engine.hpp"
-#include "log/logger.hpp"
+#include "application_log.hpp"
+#include "platform/windows/windows_window.hpp"
 
 namespace atlas
 {
 
+static WindowsApplication* g_application = nullptr;
+
 void WindowsApplication::Initialize()
 {
-    RegisterWinClass();
-    ShowWindow();
+    windows_destroy_handle_ = WindowsWindow::on_window_destroyed_.AddRaw(this, &WindowsApplication::OnWindowDestroyed);
+    RegisterWindowClass();
+    g_application = this;
 }
 
 void WindowsApplication::Deinitialize()
 {
+    if (windows_destroy_handle_.IsValid())
+    {
+        WindowsWindow::on_window_destroyed_.Remove(windows_destroy_handle_);
+        windows_destroy_handle_.Invalidate();
+    }
 
+    if (g_application == this)
+    {
+        g_application = nullptr;
+    }
 }
 
 void WindowsApplication::Tick(float delta_time)
@@ -36,10 +49,29 @@ void WindowsApplication::Tick(float delta_time)
     }
 }
 
-void WindowsApplication::RegisterWinClass()
+std::shared_ptr<ApplicationWindow> WindowsApplication::MakeWindow()
 {
-    hinstance_ = GetModuleHandle(nullptr);
+    auto&& window = WindowsWindow::Create(this);
+    managed_windows_.Add(window);
 
+    if (primary_window_.expired() && window->CanBecomePrimary())
+    {
+        primary_window_ = window;
+    }
+
+    return window;
+}
+
+std::shared_ptr<ApplicationWindow> WindowsApplication::GetWindow(HWND hwnd) const
+{
+    const size_t index = managed_windows_.Find([hwnd](auto&& window) {
+        return window->GetNativeHandle() == hwnd;
+    });
+    return index == INDEX_NONE ? nullptr : managed_windows_[index];
+}
+
+void WindowsApplication::RegisterWindowClass()
+{
     // this struct holds information for the window class
     WNDCLASSEX wc;
 
@@ -53,13 +85,51 @@ void WindowsApplication::RegisterWinClass()
     wc.hInstance = hinstance_;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
-    wc.lpszClassName = L"ATLAS"; //TODO:
+    wc.lpszClassName = WindowsWindow::window_class_name_;
 
     // register the window class
-    auto result = RegisterClassEx(&wc);
+    ATOM result = RegisterClassEx(&wc);
     if (result == 0)
     {
-        LOG_ERROR(temp, "RegisterClassEx failed in windows platform");
+        LOG_ERROR(app, "RegisterClassEx failed in windows platform");
+        if (g_engine)
+        {
+            g_engine->RequestShutdown();
+        }
+    }
+}
+
+void WindowsApplication::OnWindowDestroyed(std::shared_ptr<ApplicationWindow> window)
+{
+    if (!primary_window_.expired())
+    {
+        auto&& shared_primary_window = primary_window_.lock();
+        if (shared_primary_window == window)
+        {
+            primary_window_.reset();
+        }
+    }
+
+    managed_windows_.Remove(std::static_pointer_cast<WindowsWindow>(window));
+
+    bool need_shutdown_engine = managed_windows_.IsEmpty();
+    if (!need_shutdown_engine && primary_window_.expired())
+    {
+        // find next primary window.
+        for (auto&& managed_window : managed_windows_)
+        {
+            if (managed_window->CanBecomePrimary())
+            {
+                primary_window_ = managed_window;
+                break;
+            }
+        }
+
+        need_shutdown_engine = primary_window_.expired();
+    }
+
+    if (need_shutdown_engine)
+    {
         if (g_engine)
         {
             g_engine->request_shutdown();
@@ -67,54 +137,33 @@ void WindowsApplication::RegisterWinClass()
     }
 }
 
-void WindowsApplication::ShowWindow()
-{
-    int heightAdjust = (GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CXPADDEDBORDER));
-    int widthAdjust = (GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER));
-
-
-    // create the window and use the result as the handle
-    // TODO: move args to window definition
-    hwnd_ = CreateWindowEx(
-        0,
-        L"ATLAS",                               // name of the window class TODO:
-        L"Title",                                // title of the window TODO:
-        WS_OVERLAPPEDWINDOW,                        // window style
-        CW_USEDEFAULT,                              // x-position of the window
-        CW_USEDEFAULT,                              // y-position of the window
-        800 + widthAdjust,           // width of the window
-        600 + heightAdjust,         // height of the window
-        NULL,                                       // we have no parent window, NULL
-        NULL,                                       // we aren't using menus, NULL
-        hinstance_,                                   // application handle
-        NULL);                                      // pass pointer to current object
-
-    if (hwnd_ == nullptr)
-    {
-        uint32 errorCode = (uint32)::GetLastError();
-        LOG_ERROR(temp, "CreateWindowEx failed, error code: {0}", errorCode);
-        return;
-    }
-
-    hdc_ = GetDC(hwnd_);
-
-    // display the window on the screen
-    ::ShowWindow(hwnd_, SW_SHOW);
-}
-
 LRESULT WindowsApplication::HandleWindowsMsg(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
+    if (g_application)
+    {
+        return g_application->ProcessMessage(hwnd, message, wparam, lparam);
+    }
+    else
+    {
+        return ::DefWindowProc(hwnd, message, wparam, lparam);
+    }
+}
+
+LRESULT WindowsApplication::ProcessMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+{
+    auto&& window = GetWindow(hwnd);
+    if (!window)
+    {
+        return ::DefWindowProc(hwnd, message, wparam, lparam);
+    }
+
     LRESULT result = 0;
 
     switch (message)
     {
         case WM_DESTROY:
         {
-            if (g_engine)
-            {
-                g_engine->request_shutdown();
-            }
-            PostQuitMessage(0);
+            window->Destroy();
         } break;
         default:
             result = ::DefWindowProc(hwnd, message, wparam, lparam);
