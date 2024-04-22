@@ -41,27 +41,83 @@
 namespace atlas
 {
 
-std::shared_ptr<MacWindow> MacWindow::Create(ApplicationImplement* application)
+NSRect FromRect(const FrameRect& rect)
 {
-    auto window = std::make_shared<MacWindow>(Private{});
-    window->Initialize(application);
+    NSScreen* main_screen = [NSScreen mainScreen];
+    NSRect screen_frame = [main_screen frame];
+    NSSize screen_size = screen_frame.size;
+    CGFloat frame_width = screen_size.width;
+    CGFloat frame_height = screen_size.height;
+
+    NSRect frame = NSMakeRect(rect.x, frame_height - rect.y - rect.height, rect.width, rect.height);
+    return frame;
+}
+
+std::shared_ptr<MacWindow> MacWindow::Create(const MacApplication& application, const WindowDescription& description,
+                                             const MacWindow* parent)
+{
+    auto window= std::make_shared<MacWindow>(Private{});
+    window->Initialize(application, description, parent);
     return window;
 }
 
-void MacWindow::Initialize(ApplicationImplement* application)
+void MacWindow::Initialize(const MacApplication& application, const WindowDescription& description, const MacWindow* parent)
 {
-    base::Initialize(application);
+    NSWindowStyleMask style = NSWindowStyleMaskBorderless;
 
-    NSRect frame = NSMakeRect(500, 500, 500, 500);
-    native_window_ = [[NSWindow alloc] initWithContentRect:frame
-                                                 styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskResizable|NSWindowStyleMaskMiniaturizable
-                                                   backing:NSBackingStoreBuffered defer:NO];
+    if (description.is_frameless)
+    {
 
-    NSString *title = @"Title";
-    [native_window_ setTitle:title];
+    }
+    else
+    {
+        if (description.is_closeable)
+        {
+            style |= NSWindowStyleMaskTitled|NSWindowStyleMaskClosable;
+        }
+
+        if (description.is_miniaturizable)
+        {
+            style |= NSWindowStyleMaskTitled|NSWindowStyleMaskMiniaturizable;
+        }
+
+        if (description.is_resizeable)
+        {
+            style |= NSWindowStyleMaskTitled|NSWindowStyleMaskResizable;
+        }
+    }
+
+    NSRect rect;
+    if (description.is_maximize)
+    {
+        NSScreen* main_screen = [NSScreen mainScreen];
+        NSRect screen_frame = [main_screen frame];
+        NSSize screen_size = screen_frame.size;
+        rect = NSMakeRect(0, 0, screen_size.width, screen_size.height);
+    }
+    else
+    {
+        rect = FromRect(description.frame_rect);
+    }
+
+    native_window_ = [[NSWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO];
+
+    [native_window_ setTitle:[NSString stringWithUTF8String:description.title.Data()]];
     [native_window_ setBackgroundColor:[NSColor whiteColor]];
     [native_window_ makeKeyAndOrderFront:NSApp];
     [native_window_ setDelegate:[[WindowDelegate alloc] init:this]];
+    if (description.is_minimize)
+    {
+        [native_window_ miniaturize:nullptr];
+    }
+
+    if (parent)
+    {
+        [native_window_ setParentWindow: parent->native_window_];
+        can_be_primary_ = false;
+    }
+
+    initialized_ = true;
 }
 
 void MacWindow::Deinitialize()
@@ -74,7 +130,7 @@ void MacWindow::Deinitialize()
             native_window_ = nullptr;
         }
 
-        base::Deinitialize();
+        initialized_ = false;
     }
 }
 

@@ -6,21 +6,25 @@
 #include "core_def.hpp"
 #include "misc/delegate_fwd.hpp"
 #include "string/string.hpp"
+#include "math/rect.hpp"
 
 namespace atlas
 {
 
 class ApplicationImplement;
 
+using FrameRect = Rect<int32>;
+
 struct APPLICATION_API WindowDescription
 {
     String title = "";
-    bool is_closeable = false;
+    bool is_closeable = true;
     bool is_resizeable = true;
     bool is_miniaturizable = true;
     bool is_frameless = false;
     bool is_maximize = false;
     bool is_minimize = false;
+    FrameRect frame_rect = {100, 100, 800, 600};
     int32 x = 100;
     int32 y = 100;
     int32 width = 800;

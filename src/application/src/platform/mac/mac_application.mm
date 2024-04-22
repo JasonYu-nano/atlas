@@ -44,9 +44,9 @@ void MacApplication::Tick(float delta_time)
     }
 }
 
-std::shared_ptr<ApplicationWindow> MacApplication::MakeWindow()
+std::shared_ptr<ApplicationWindow> MacApplication::MakeWindow(const WindowDescription& description, const ApplicationWindow* parent)
 {
-    auto&& window = MacWindow::Create(this);
+    auto&& window = MacWindow::Create(*this, description, static_cast<const MacWindow*>(parent));
     managed_windows.Add(window);
 
     if (window->CanBecomePrimary() && primary_window_.expired())

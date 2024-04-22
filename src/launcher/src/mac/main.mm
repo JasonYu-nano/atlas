@@ -33,6 +33,7 @@ static int32 g_engine_main_error_code = 0;
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
     g_engine_main_error_code = EngineMain(0, nullptr);
+    [NSApp terminate:nil];
 }
 
 - (IBAction)requestQuit:(id)Sender
@@ -40,6 +41,7 @@ static int32 g_engine_main_error_code = 0;
     if (g_engine)
     {
         g_engine->RequestShutdown();
+        [NSApp terminate:nil];
     }
 }
 
