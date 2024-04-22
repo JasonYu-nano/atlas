@@ -36,6 +36,15 @@ public:
         return true;
     }
 
+    /**
+     * @brief Get handle of native window.
+     * eg: NSWindow, HWND...
+     * @return
+     */
+    NODISCARD virtual void* GetNativeHandle() const
+    {
+        return nullptr;
+    }
     DECLARE_MULTICAST_DELEGATE_ONE_PARAM(OnWindowDestroyed, std::shared_ptr<ApplicationWindow>, window);
     /**
      * @brief Event broadcast when a window was destroyed.
