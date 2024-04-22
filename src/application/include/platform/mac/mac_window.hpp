@@ -13,6 +13,9 @@ FORWARD_DECLARE_OBJC_CLASS(NSWindow);
 
 namespace atlas
 {
+
+class MacApplication;
+
 /**
  * @brief Wrapper class for cocoa window.
  * Use MacWindow::Create to create instance.
@@ -27,7 +30,8 @@ public:
      * @param application
      * @return
      */
-    static std::shared_ptr<MacWindow> Create(ApplicationImplement* application);
+    static std::shared_ptr<MacWindow> Create(const MacApplication& application, const WindowDescription& description,
+                                             const MacWindow* parent = nullptr);
 
     // make sure MacWindow can only be construct by MacWindow::Create()
     explicit MacWindow(Private) {};
@@ -44,12 +48,17 @@ public:
         return can_be_primary_;
     }
 
+    NODISCARD void* GetNativeHandle() const override
+    {
+        return native_window_;
+    }
+
 protected:
-    void Initialize(ApplicationImplement *application) override;
-    void Deinitialize() override;
+    void Initialize(const MacApplication& application, const WindowDescription& description, const MacWindow* parent);
+    void Deinitialize();
 
     bool can_be_primary_{ true };
-    NSWindow* native_window_{nullptr };
+    NSWindow* native_window_{ nullptr };
 };
 
 } // namespace atlas

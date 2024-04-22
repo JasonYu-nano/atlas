@@ -20,7 +20,7 @@ public:
      * @brief Create a native window instance.
      * @return
      */
-    std::shared_ptr<ApplicationWindow> MakeWindow() override;
+    std::shared_ptr<ApplicationWindow> MakeWindow(const WindowDescription& description, const ApplicationWindow* parent = nullptr) override;
 
 protected:
     void OnWindowDestroyed(std::shared_ptr<ApplicationWindow> window);
