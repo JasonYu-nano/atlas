@@ -16,7 +16,7 @@ class WindowsWindow : public ApplicationWindow, public std::enable_shared_from_t
     using base = ApplicationWindow;
     struct Private {};
 public:
-    static std::shared_ptr<WindowsWindow> Create(const WindowsApplication& application, const WindowDescription& description, std::shared_ptr<ApplicationWindow> parent = nullptr);
+    static std::shared_ptr<WindowsWindow> Create(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent = nullptr);
 
     explicit WindowsWindow(Private) {};
 
@@ -33,7 +33,7 @@ public:
     }
 
 protected:
-    void Initialize(const WindowsApplication& application, const WindowDescription& description, std::shared_ptr<ApplicationWindow> parent);
+    void Initialize(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent);
     void Deinitialize();
 
 public:

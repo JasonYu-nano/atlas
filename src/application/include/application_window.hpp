@@ -15,20 +15,29 @@ class ApplicationImplement;
 
 using FrameRect = Rect<int32>;
 
+/**
+ * @brief The definitions of native window property.
+ */
 struct APPLICATION_API WindowDescription
 {
+    /** Title of the window */
     String title = "";
-    bool is_closeable = true;
-    bool is_resizeable = true;
-    bool is_miniaturizable = true;
+    /** Whether the window is frameless */
     bool is_frameless = false;
+    /** Whether the window is start with fullscreen */
+    bool is_fullscreen = true;
+    /** Whether the window has a close button. Only works when is_frameless == false && is_fullscreen == false */
+    bool is_closeable = true;
+    /** Whether the window can resize */
+    bool is_resizeable = true;
+    /** Whether the window can be miniaturize to the taskbar. Only works when is_frameless == false && is_fullscreen == false */
+    bool is_miniaturizable = true;
+    /** Whether the window is start with max size */
     bool is_maximize = false;
+    /** Whether the window is start with min size */
     bool is_minimize = false;
+    /** The content frame rect of the window */
     FrameRect frame_rect = {100, 100, 800, 600};
-    int32 x = 100;
-    int32 y = 100;
-    int32 width = 800;
-    int32 height = 600;
 };
 
 /**
