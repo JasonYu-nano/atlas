@@ -20,7 +20,7 @@ public:
     void Deinitialize() override;
     void Tick(float delta_time) override;
 
-    std::shared_ptr<ApplicationWindow> MakeWindow(const WindowDescription& description) override;
+    std::shared_ptr<ApplicationWindow> MakeWindow(const WindowDescription& description, const ApplicationWindow* parent) override;
 
     NODISCARD HINSTANCE GetInstanceHandle() const
     {
