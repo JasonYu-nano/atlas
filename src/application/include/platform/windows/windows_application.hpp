@@ -22,6 +22,10 @@ public:
 
     std::shared_ptr<ApplicationWindow> MakeWindow(const WindowDescription& description, const ApplicationWindow* parent) override;
 
+    std::shared_ptr<ApplicationWindow> MakeDummyWindow() override;
+
+    std::shared_ptr<ApplicationWindow> GetKeyWindow() const override;
+
     NODISCARD HINSTANCE GetInstanceHandle() const
     {
         return hinstance_;

@@ -15,7 +15,7 @@ public:
 
     static void* LoadDynamicLibrary(const Path& path);
     static void FreeDynamicLibrary(void* module_handle);
-    static void* GetExportedSymbol(void* handle, const String& symbol_name);
+    static void* GetExportedSymbol(void* handle, StringView symbol_name);
     static Path GetEngineDirectory();
     static Path GetDynamicLibraryPath(const Path& module_dir, const class StringName& lib_name);
 };

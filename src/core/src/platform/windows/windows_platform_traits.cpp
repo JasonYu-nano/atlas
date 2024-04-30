@@ -28,9 +28,9 @@ void WindowsPlatformTraits::FreeDynamicLibrary(void* module_handle)
     ::FreeLibrary((HMODULE)module_handle);
 }
 
-void* WindowsPlatformTraits::GetExportedSymbol(void* handle, const String& symbol_name)
+void* WindowsPlatformTraits::GetExportedSymbol(void* handle, StringView symbol_name)
 {
-    return ::GetProcAddress((HMODULE)handle, symbol_name.Data());
+    return ::GetProcAddress((HMODULE)handle, symbol_name.data());
 }
 
 Path WindowsPlatformTraits::GetEngineDirectory()

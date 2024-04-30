@@ -24,6 +24,24 @@ void WindowsWindow::Destroy()
     }
 }
 
+void WindowsWindow::Show()
+{
+    if (!is_visible_)
+    {
+        is_visible_ = true;
+        ::ShowWindow(window_handle_, SW_SHOW);
+    }
+}
+
+void WindowsWindow::Hide()
+{
+    if (is_visible_)
+    {
+        is_visible_ = false;
+        ::ShowWindow(window_handle_, SW_HIDE);
+    }
+}
+
 void WindowsWindow::Initialize(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent)
 {
     uint32 window_style = 0;
@@ -93,10 +111,10 @@ void WindowsWindow::Initialize(const WindowsApplication& application, const Wind
         return;
     }
 
-    device_context_handle = GetDC(window_handle_);
-
-    // display the window on the screen
-    ::ShowWindow(window_handle_, SW_SHOW);
+    if (description.display_when_initialize)
+    {
+        Show();
+    }
 
     initialized_ = true;
 }
@@ -108,11 +126,6 @@ void WindowsWindow::Deinitialize()
         if (window_handle_)
         {
             HWND handle = std::exchange(window_handle_, nullptr);
-            HDC dc = std::exchange(device_context_handle, nullptr);
-            if (dc)
-            {
-                ReleaseDC(handle, dc);
-            }
             DestroyWindow(handle);
         }
         initialized_ = false;

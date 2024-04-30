@@ -35,4 +35,10 @@ private:
     bool activated_{ true };
 };
 
+template<typename T>
+ScopeGuard<T> MakeScopeGuard(T&& callable)
+{
+    return ScopeGuard<T>(std::forward<T>(callable));
+}
+
 }// namespace atlas

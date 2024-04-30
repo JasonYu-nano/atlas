@@ -10,6 +10,7 @@ void GameEngine::Startup()
 {
     base::Startup();
     application_module_ = static_cast<IManualTickableModule*>(ModuleManager::Load("application"));
+    ModuleManager::Load("rhi");
 }
 
 void GameEngine::Shutdown()
