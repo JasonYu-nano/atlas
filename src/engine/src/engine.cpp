@@ -2,6 +2,7 @@
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
 #include "engine.hpp"
+#include "tickable/tickable_object.hpp"
 
 #include "project.hpp"
 #include "misc/cmd_options.hpp"

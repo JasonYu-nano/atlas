@@ -62,6 +62,19 @@ std::shared_ptr<ApplicationWindow> WindowsApplication::MakeWindow(const WindowDe
     return window;
 }
 
+std::shared_ptr<ApplicationWindow> WindowsApplication::MakeDummyWindow()
+{
+    // we won't manage dummy window.
+    WindowDescription desc;
+    desc.display_when_initialize = false;
+    return WindowsWindow::Create(*this, desc, nullptr);
+}
+
+std::shared_ptr<ApplicationWindow> WindowsApplication::GetKeyWindow() const
+{
+    return primary_window_.expired() ? nullptr : primary_window_.lock();
+}
+
 std::shared_ptr<ApplicationWindow> WindowsApplication::GetWindow(HWND hwnd) const
 {
     const size_t index = managed_windows_.Find([hwnd](auto&& window) {

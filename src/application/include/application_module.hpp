@@ -20,6 +20,11 @@ public:
 
     void tick(float delta_time) override;
 
+    NODISCARD PlatformApplication* GetApplication() const
+    {
+        return application_.get();
+    }
+
 private:
     std::unique_ptr<PlatformApplication> application_{ nullptr };
 };

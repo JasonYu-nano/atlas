@@ -12,13 +12,10 @@ int EngineMain(int argc, char* argv[])
 {
     g_engine = new GameEngine();
 
-    using exit = decltype([]() {
+    // make sure can always call engine shutdown on program terminated.
+    auto guard = MakeScopeGuard([] {
         g_engine->shutdown();
     });
-
-    // make sure can always call engine shutdown on program terminated.
-    ScopeGuard<exit> guard;
-
 
     g_engine->startup(argc, argv);
 

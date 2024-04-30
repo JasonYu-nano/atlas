@@ -37,6 +37,16 @@ public:
         return implement_->MakeWindow(description, parent);
     }
 
+    std::shared_ptr<ApplicationWindow> MakeDummyWindow()
+    {
+        return implement_->MakeDummyWindow();
+    }
+
+    std::shared_ptr<ApplicationWindow> GetKeyWindow() const
+    {
+        return implement_->GetKeyWindow();
+    }
+
 private:
     explicit PlatformApplication(ApplicationImplement* implement) : implement_(implement) {}
 

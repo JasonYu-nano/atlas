@@ -25,7 +25,7 @@ struct APPLICATION_API WindowDescription
     /** Whether the window is frameless */
     bool is_frameless = false;
     /** Whether the window is start with fullscreen */
-    bool is_fullscreen = true;
+    bool is_fullscreen = false;
     /** Whether the window has a close button. Only works when is_frameless == false && is_fullscreen == false */
     bool is_closeable = true;
     /** Whether the window can resize */
@@ -36,6 +36,8 @@ struct APPLICATION_API WindowDescription
     bool is_maximize = false;
     /** Whether the window is start with min size */
     bool is_minimize = false;
+    /** Whether automaticly show window when initialize */
+    bool display_when_initialize = true;
     /** The content frame rect of the window */
     FrameRect frame_rect = {100, 100, 800, 600};
 };
@@ -53,6 +55,22 @@ public:
      * If the window is a primary window, Destroy() may cause engine shutdown.
      */
     virtual void Destroy() {}
+
+    /**
+     * @brief Display window.
+     */
+    virtual void Show()
+    {
+
+    }
+
+    /**
+     * @brief Hide window.
+     */
+    virtual void Hide()
+    {
+
+    }
     /**
      * @brief Determines whether the window can become the main window.
      * @return
@@ -61,7 +79,6 @@ public:
     {
         return true;
     }
-
     /**
      * @brief Get handle of native window.
      * eg: NSWindow, HWND...

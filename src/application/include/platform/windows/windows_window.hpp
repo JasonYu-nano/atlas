@@ -20,7 +20,16 @@ public:
 
     explicit WindowsWindow(Private) {};
 
+    ~WindowsWindow() override
+    {
+        Deinitialize();
+    }
+
     void Destroy() override;
+
+    void Show() override;
+
+    void Hide() override;
 
     void* GetNativeHandle() const override
     {
@@ -41,7 +50,7 @@ public:
 
 protected:
     HWND window_handle_{ nullptr };
-    HDC device_context_handle{ nullptr };
+    bool is_visible_{ false };
 };
 
 }// namespace atlas
