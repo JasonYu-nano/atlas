@@ -5,6 +5,7 @@
 
 #include "misc/delegate_fwd.hpp"
 #include "module/module_manager.hpp"
+#include "misc/cmd_options.hpp"
 
 namespace atlas::test
 {
@@ -156,6 +157,51 @@ TEST(MiscTest, MulticastDelegateTest)
         delegate.Broadcast(2);
         EXPECT_TRUE(count == 5);
         EXPECT_FALSE(delegate.IsBound());
+    }
+}
+
+DEFINE_COMMAND_OPTION(bool, boolean, "b", "")
+DEFINE_COMMAND_OPTION(String, string, "s", "")
+DEFINE_COMMAND_OPTION(int32, int, "", "")
+DEFINE_COMMAND_OPTION(float, float, "", "")
+DEFINE_COMMAND_OPTION_DEFAULT(int8, uint, "", "", 99)
+
+TEST(MiscTest, CmdOptTest)
+{
+    const char* cmd_line[] = {
+        "placeholder", "-b", "true", "--string=atlas", "-int=12", "--float=1.5"
+    };
+
+    CommandParser::ParseCommandLineOptions(6, const_cast<char**>(cmd_line));
+
+    {
+        auto v = CommandParser::ValueOf<bool>("b");
+        EXPECT_TRUE(*v);
+    }
+
+    {
+        auto v = CommandParser::ValueOf<String>("s");
+        EXPECT_TRUE(*v == "atlas");
+    }
+
+    {
+        auto v = CommandParser::ValueOf<int32>("int");
+        EXPECT_TRUE(*v == 12);
+    }
+
+    {
+        auto v = CommandParser::ValueOf<float>("float");
+        EXPECT_TRUE(*v == 1.5);
+    }
+
+    {
+        auto v = CommandParser::ValueOf<double>("");
+        EXPECT_FALSE(v.has_value());
+    }
+
+    {
+        auto v = CommandParser::ValueOf<int8>("uint");
+        EXPECT_TRUE(*v == 99);
     }
 }
 
