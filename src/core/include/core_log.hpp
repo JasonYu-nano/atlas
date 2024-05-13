@@ -5,4 +5,4 @@
 
 #include "log/logger.hpp"
 
-DEFINE_LOGGER(core_module);
+DEFINE_LOGGER(core);

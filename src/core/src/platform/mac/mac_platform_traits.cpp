@@ -16,7 +16,7 @@ void* MacPlatformTraits::LoadDynamicLibrary(const Path& path)
     void* handle = ::dlopen(sys_path.data(), RTLD_LAZY);
     if (handle == nullptr)
     {
-        LOG_ERROR(core_module, "Load library {0} failed.", path.ToString());
+        LOG_ERROR(core, "Load library {0} failed.", path.ToString());
     }
     return handle;
 }
