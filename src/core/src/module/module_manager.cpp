@@ -121,9 +121,20 @@ IModule* ModuleManager::AddModule(StringName name)
 
 void ModuleManager::CreateModuleImp(ModuleInfo& module_info)
 {
-    Path module_path = PlatformTraits::GetDynamicLibraryPath(Directory::GetModuleDirectory(), module_info.name);
+    Path search_path;
+    if (Path* p = module_search_path_map_.FindValue(module_info.name))
+    {
+        search_path = *p;
+    }
+    else
+    {
+        search_path = Directory::GetEngineDirectory();
+        module_search_path_map_.Insert(module_info.name, search_path);
+    }
 
-    void* handle = PlatformTraits::LoadDynamicLibrary(module_path);
+    const Path lib_path = PlatformTraits::GetDynamicLibraryPath(Directory::GetModuleDirectory(search_path), module_info.name);
+
+    void* handle = PlatformTraits::LoadDynamicLibrary(lib_path);
     if (handle)
     {
         module_info.module_handle = std::unique_ptr<void, ReleaseModuleHandle>(handle);
@@ -145,7 +156,7 @@ void ModuleManager::CreateModuleImp(ModuleInfo& module_info)
     }
     else
     {
-        LOG_ERROR(module_manager, "Failed to load module library from path {0}", module_path.ToString());
+        LOG_ERROR(module_manager, "Failed to load module library from path {0}", search_path.ToString());
     }
 }
 

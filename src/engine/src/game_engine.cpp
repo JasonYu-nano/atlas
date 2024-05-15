@@ -6,9 +6,9 @@
 namespace atlas
 {
 
-void GameEngine::Startup()
+void GameEngine::Startup(int argc, char** argv)
 {
-    base::Startup();
+    base::Startup(argc, argv);
     application_module_ = static_cast<IManualTickableModule*>(ModuleManager::Load("application"));
 }
 

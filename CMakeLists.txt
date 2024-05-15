@@ -103,3 +103,5 @@ endif ()
 if (WITH_TEST)
     add_subdirectory(test)
 endif ()
+
+add_subdirectory(examples)

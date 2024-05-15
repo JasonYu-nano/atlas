@@ -24,6 +24,16 @@ Path Directory::GetModuleDirectory()
     return dir;
 }
 
+Path Directory::GetModuleDirectory(const Path& search_path)
+{
+#if PLATFORM_WINDOWS
+    Path dir = search_path / "build\\debug\\out\\bin\\";
+#else
+    Path dir = search_path / "build/debug/out/bin/";
+#endif
+    return dir;
+}
+
 Path Directory::GetEnginePluginsDirectory()
 {
     Path engine_root = GetEngineDirectory();

@@ -25,6 +25,7 @@ public:
      * @return
      */
     static Path GetModuleDirectory();
+    static Path GetModuleDirectory(const Path& search_path);
     /**
      * @brief Gets directory of engine plugins.
      * @return

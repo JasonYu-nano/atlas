@@ -16,7 +16,7 @@ public:
 
     ~GameEngine() override = default;
 
-    void Startup() override;
+    void Startup(int argc, char** argv) override;
     void Shutdown() override;
     void Loop() override;
 

@@ -197,6 +197,10 @@ public:
     {
         Construct(str, length);
     }
+    explicit String(BasicStringView<value_type> view)
+    {
+        Construct(view.data(), view.length());
+    }
 #if CHAR8T_SUPPORT
     String(const char* str)
     {

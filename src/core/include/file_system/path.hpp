@@ -394,6 +394,22 @@ public:
         return { normalized };
     }
     /**
+     * @brief Gets the extension of path.
+     * @return
+     */
+    NODISCARD Path Extension() const
+    {
+        return {String{ParseExtension()}};
+    }
+    /** Gets the parent path.
+     * @brief
+     * @return
+     */
+    NODISCARD Path ParentPath() const
+    {;
+        return {String{ParseParentPath(text_)}};
+    }
+    /**
      * @brief Converts path into a string.
      * @return
      */
@@ -505,6 +521,98 @@ private:
 
         // no match
         return first;
+    }
+
+    NODISCARD const_pointer FindRelativePath(const_pointer const first, const_pointer const last) const
+    {
+        // attempt to parse [_First, _Last) as a path and return the start of relative-path
+        return std::find_if_not(FindRootNameEnd(first, last), last, is_separator_);
+    }
+
+    NODISCARD const_pointer FindFileName(const_pointer const first, const_pointer const last) const
+    {
+        const auto relative_path = FindRelativePath(first, last);
+        pointer mutable_last = const_cast<pointer>(last);
+        while (relative_path != mutable_last && !is_separator_(mutable_last[-1]))
+        {
+            --mutable_last;
+        }
+
+        return mutable_last;
+    }
+
+    NODISCARD const_pointer FindExtension(const_pointer filename, const_pointer ads) const
+    {
+        // find dividing point between stem and extension in a generic format filename consisting of [_Filename, _Ads)
+        auto extension = ads;
+        if (filename == extension) // empty path
+        {
+            return ads;
+        }
+
+        --extension;
+        if (filename == extension) // path is length 1 and either dot, or has no dots; either way, extension() is empty
+        {
+            return ads;
+        }
+
+        if (*extension == '.') // we might have found the end of stem
+        {
+            if (filename == extension - 1 && extension[-1] == '.') // dotdot special case
+            {
+                return ads;
+            }
+            // x.
+            return extension;
+        }
+
+        while (filename != --extension)
+        {
+            if (*extension == '.') // found a dot which is not in first position, so it starts extension()
+            {
+                return extension;
+            }
+        }
+
+        // if we got here, either there are no dots, in which case extension is empty, or the first element
+        // is a dot, in which case we have the leading single dot special case, which also makes extension empty
+        return ads;
+    }
+
+    StringView ParseExtension() const
+    {
+        // attempt to parse _Str as a path and return the extension if it exists; otherwise, an empty view
+        const auto first    = text_.data();
+        const auto last     = first + text_.size();
+        const auto filename = FindFileName(first, last);
+        const auto ads = std::find(filename, last, ':'); // strip alternate data streams in intra-filename decomposition
+        const auto extension = FindExtension(filename, ads);
+        return StringView(extension, static_cast<size_t>(ads - extension));
+    }
+
+    NODISCARD StringView ParseParentPath(const StringView str) const
+    {
+        // attempt to parse _Str as a path and return the parent_path if it exists; otherwise, an empty view
+        const auto first         = str.data();
+        auto last                = first + str.size();
+        const auto relative_path = FindRelativePath(first, last);
+        // case 1: relative-path ends in a directory-separator, remove the separator to remove "magic empty path"
+        //  for example: R"(/cat/dog/\//\)"
+        // case 2: relative-path doesn't end in a directory-separator, remove the filename and last directory-separator
+        //  to prevent creation of a "magic empty path"
+        //  for example: "/cat/dog"
+        while (relative_path != last && !is_separator_(last[-1]))
+        {
+            // handle case 2 by removing trailing filename, puts us into case 1
+            --last;
+        }
+
+        while (relative_path != last && is_separator_(last[-1])) // handle case 1 by removing trailing slashes
+        {
+            --last;
+        }
+
+        return {first, static_cast<size_t>(last - first)};
     }
 
     constexpr static IsSeparator<value_type> is_separator_;

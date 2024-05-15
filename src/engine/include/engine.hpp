@@ -5,6 +5,7 @@
 
 #include "module/module_manager.hpp"
 #include "plugin_manager.hpp"
+#include "project.hpp"
 #include "tickable/tick_task_manager.hpp"
 
 namespace atlas
@@ -23,7 +24,7 @@ public:
 
     virtual ~Engine() = default;
 
-    virtual void Startup();
+    virtual void Startup(int argc, char** argv);
 
     virtual void Shutdown();
 
@@ -46,6 +47,8 @@ public:
     TickTaskManager* GetTickTaskManager() const { return tick_task_manager_.get(); }
 
 protected:
+    void LoadProject();
+
     bool is_shutdown_requested_{ false };
 
     std::chrono::nanoseconds last_time_{ 0 };
@@ -54,6 +57,8 @@ protected:
 
     std::unique_ptr<TickTaskManager> tick_task_manager_{ nullptr };
     std::unique_ptr<PluginManager> plugin_manager_{ nullptr };
+
+    Project project_;
 };
 
 } // namespace atlas

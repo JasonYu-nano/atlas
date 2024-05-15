@@ -66,6 +66,12 @@ public:
      * @brief Shutdown module manager and unload all modules.
      */
     static void Shutdown();
+
+    static void AddModuleSearchPath(StringName module_name, const Path& path)
+    {
+        module_search_path_map_.Insert(module_name, path);
+    }
+
 private:
     ModuleManager() = default;
 
@@ -75,6 +81,7 @@ private:
 
     static inline std::shared_mutex mutex_;
     static inline UnorderedMap<StringName, ModuleInfo> module_info_map_;
+    static inline UnorderedMap<StringName, Path> module_search_path_map_;
 };
 
 } // namespace atlas

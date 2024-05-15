@@ -5,11 +5,11 @@
 
 using namespace atlas;
 
-int main()
+int main(int argc, char* argv[])
 {
     g_engine = new GameEngine();
 
-    g_engine->Startup();
+    g_engine->Startup(argc, argv);
 
     while (!g_engine->IsShutdownRequested())
     {

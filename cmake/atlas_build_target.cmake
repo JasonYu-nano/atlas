@@ -195,3 +195,42 @@ macro(add_atlas_executable)
 
     _setup_ide()
 endmacro()
+
+macro(add_atlas_project)
+    _build_target_parse_arguments(${ARGV})
+
+    set(MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp)
+
+    _exclude_platform_files(MODULE_FILES)
+
+    if(SHARED)
+        add_library(${ARG_TARGET} SHARED ${MODULE_FILES})
+    else()
+        add_library(${ARG_TARGET} STATIC ${MODULE_FILES})
+    endif()
+
+    _add_target_properties()
+    _add_compile_definitions()
+    _add_include_dirs()
+    _add_link_libs()
+    _add_dependency()
+    _include_definition_file()
+
+    if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+        set(BUILD_DIR "${MODULE_DIR}/build/debug")
+    elseif(${CMAKE_BUILD_TYPE} MATCHES "RelWithDebInfo")
+        set(BUILD_DIR "${MODULE_DIR}/build/debug_release")
+    elseif(${CMAKE_BUILD_TYPE} MATCHES "Release")
+        set(BUILD_DIR "${MODULE_DIR}/build/release")
+    endif()
+
+    set_target_properties(${ARG_TARGET} PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY ${BUILD_DIR}/out/lib
+        RUNTIME_OUTPUT_DIRECTORY ${BUILD_DIR}/out/bin
+        LIBRARY_OUTPUT_DIRECTORY ${BUILD_DIR}/out/bin
+    )
+
+    _setup_ide()
+endmacro()
