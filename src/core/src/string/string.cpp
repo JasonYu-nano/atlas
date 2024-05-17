@@ -27,7 +27,7 @@ namespace
 
 String::size_type String::Count() const
 {
-    auto it = CAST_TO_CONST_CHAR_POINT(Data());
+    auto it = Data();
     auto end = it + Length();
     size_type count = 0;
 
@@ -43,7 +43,7 @@ String::size_type String::Count() const
 
 CodePoint String::CodePointAt(std::make_unsigned_t<size_type> offset) const
 {
-    auto it = CAST_TO_CONST_CHAR_POINT(Data());
+    auto it = Data();
     auto end = it + Length();
     size_type current_offset = 0;
 
@@ -82,7 +82,7 @@ int32 String::Compare(const String& right, ECaseSensitive case_sensitive) const
 
 String String::FoldCase() const
 {
-    const char* data = CAST_TO_CONST_CHAR_POINT(Data());
+    const char* data = Data();
     std::string fold_case = boost::locale::fold_case(data, data + Length(), locale::DefaultLocale());
     return {fold_case.data(), ConvertSize(fold_case.length())};
 }
@@ -94,7 +94,7 @@ bool String::IsUpper(const std::locale& locale) const
 
 String String::ToUpper(const std::locale& locale) const
 {
-    const char* data = CAST_TO_CONST_CHAR_POINT(Data());
+    const char* data = Data();
     std::string upper = boost::locale::to_upper(data, data + Length(), locale);
     return {upper.data(), ConvertSize(upper.length())};
 }
@@ -106,7 +106,7 @@ bool String::IsLower(const std::locale& locale) const
 
 String String::ToLower(const std::locale& locale) const
 {
-    const char* data = CAST_TO_CONST_CHAR_POINT(Data());
+    const char* data = Data();
     std::string lower = boost::locale::to_lower(data, data + Length(), locale);
     return {lower.data(), ConvertSize(lower.length())};
 }
@@ -120,7 +120,7 @@ std::wstring String::ToWide() const
         return {};
     }
 
-    const char* data = CAST_TO_CONST_CHAR_POINT(my_val.GetPtr());
+    const char* data = Data();
 
     return boost::locale::conv::utf_to_utf<wchar_t, char>(data, data + length);
 }
@@ -134,7 +134,7 @@ std::u16string String::ToUtf16() const
         return {};
     }
 
-    const char* data = CAST_TO_CONST_CHAR_POINT(my_val.GetPtr());
+    const char* data = Data();
     return boost::locale::conv::utf_to_utf<char16_t, char>(data, data + length);
 }
 
@@ -147,7 +147,7 @@ std::u32string String::ToUtf32() const
         return {};
     }
 
-    const char* data = CAST_TO_CONST_CHAR_POINT(my_val.GetPtr());
+    const char* data = Data();
     return boost::locale::conv::utf_to_utf<char32_t, char>(data, data + length);
 }
 

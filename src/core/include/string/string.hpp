@@ -20,21 +20,6 @@
 #include "math/atlas_math.hpp"
 #include "core_macro.hpp"
 
-
-#ifndef CHAR8T_SUPPORT
-#define CHAR8T_SUPPORT 0
-#endif
-
-#if CHAR8T_SUPPORT
-#define CHAR_T(ch) u8##ch
-#define CAST_TO_CHAR_POINT(p) reinterpret_cast<char*>(p)
-#define CAST_TO_CONST_CHAR_POINT(p) reinterpret_cast<const char*>(p)
-#else
-#define CHAR_T(ch) ch
-#define CAST_TO_CHAR_POINT(p) p
-#define CAST_TO_CONST_CHAR_POINT(p) p
-#endif
-
 namespace atlas
 {
 namespace details
@@ -144,11 +129,7 @@ enum class ECaseSensitive : uint8
 class CORE_API String
 {
 public:
-#if CHAR8T_SUPPORT
-    using value_type = char8_t;
-#else
     using value_type = char;
-#endif
     using char_traits = std::char_traits<value_type>;
     using allocator_type = HeapAllocator<value_type>;
     using allocator_traits = AllocatorTraits<allocator_type>;
@@ -171,23 +152,11 @@ public:
     {
         Construct(ch, 1);
     }
-#if CHAR8T_SUPPORT
-    explicit String(char ch)
-    {
-        Construct(static_cast<value_type>(ch), 1);
-    }
-#endif
 
     String(value_type ch, size_type count)
     {
         Construct(ch, count);
     }
-#if CHAR8T_SUPPORT
-    String(char ch, size_type count)
-    {
-        Construct(static_cast<value_type>(ch), count);
-    }
-#endif
 
     String(const_pointer str)
     {
@@ -201,17 +170,6 @@ public:
     {
         Construct(view.data(), view.length());
     }
-#if CHAR8T_SUPPORT
-    String(const char* str)
-    {
-        Construct(reinterpret_cast<const_pointer>(str), ConvertSize(std::char_traits<char>::length(str)));
-    }
-
-    String(const char* str, size_type length)
-    {
-        Construct(reinterpret_cast<const_pointer>(str), length);
-    }
-#endif
 
     String(const String& right)
     {
@@ -243,13 +201,6 @@ public:
         MoveAssign(right);
         return *this;
     }
-#if CHAR8T_SUPPORT
-    String& operator= (const char* right)
-    {
-        Assign(reinterpret_cast<const_pointer>(right), ConvertSize(std::char_traits<char>::length(right)));
-        return *this;
-    }
-#endif
     String& operator= (const_pointer right)
     {
         Assign(right, char_traits::length(right));
@@ -445,20 +396,12 @@ public:
     NODISCARD String ToLower(const std::locale& locale = locale::DefaultLocale()) const;
     NODISCARD std::string ToStdString() const
     {
-        return { CAST_TO_CONST_CHAR_POINT(Data()), Length() };
+        return { Data(), Length() };
     }
     NODISCARD std::wstring ToWide() const;
     NODISCARD std::u16string ToUtf16() const;
     NODISCARD std::u32string ToUtf32() const;
 
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Append the specified string to the current string.
-     * @param str
-     * @return Current string
-     */
-    String& Append(const char* str) { return Append(std::string_view(str)); }
-#endif
     /**
      * @brief Append the specified characters to the current string.
      * @param ch
@@ -479,14 +422,6 @@ public:
      */
     template<std::ranges::contiguous_range RangeType>
     String& Append(const RangeType& range);
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Prepend the specified string to the current string.
-     * @param str
-     * @return Current string
-     */
-    String& Prepend(const char* str) { return Prepend(std::string_view(str)); }
-#endif
     /**
      * @brief Prepend the specified characters to the current string.
      * @param ch
@@ -507,14 +442,6 @@ public:
      */
     template<std::ranges::contiguous_range RangeType>
     String& Prepend(const RangeType& range);
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Concatenates two specified const string.
-     * @param str
-     * @return A new string
-     */
-    NODISCARD String Concat(const char* str) const { return Concat(std::string_view(str)); }
-#endif
     /**
      * @brief Concatenates specified const string and characters.
      * @param ch
@@ -535,15 +462,6 @@ public:
      */
     template<std::ranges::contiguous_range RangeType>
     NODISCARD String Concat(const RangeType& range) const;
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Insert the specified string into the current string.
-     * @param offset
-     * @param str
-     * @return Current string
-     */
-    String& Insert(size_type offset, const char* str) { return Insert(cbegin() + offset, std::string_view(str)); }
-#endif
     /**
      * @brief Insert the specified string into the current string.
      * @param offset
@@ -568,18 +486,6 @@ public:
      * @return Current string
      */
     String& Remove(size_type from, size_type count);
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Remove all specified strings from the current string.
-     * @param str
-     * @param case_sensitive
-     * @return
-     */
-    String& Remove(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive)
-    {
-        return Remove(std::string_view(str), case_sensitive);
-    }
-#endif
     /**
      * @brief Remove all specified strings from the current string.
      * @param str
@@ -599,19 +505,6 @@ public:
      */
     template<std::ranges::sized_range RangeType>
     String& Remove(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive);
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Replace specified number of characters in the current instance with another specified string.
-     * @param from
-     * @param count
-     * @param new_value
-     * @return
-     */
-    String& Replace(size_type from, size_type count, const char* new_value)
-    {
-        return Replace(from, count, std::string_view(new_value));
-    }
-#endif
     /**
      * @brief Replace specified number of characters in the current instance with another specified string.
      * @param from
@@ -633,18 +526,6 @@ public:
      */
     template<std::ranges::contiguous_range RangeType>
     String& Replace(size_type from, size_type count, const RangeType& new_value);
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
-     * @param old_value
-     * @param new_value
-     * @return
-     */
-    String& Replace(const char* old_value, const char* new_value)
-    {
-        return Replace(std::string_view(old_value), std::string_view(new_value));
-    }
-#endif
     /**
      * @brief Replace all occurrences of a specified string in the current instance with another specified string.
      * @param old_value
@@ -676,18 +557,6 @@ public:
      */
     template<std::ranges::sized_range RangeType1, std::ranges::contiguous_range RangeType2>
     String& Replace(const RangeType1& old_value, const RangeType2& new_value, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive);
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Determines whether the beginning of this string instance matches the specified string.
-     * @param str
-     * @param case_sensitive
-     * @return
-     */
-    bool StartsWith(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
-    {
-        return StartsWith(std::string_view(str), case_sensitive);
-    }
-#endif
     /**
      * @brief Determines whether the beginning of this string instance matches the specified string.
      * @param str
@@ -707,18 +576,6 @@ public:
      */
     template<std::ranges::sized_range RangeType>
     bool StartsWith(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Determines whether the end of this string instance matches the specified string.
-     * @param str
-     * @param case_sensitive
-     * @return
-     */
-    bool EndsWith(const char* str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
-    {
-        return EndsWith(std::string_view(str), case_sensitive);
-    }
-#endif
     /**
      * @brief Determines whether the end of this string instance matches the specified string.
      * @param str
@@ -744,18 +601,6 @@ public:
 
     template<std::ranges::range RangeType>
     size_type FindLast(const RangeType& search, size_type offset_to_tail, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Reports the zero-based index of the first occurrence of the specified string in this instance.
-     * @param search
-     * @param case_sensitive
-     * @return
-     */
-    size_type IndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
-    {
-        return IndexOf(std::string_view(search), case_sensitive);
-    }
-#endif
     /**
      * @brief Reports the zero-based index of the first occurrence of the specified string in this instance.
      * @param search
@@ -778,18 +623,6 @@ public:
     {
         return Find(search, 0, case_sensitive);
     }
-#if CHAR8T_SUPPORT
-    /**
-     * @brief Reports the zero-based index position of the last occurrence of a specified string within this instance.
-     * @param search
-     * @param case_sensitive
-     * @return
-     */
-    size_type LastIndexOf(const char* search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
-    {
-        return LastIndexOf(std::string_view(search), case_sensitive);
-    }
-#endif
     /**
      * @brief Reports the zero-based index position of the last occurrence of a specified string within this instance.
      * @param search

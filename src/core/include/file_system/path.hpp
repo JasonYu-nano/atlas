@@ -508,8 +508,8 @@ private:
 
         // $ means anything other than a separator, including potentially the end of the input
         if (last - first >= 4 && is_separator_(first[3]) && (last - first == 4 || !is_separator_(first[4])) // \xx\$
-            && ((is_separator_(first[1]) && (first[2] == CHAR_T('?') || first[2] == CHAR_T('.'))) // \\?\$ or \\.\$
-                || (first[1] == CHAR_T('?') && first[2] == CHAR_T('?')))) // \??\$
+            && ((is_separator_(first[1]) && (first[2] == '?' || first[2] == '.')) // \\?\$ or \\.\$
+                || (first[1] == '?' && first[2] == '?'))) // \??\$
         {
             return first + 3;
         }

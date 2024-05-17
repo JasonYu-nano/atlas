@@ -173,7 +173,7 @@ TEST(StringTest, StringSearch)
         EXPECT_TRUE(name.IndexOf("la") == 2);
         EXPECT_TRUE(name.IndexOf("al") == INDEX_NONE);
         EXPECT_TRUE(name.IndexOf("at", ECaseSensitive::Insensitive) == 0);
-        EXPECT_TRUE(name.IndexOf(String::view_type(CHAR_T("at"))) == INDEX_NONE);
+        EXPECT_TRUE(name.IndexOf(String::view_type("at")) == INDEX_NONE);
         std::shared_ptr<String> a;
     }
 }
@@ -182,7 +182,7 @@ TEST(StringTest, StringModify)
 {
     {
         String name = "Atlas";
-        String::view_type view = CHAR_T("阿特拉斯");
+        String::view_type view = "阿特拉斯";
         name.Append(view);
         EXPECT_TRUE(name == "Atlas阿特拉斯" && name.Length() == 17);
     }
