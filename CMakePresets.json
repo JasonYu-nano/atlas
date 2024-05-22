@@ -8,8 +8,7 @@
   "configurePresets": [
     {
       "name": "release",
-      "displayName": "Default Config",
-      "description": "Default build using Ninja generator",
+      "description": "Build without debug info",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
@@ -18,11 +17,10 @@
       }
     },
     {
-      "name": "debug_release",
-      "displayName": "Default Config",
-      "description": "Default build using Ninja generator",
+      "name": "debug_optimize",
+      "description": "This usually corresponds to the -O2 optimization level of the compiler",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/debug_release",
+      "binaryDir": "${sourceDir}/build/debug_optimize",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "cmake/conan_provider.cmake",
@@ -31,8 +29,7 @@
     },
     {
       "name": "debug",
-      "displayName": "Default Config",
-      "description": "Default build using Ninja generator",
+      "description": "Build with debug info",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {

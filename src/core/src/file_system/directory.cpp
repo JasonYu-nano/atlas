@@ -13,25 +13,14 @@ Path Directory::GetEngineDirectory()
     return directory;
 }
 
-Path Directory::GetModuleDirectory()
+Path Directory::GetEngineModuleDirectory()
 {
-    Path engine_root = GetEngineDirectory();
-#if PLATFORM_WINDOWS
-    Path dir = engine_root / "build\\debug\\out\\bin\\";
-#else
-    Path dir = engine_root / "build/debug/out/bin/";
-#endif
-    return dir;
+    return GetModuleDirectory(GetEngineDirectory());
 }
 
 Path Directory::GetModuleDirectory(const Path& search_path)
 {
-#if PLATFORM_WINDOWS
-    Path dir = search_path / "build\\debug\\out\\bin\\";
-#else
-    Path dir = search_path / "build/debug/out/bin/";
-#endif
-    return dir;
+    return search_path / PlatformTraits::GetRelativeBuildDirectory();
 }
 
 Path Directory::GetEnginePluginsDirectory()

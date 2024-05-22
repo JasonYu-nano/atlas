@@ -21,10 +21,14 @@ public:
      */
     static Path GetEngineDirectory();
     /**
-     * @brief Gets directory of module library.
+     * @brief Gets directory of engine module library.
      * @return
      */
-    static Path GetModuleDirectory();
+    static Path GetEngineModuleDirectory();
+    /**
+     * @brief Format module library directory by given path.
+     * @return
+     */
     static Path GetModuleDirectory(const Path& search_path);
     /**
      * @brief Gets directory of engine plugins.

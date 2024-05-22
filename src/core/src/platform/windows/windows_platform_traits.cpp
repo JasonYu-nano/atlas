@@ -33,17 +33,24 @@ void* WindowsPlatformTraits::GetExportedSymbol(void* handle, const String& symbo
     return ::GetProcAddress((HMODULE)handle, symbol_name.Data());
 }
 
-Path WindowsPlatformTraits::GetEngineDirectory()
+const Path& WindowsPlatformTraits::GetEngineDirectory()
 {
-    std::error_code error;
-    std::filesystem::path working_directory = std::filesystem::current_path(error);
-    String working_directory_string = String::From(working_directory);
+    static Path dir = GetEngineDirectoryImpl();
+    return dir;
+}
+
+const Path& WindowsPlatformTraits::GetRelativeBuildDirectory()
+{
 #if DEBUG
-    working_directory_string.Remove("build\\debug\\out\\bin");
+    static Path reltive_path("build\\debug\\out\\bin");
+#elif DEBUG_OPTIMIZE
+    static Path reltive_path("build\\debug_optimize\\out\\bin");
+#elif RELEASE
+    static Path reltive_path("build\\release\\out\\bin");
 #else
-    // TODO:
+#   error "Invalid build type"
 #endif
-    return { working_directory_string };
+    return reltive_path;
 }
 
 Path WindowsPlatformTraits::GetDynamicLibraryPath(const Path& module_dir, const StringName& lib_name)
@@ -53,6 +60,15 @@ Path WindowsPlatformTraits::GetDynamicLibraryPath(const Path& module_dir, const 
 #else
     return module_dir / lib_name.ToLexical();
 #endif
+}
+
+Path WindowsPlatformTraits::GetEngineDirectoryImpl()
+{
+    std::error_code error;
+    std::filesystem::path working_directory = std::filesystem::current_path(error);
+    String working_directory_string = String::From(working_directory);
+    working_directory_string.Remove(GetRelativeBuildDirectory().ToString());
+    return { working_directory_string };
 }
 
 } // namespace atlas

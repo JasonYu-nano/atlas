@@ -38,12 +38,19 @@ if (MSVC)
 
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /GL")
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+    add_compile_definitions(_HAS_EXCEPTIONS=0)
+else ()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions")
 endif ()
+
+
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     add_compile_definitions(DEBUG)
 elseif(${CMAKE_BUILD_TYPE} MATCHES "RelWithDebInfo")
-    add_compile_definitions(DEVELOPMENT)
+    add_compile_definitions(DEBUG_OPTIMIZE)
 elseif(${CMAKE_BUILD_TYPE} MATCHES "Release")
     add_compile_definitions(RELEASE)
 endif()
