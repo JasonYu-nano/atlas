@@ -7,3 +7,9 @@
 #define INDEX_NONE_ZU ((size_t)-1)
 
 #define DO_NOT_USE_DIRECTLY
+
+#ifdef __cpp_exceptions
+#define CPP_EXCEPTIONS 1
+#else
+#define CPP_EXCEPTIONS 0
+#endif
