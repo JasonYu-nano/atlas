@@ -160,7 +160,7 @@ public:
      */
     iterator Insert(const param_type value, bool* already_in_set = nullptr)
     {
-        return tree_.InsertUnique(value, already_in_set);
+        return tree_.insert_unique(value, already_in_set);
     }
     /**
      * @brief Inserts element only if there is no element equivalently.
@@ -170,7 +170,7 @@ public:
      */
     iterator Insert(value_type&& value, bool* already_in_set = nullptr)
     {
-        return tree_.InsertUnique(std::forward<value_type>(value), already_in_set);
+        return tree_.insert_unique(std::forward<value_type>(value), already_in_set);
     }
     /**
      * @brief Inserts each element from the range only if there is no element equivalently.
@@ -180,7 +180,7 @@ public:
     template<std::ranges::forward_range RangeType>
     void Insert(const RangeType& range)
     {
-        tree_.InsertUnique(range);
+        tree_.insert_unique(range);
     }
     /**
      * @brief Returns whether set contains equivalently element.
@@ -216,7 +216,7 @@ public:
      */
     bool Remove(const param_type value)
     {
-        return tree_.RemoveUnique(value) > 0;
+        return tree_.remove_unique(value) > 0;
     }
     /**
      * @brief Removes element at given position.
@@ -377,7 +377,7 @@ public:
      */
     iterator Insert(const param_type value)
     {
-        return tree_.InsertEqual(value);
+        return tree_.insert_equal(value);
     }
     /**
      * @brief Inserts element to set.
@@ -386,7 +386,7 @@ public:
      */
     iterator Insert(value_type&& value)
     {
-        return tree_.InsertEqual(std::forward<value_type>(value));
+        return tree_.insert_equal(std::forward<value_type>(value));
     }
     /**
      * @brief Inserts each element from the range to set.
@@ -396,7 +396,7 @@ public:
     template<std::ranges::forward_range RangeType>
     void Insert(const RangeType& range)
     {
-        tree_.InsertEqual(range);
+        tree_.insert_equal(range);
     }
     /**
      * @brief Returns whether set contains equivalently element.
@@ -414,7 +414,7 @@ public:
      */
     size_type Count(const param_type value) const
     {
-        return tree_.Count(value);
+        return tree_.count(value);
     }
     /**
      * @brief Finds first element equivalent to the given one.

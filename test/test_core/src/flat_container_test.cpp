@@ -137,23 +137,23 @@ TEST(MapTest, MapCtor)
     }
     {
         Map<SetElement, int32> map(10);
-        EXPECT_TRUE(map.Capacity() == 10);
+        EXPECT_TRUE(map.capacity() == 10);
     }
     {
         Map<SetElement, int32> map = {{{4}, 0}, {{1}, 1}, {{3}, 0}, {{3}, 5}};
-        EXPECT_TRUE(std::is_sorted(map.begin(), map.end()) && map.Size() == 3);
+        EXPECT_TRUE(std::is_sorted(map.begin(), map.end()) && map.size() == 3);
     }
     {
         Array<std::pair<SetElement, int32>> array = {{{4}, 0}, {{1}, 1}, {{3}, 0}, {{3}, 5}};
         Map<SetElement, int32> map(array);
-        EXPECT_TRUE(std::is_sorted(map.begin(), map.end()) && map.Size() == 3);
+        EXPECT_TRUE(std::is_sorted(map.begin(), map.end()) && map.size() == 3);
     }
     {
         Map<SetElement, int32> map = {{{4}, 0}, {{1}, 1}, {{3}, 0}, {{3}, 5}};
         Map<SetElement, int32> map_1(map);
-        EXPECT_TRUE(map_1.Size() == 3);
+        EXPECT_TRUE(map_1.size() == 3);
         Map<SetElement, int32> map_2(std::move(map));
-        EXPECT_TRUE(map_2.Size() == 3 && map.Size() == 0);
+        EXPECT_TRUE(map_2.size() == 3 && map.size() == 0);
     }
 };
 
@@ -161,17 +161,17 @@ TEST(MapTest, MapInsert)
 {
     {
         Map<SetElement, int32> map;
-        map.Insert({1}, 0);
-        EXPECT_TRUE(map.FindValueRef({1}) == 0);
+        map.insert({1}, 0);
+        EXPECT_TRUE(map.find_value_ref({1}) == 0);
         Map<SetElement, int32> pending_insert = {{{4}, 0}, {{1}, 1}, {{3}, 0}};
-        map.Insert(pending_insert);
-        EXPECT_TRUE(map.Size() == 3 && map.FindValueRef({1}) == 0);
+        map.insert(pending_insert);
+        EXPECT_TRUE(map.size() == 3 && map.find_value_ref({1}) == 0);
     }
     {
         Map<SetElement, int32> map;
-        EXPECT_TRUE(map.FindOrInsert({1})->second == 0);
-        map.Insert({2}, 5);
-        EXPECT_TRUE(map.FindOrInsert({2})->second == 5);
+        EXPECT_TRUE(map.find_or_insert({1})->second == 0);
+        map.insert({2}, 5);
+        EXPECT_TRUE(map.find_or_insert({2})->second == 5);
     }
 }
 
@@ -179,8 +179,8 @@ TEST(MapTest, MapRemove)
 {
     {
         Map<SetElement, int32> map = {{{4}, 0}, {{1}, 1}, {{3}, 0}};
-        map.Remove({3});
-        EXPECT_TRUE(map.Size() == 2 && map.FindValue({3}) == nullptr);
+        map.remove({3});
+        EXPECT_TRUE(map.size() == 2 && map.find_value({3}) == nullptr);
     }
 };
 
@@ -191,23 +191,23 @@ TEST(MultiMapTest, MultiMapCtor)
     }
     {
         MultiMap<SetElement, int32> map(10);
-        EXPECT_TRUE(map.Capacity() == 10);
+        EXPECT_TRUE(map.capacity() == 10);
     }
     {
         MultiMap<SetElement, int32> map = {{{4}, 0}, {{1}, 1}, {{3}, 0}, {{3}, 5}};
-        EXPECT_TRUE(std::is_sorted(map.begin(), map.end()) && map.Size() == 4);
+        EXPECT_TRUE(std::is_sorted(map.begin(), map.end()) && map.size() == 4);
     }
     {
         Array<std::pair<SetElement, int32>> array = {{{4}, 0}, {{1}, 1}, {{3}, 0}, {{3}, 5}};
         MultiMap<SetElement, int32> map(array);
-        EXPECT_TRUE(std::is_sorted(map.begin(), map.end()) && map.Size() == 4);
+        EXPECT_TRUE(std::is_sorted(map.begin(), map.end()) && map.size() == 4);
     }
     {
         MultiMap<SetElement, int32> map = {{{4}, 0}, {{1}, 1}, {{3}, 0}, {{3}, 5}};
         MultiMap<SetElement, int32> map_1(map);
-        EXPECT_TRUE(map_1.Size() == 4);
+        EXPECT_TRUE(map_1.size() == 4);
         MultiMap<SetElement, int32> map_2(std::move(map));
-        EXPECT_TRUE(map_2.Size() == 4 && map.Size() == 0);
+        EXPECT_TRUE(map_2.size() == 4 && map.size() == 0);
     }
 };
 
@@ -215,17 +215,17 @@ TEST(MultiMapTest, MultiMapInsert)
 {
     {
         MultiMap<SetElement, int32> map;
-        map.Insert({1}, 0);
-        EXPECT_TRUE(map.FindValueRef({1}) == 0);
+        map.insert({1}, 0);
+        EXPECT_TRUE(map.find_value_ref({1}) == 0);
         MultiMap<SetElement, int32> pending_insert = {{{4}, 0}, {{1}, 1}, {{3}, 0}};
-        map.Insert(pending_insert);
-        EXPECT_TRUE(map.Count({1}) == 2 && map.Size() == 4 && map.FindValueRef({1}) == 0);
+        map.insert(pending_insert);
+        EXPECT_TRUE(map.count({1}) == 2 && map.size() == 4 && map.find_value_ref({1}) == 0);
     }
     {
         MultiMap<SetElement, int32> map;
-        EXPECT_TRUE(map.FindOrInsert({1})->second == 0);
-        map.Insert({2}, 5);
-        EXPECT_TRUE(map.FindOrInsert({2})->second == 5);
+        EXPECT_TRUE(map.find_or_insert({1})->second == 0);
+        map.insert({2}, 5);
+        EXPECT_TRUE(map.find_or_insert({2})->second == 5);
     }
 }
 
@@ -233,8 +233,8 @@ TEST(MultiMapTest, MultiMapRemove)
 {
     {
         MultiMap<SetElement, int32> map = {{{4}, 0}, {{1}, 1}, {{3}, 0}, {{3}, 1}};
-        map.Remove({3});
-        EXPECT_TRUE(map.Size() == 2 && map.FindValue({3}) == nullptr);
+        map.remove({3});
+        EXPECT_TRUE(map.size() == 2 && map.find_value({3}) == nullptr);
     }
 };
 

@@ -97,15 +97,7 @@ public:
      * @brief Get number of elements in map.
      * @return
      */
-    NODISCARD size_type Size() const
-    {
-        return tree_.size();
-    }
-    /**
-     * @brief Get number of elements in map.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
+    NODISCARD size_type size() const
     {
         return tree_.size();
     }
@@ -113,15 +105,7 @@ public:
      * @brief Get maximum number of elements in map.
      * @return
      */
-    NODISCARD size_type MaxSize() const
-    {
-        return tree_.max_size();
-    }
-    /**
-     * @brief Get maximum number of elements in map.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY size_type max_size() const
+    NODISCARD size_type max_size() const
     {
         return tree_.max_size();
     }
@@ -129,7 +113,7 @@ public:
      * @brief Get capacity of map.
      * @return
      */
-    NODISCARD size_type Capacity() const
+    NODISCARD size_type capacity() const
     {
         return tree_.capacity();
     }
@@ -137,7 +121,7 @@ public:
      * @brief Reserves memory such that the map can contain at least number elements.
      * @param new_capacity
      */
-    void Reserve(size_type new_capacity)
+    void reserve(size_type new_capacity)
     {
         tree_.reserve(new_capacity);
     }
@@ -145,14 +129,14 @@ public:
      * @brief Clear all elements.
      * @param reset_capacity Deallocate the remain capacity. Default is false.
      */
-    void Clear(bool reset_capacity = false)
+    void clear(bool reset_capacity = false)
     {
         tree_.clear(reset_capacity);
     }
     /**
      * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
      */
-    void ShrinkToFit()
+    void shrink_to_fit()
     {
         tree_.shrink_to_fit();
     }
@@ -163,9 +147,9 @@ public:
      * @param already_in_map Optional pointer to bool that will be set depending on whether element is already in map.
      * @return Iterator to insert element.
      */
-    iterator Insert(const key_type& key, const value_type& value, bool* already_in_map = nullptr)
+    iterator insert(const key_type& key, const value_type& value, bool* already_in_map = nullptr)
     {
-        return tree_.InsertUnique(pair_type(key, value), already_in_map);
+        return tree_.insert_unique(pair_type(key, value), already_in_map);
     }
     /**
      * @brief Inserts value only if there is no key equivalently.
@@ -174,9 +158,9 @@ public:
      * @param already_in_map Optional pointer to bool that will be set depending on whether element is already in map.
      * @return Iterator to insert element.
      */
-    iterator Insert(key_type&& key, const value_type& value, bool* already_in_map = nullptr)
+    iterator insert(key_type&& key, const value_type& value, bool* already_in_map = nullptr)
     {
-        return tree_.InsertUnique(pair_type(std::forward<key_type>(key), value), already_in_map);
+        return tree_.insert_unique(pair_type(std::forward<key_type>(key), value), already_in_map);
     }
     /**
      * @brief Inserts value only if there is no key equivalently.
@@ -185,9 +169,9 @@ public:
      * @param already_in_map Optional pointer to bool that will be set depending on whether element is already in map.
      * @return Iterator to insert element.
      */
-    iterator Insert(const key_type& key, value_type&& value, bool* already_in_map = nullptr)
+    iterator insert(const key_type& key, value_type&& value, bool* already_in_map = nullptr)
     {
-        return tree_.InsertUnique(pair_type(key, std::forward<value_type>(value)), already_in_map);
+        return tree_.insert_unique(pair_type(key, std::forward<value_type>(value)), already_in_map);
     }
     /**
      * @brief Inserts value only if there is no key equivalently.
@@ -196,9 +180,9 @@ public:
      * @param already_in_map Optional pointer to bool that will be set depending on whether element is already in map.
      * @return Iterator to insert element.
      */
-    iterator Insert(key_type&& key, value_type&& value, bool* already_in_map = nullptr)
+    iterator insert(key_type&& key, value_type&& value, bool* already_in_map = nullptr)
     {
-        return tree_.InsertUnique(pair_type(std::forward<key_type>(key), std::forward<value_type>(value)), already_in_map);
+        return tree_.insert_unique(pair_type(std::forward<key_type>(key), std::forward<value_type>(value)), already_in_map);
     }
     /**
      * @brief Inserts each element from the range to map.
@@ -206,21 +190,21 @@ public:
      * @param range
      */
     template<std::ranges::forward_range RangeType>
-    void Insert(const RangeType& range)
+    void insert(const RangeType& range)
     {
-        tree_.InsertUnique(range);
+        tree_.insert_unique(range);
     }
     /**
      * @brief Finds the element associated with given key, or if none exists, adds a value using the default constructor.
      * @param key
      * @return Iterator to found element.
      */
-    iterator FindOrInsert(const key_type& key)
+    iterator find_or_insert(const key_type& key)
     {
         iterator it = tree_.find(key);
         if (it == tree_.end())
         {
-            it = tree_.InsertUnique(pair_type(key, value_type()));
+            it = tree_.insert_unique(pair_type(key, value_type()));
         }
         return it;
     }
@@ -229,12 +213,12 @@ public:
      * @param key
      * @return Iterator to found element.
      */
-    iterator FindOrInsert(key_type&& key)
+    iterator find_or_insert(key_type&& key)
     {
         iterator it = tree_.find(key);
         if (it == tree_.end())
         {
-            it = tree_.InsertUnique(pair_type(std::forward<key_type>(key), value_type()));
+            it = tree_.insert_unique(pair_type(std::forward<key_type>(key), value_type()));
         }
         return it;
     }
@@ -243,7 +227,7 @@ public:
      * @param key
      * @return
      */
-    NODISCARD bool Contains(const key_param_type key) const
+    NODISCARD bool contains(const key_param_type key) const
     {
         return tree_.find(key) != end();
     }
@@ -252,7 +236,7 @@ public:
      * @param key
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    NODISCARD iterator Find(const key_param_type key)
+    NODISCARD iterator find(const key_param_type key)
     {
         return tree_.find(key);
     }
@@ -261,7 +245,7 @@ public:
      * @param key
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    NODISCARD const_iterator Find(const key_param_type key) const
+    NODISCARD const_iterator find(const key_param_type key) const
     {
         return tree_.find(key);
     }
@@ -270,7 +254,7 @@ public:
      * @param key
      * @return Pointer to the found value. Returns null otherwise.
      */
-    NODISCARD value_type* FindValue(const key_param_type key)
+    NODISCARD value_type* find_value(const key_param_type key)
     {
         iterator it = tree_.find(key);
         return it == tree_.end() ? nullptr : &it->second;
@@ -280,7 +264,7 @@ public:
      * @param key
      * @return Pointer to the found value. Returns null otherwise.
      */
-    NODISCARD const value_type* FindValue(const key_param_type key) const
+    NODISCARD const value_type* find_value(const key_param_type key) const
     {
         iterator it = tree_.find(key);
         return it == tree_.end() ? nullptr : &it->second;
@@ -290,7 +274,7 @@ public:
      * @param key
      * @return Reference to the found value.
      */
-    NODISCARD value_type& FindValueRef(const key_param_type key)
+    NODISCARD value_type& find_value_ref(const key_param_type key)
     {
         iterator it = tree_.find(key);
         ASSERT(it != tree_.end());
@@ -301,7 +285,7 @@ public:
      * @param key
      * @return Reference to the found value.
      */
-    NODISCARD const value_type& FindValueRef(const key_param_type key) const
+    NODISCARD const value_type& find_value_ref(const key_param_type key) const
     {
         iterator it = tree_.find(key);
         ASSERT(it != tree_.end());
@@ -312,16 +296,16 @@ public:
      * @param key
      * @return Whether the element has been removed.
      */
-    bool Remove(const key_param_type key)
+    bool remove(const key_param_type key)
     {
-        return tree_.RemoveUnique(key) > 0;
+        return tree_.remove_unique(key) > 0;
     }
     /**
      * @brief Removes element at given position.
      * @param where
      * @return Iterator to removed element.
      */
-    iterator Remove(const_iterator where)
+    iterator remove(const_iterator where)
     {
         return tree_.remove(where);
     }
@@ -412,15 +396,7 @@ public:
      * @brief Get number of elements in map.
      * @return
      */
-    NODISCARD size_type Size() const
-    {
-        return tree_.size();
-    }
-    /**
-     * @brief Get number of elements in map.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
+    NODISCARD size_type size() const
     {
         return tree_.size();
     }
@@ -428,15 +404,7 @@ public:
      * @brief Get maximum number of elements in map.
      * @return
      */
-    NODISCARD size_type MaxSize() const
-    {
-        return tree_.max_size();
-    }
-    /**
-     * @brief Get maximum number of elements in map.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY size_type max_size() const
+    NODISCARD size_type max_size() const
     {
         return tree_.max_size();
     }
@@ -444,7 +412,7 @@ public:
      * @brief Get capacity of map.
      * @return
      */
-    NODISCARD size_type Capacity() const
+    NODISCARD size_type capacity() const
     {
         return tree_.capacity();
     }
@@ -452,7 +420,7 @@ public:
      * @brief Reserves memory such that the map can contain at least number elements.
      * @param new_capacity
      */
-    void Reserve(size_type new_capacity)
+    void reserve(size_type new_capacity)
     {
         tree_.reserve(new_capacity);
     }
@@ -460,14 +428,14 @@ public:
      * @brief Clear all elements.
      * @param reset_capacity Deallocate the remain capacity. Default is false.
      */
-    void Clear(bool reset_capacity = false)
+    void clear(bool reset_capacity = false)
     {
         tree_.clear(reset_capacity);
     }
     /**
      * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
      */
-    void ShrinkToFit()
+    void shrink_to_fit()
     {
         tree_.shrink_to_fit();
     }
@@ -477,9 +445,9 @@ public:
      * @param value
      * @return Iterator to insert element.
      */
-    iterator Insert(const key_type& key, const value_type& value)
+    iterator insert(const key_type& key, const value_type& value)
     {
-        return tree_.InsertEqual(pair_type(key, value));
+        return tree_.insert_equal(pair_type(key, value));
     }
     /**
      * @brief Inserts value.
@@ -487,9 +455,9 @@ public:
      * @param value
      * @return Iterator to insert element.
      */
-    iterator Insert(key_type&& key, const value_type& value)
+    iterator insert(key_type&& key, const value_type& value)
     {
-        return tree_.InsertEqual(pair_type(std::forward<key_type>(key), value));
+        return tree_.insert_equal(pair_type(std::forward<key_type>(key), value));
     }
     /**
      * @brief Inserts value.
@@ -497,9 +465,9 @@ public:
      * @param value
      * @return Iterator to insert element.
      */
-    iterator Insert(const key_type& key, value_type&& value)
+    iterator insert(const key_type& key, value_type&& value)
     {
-        return tree_.InsertEqual(pair_type(key, std::forward<value_type>(value)));
+        return tree_.insert_equal(pair_type(key, std::forward<value_type>(value)));
     }
     /**
      * @brief Inserts value.
@@ -507,9 +475,9 @@ public:
      * @param value
      * @return Iterator to insert element.
      */
-    iterator Insert(key_type&& key, value_type&& value)
+    iterator insert(key_type&& key, value_type&& value)
     {
-        return tree_.InsertEqual(pair_type(std::forward<key_type>(key), std::forward<value_type>(value)));
+        return tree_.insert_equal(pair_type(std::forward<key_type>(key), std::forward<value_type>(value)));
     }
     /**
      * @brief Inserts each element from the range to map.
@@ -517,21 +485,21 @@ public:
      * @param range
      */
     template<std::ranges::forward_range RangeType>
-    void Insert(const RangeType& range)
+    void insert(const RangeType& range)
     {
-        tree_.InsertEqual(range);
+        tree_.insert_equal(range);
     }
     /**
      * @brief Finds the element associated with given key, or if none exists, adds a value using the default constructor.
      * @param key
      * @return Iterator to found element.
      */
-    iterator FindOrInsert(const key_type& key)
+    iterator find_or_insert(const key_type& key)
     {
         iterator it = tree_.find(key);
         if (it == tree_.end())
         {
-            it = tree_.InsertEqual(pair_type(key, value_type()));
+            it = tree_.insert_equal(pair_type(key, value_type()));
         }
         return it;
     }
@@ -540,12 +508,12 @@ public:
      * @param key
      * @return Iterator to found element.
      */
-    iterator FindOrInsert(key_type&& key)
+    iterator find_or_insert(key_type&& key)
     {
         iterator it = tree_.find(key);
         if (it == tree_.end())
         {
-            it = tree_.InsertEqual(pair_type(std::forward<key_type>(key), value_type()));
+            it = tree_.insert_equal(pair_type(std::forward<key_type>(key), value_type()));
         }
         return it;
     }
@@ -554,7 +522,7 @@ public:
      * @param key
      * @return
      */
-    NODISCARD bool Contains(const key_param_type key) const
+    NODISCARD bool contains(const key_param_type key) const
     {
         return tree_.find(key) != end();
     }
@@ -563,16 +531,16 @@ public:
      * @param value
      * @return
      */
-    size_type Count(const key_param_type value) const
+    size_type count(const key_param_type value) const
     {
-        return tree_.Count(value);
+        return tree_.count(value);
     }
     /**
      * @brief Finds first element associated with given key.
      * @param key
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    NODISCARD iterator Find(const key_param_type key)
+    NODISCARD iterator find(const key_param_type key)
     {
         return tree_.find(key);
     }
@@ -581,7 +549,7 @@ public:
      * @param key
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    NODISCARD const_iterator Find(const key_param_type key) const
+    NODISCARD const_iterator find(const key_param_type key) const
     {
         return tree_.find(key);
     }
@@ -590,7 +558,7 @@ public:
      * @param key
      * @return Pointer to the found value. Returns null otherwise.
      */
-    NODISCARD value_type* FindValue(const key_param_type key)
+    NODISCARD value_type* find_value(const key_param_type key)
     {
         iterator it = tree_.find(key);
         return it == tree_.end() ? nullptr : &it->second;
@@ -600,7 +568,7 @@ public:
      * @param key
      * @return Pointer to the found value. Returns null otherwise.
      */
-    NODISCARD const value_type* FindValue(const key_param_type key) const
+    NODISCARD const value_type* find_value(const key_param_type key) const
     {
         iterator it = tree_.find(key);
         return it == tree_.end() ? nullptr : &it->second;
@@ -610,7 +578,7 @@ public:
      * @param key
      * @return Reference to the found value.
      */
-    NODISCARD value_type& FindValueRef(const key_param_type key)
+    NODISCARD value_type& find_value_ref(const key_param_type key)
     {
         iterator it = tree_.find(key);
         ASSERT(it != tree_.end());
@@ -621,7 +589,7 @@ public:
      * @param key
      * @return Reference to the found value.
      */
-    NODISCARD const value_type& FindValueRef(const key_param_type key) const
+    NODISCARD const value_type& find_value_ref(const key_param_type key) const
     {
         iterator it = tree_.find(key);
         ASSERT(it != tree_.end());
@@ -632,7 +600,7 @@ public:
      * @param key
      * @return Whether the element has been removed.
      */
-    size_type Remove(const key_param_type key)
+    size_type remove(const key_param_type key)
     {
         return tree_.remove(key);
     }
@@ -641,7 +609,7 @@ public:
      * @param where
      * @return Iterator to removed element.
      */
-    iterator Remove(const_iterator where)
+    iterator remove(const_iterator where)
     {
         return tree_.remove(where);
     }

@@ -25,8 +25,8 @@ public:
         return Compare::operator()(key_extract(lhs), key_extract(rhs));
     }
 
-    Compare& GetCompare() { return *this; }
-    const Compare& GetCompare() const { return *this; }
+    Compare& get_compare() { return *this; }
+    const Compare& get_compare() const { return *this; }
 };
 
 template<typename ValueType, typename KeyOfValue, typename Compare, typename Allocator>
@@ -53,7 +53,7 @@ public:
     using const_reverse_iterator    = typename container_type::const_reverse_iterator;
 
 private:
-    using value_compare             = details::FlatTreeValueCompare<value_type, KeyOfValue, key_compare>;
+    using value_compare             = FlatTreeValueCompare<value_type, KeyOfValue, key_compare>;
 
 public:
     /**
@@ -94,7 +94,7 @@ public:
     FlatTree(const key_compare& compare, bool is_unique, const std::initializer_list<value_type>& initializer, const allocator_type& alloc)
         : pair_(OneThenVariadicArgs(), compare, alloc)
     {
-        is_unique ? InsertUnique(initializer) : InsertEqual(initializer);
+        is_unique ? insert_unique(initializer) : insert_equal(initializer);
     };
     /**
      * @brief Constructor from a range
@@ -108,7 +108,7 @@ public:
     FlatTree(const key_compare& compare, bool is_unique, const RangeType& range, const allocator_type& alloc)
         : pair_(OneThenVariadicArgs(), compare, alloc)
     {
-        is_unique ? InsertUnique(range) : InsertEqual(range);
+        is_unique ? insert_unique(range) : insert_equal(range);
     }
     template<typename AnyCompare, typename AnyAllocator>
     explicit FlatTree(const FlatTree<value_type, KeyOfValue, AnyCompare, AnyAllocator>& right) : pair_(right.pair_) {};
@@ -120,8 +120,8 @@ public:
     {
         if (this != std::addressof(right))
         {
-            GetValueCompare() = right.GetValueCompare();
-            GetUnderlyingContainer() = right.GetUnderlyingContainer();
+            get_value_compare() = right.get_value_compare();
+            get_underlying_container() = right.get_underlying_container();
         }
         return *this;
     }
@@ -131,8 +131,8 @@ public:
     {
         if (this != std::addressof(right))
         {
-            GetValueCompare() = std::move(right.GetValueCompare());
-            GetUnderlyingContainer() = std::move(right.GetUnderlyingContainer());
+            get_value_compare() = std::move(right.get_value_compare());
+            get_underlying_container() = std::move(right.get_underlying_container());
         }
         return *this;
     }
@@ -141,28 +141,27 @@ public:
      * @brief Get number of elements in container.
      * @return
      */
-    NODISCARD size_type Size() const { return GetUnderlyingContainer().size(); }
-    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const { return Size(); }
-    NODISCARD size_type MaxSize() const { return GetUnderlyingContainer().max_size(); }
-    NODISCARD DO_NOT_USE_DIRECTLY size_type max_size() const { return GetUnderlyingContainer().max_size(); }
+    NODISCARD size_type size() const { return get_underlying_container().size(); }
+
+    NODISCARD size_type max_size() const { return get_underlying_container().max_size(); }
     /**
      * @brief Get capacity of container.
      * @return
      */
-    NODISCARD size_type capacity() const { return GetUnderlyingContainer().capacity(); }
+    NODISCARD size_type capacity() const { return get_underlying_container().capacity(); }
     /**
      * @brief Inserts element only if there is no element with key equivalent to the key of that element.
      * @param value
      * @param already_in_tree Optional pointer to bool that will be set depending on whether element is already in tree.
      * @return Iterator to insert element.
      */
-    iterator InsertUnique(const param_type value, bool* already_in_tree = nullptr)
+    iterator insert_unique(const param_type value, bool* already_in_tree = nullptr)
     {
         iterator position;
-        bool can_insert = FindPositionToInsert(KeyOfValue()(value), position);
+        bool can_insert = find_position_to_insert(KeyOfValue()(value), position);
         if (can_insert)
         {
-            position = GetUnderlyingContainer().insert(position, value);
+            position = get_underlying_container().insert(position, value);
         }
         if (already_in_tree)
         {
@@ -176,13 +175,13 @@ public:
      * @param already_in_tree Optional pointer to bool that will be set depending on whether element is already in tree.
      * @return Iterator to insert element.
      */
-    iterator InsertUnique(value_type&& value, bool* already_in_tree = nullptr)
+    iterator insert_unique(value_type&& value, bool* already_in_tree = nullptr)
     {
         iterator position;
-        bool can_insert = FindPositionToInsert(KeyOfValue()(value), position);
+        bool can_insert = find_position_to_insert(KeyOfValue()(value), position);
         if (can_insert)
         {
-            position = GetUnderlyingContainer().insert(position, std::move(value));
+            position = get_underlying_container().insert(position, std::move(value));
         }
         if (already_in_tree)
         {
@@ -196,10 +195,10 @@ public:
      * @param range
      */
     template<std::ranges::forward_range RangeType>
-    void InsertUnique(const RangeType& range)
+    void insert_unique(const RangeType& range)
     {
-        container_type& container = GetUnderlyingContainer();
-        const value_compare& val_cmp = GetValueCompare();
+        container_type& container = get_underlying_container();
+        const value_compare& val_cmp = get_value_compare();
 
         //Step 1: put new elements in the back
         const iterator it = container.insert(container.cend(), range);
@@ -223,11 +222,11 @@ public:
      * @param value
      * @return Iterator to insert element.
      */
-    iterator InsertEqual(const param_type value)
+    iterator insert_equal(const param_type value)
     {
         KeyOfValue key_extract;
-        iterator position = std::ranges::upper_bound(begin(), end(), key_extract(value), GetKeyCompare(), key_extract);
-        position = GetUnderlyingContainer().insert(position, value);
+        iterator position = std::ranges::upper_bound(begin(), end(), key_extract(value), get_key_compare(), key_extract);
+        position = get_underlying_container().insert(position, value);
         return position;
     }
     /**
@@ -235,11 +234,11 @@ public:
      * @param value
      * @return Iterator to insert element.
      */
-    iterator InsertEqual(value_type&& value)
+    iterator insert_equal(value_type&& value)
     {
         KeyOfValue key_extract;
-        iterator position = std::ranges::upper_bound(begin(), end(), key_extract(value), GetKeyCompare(), key_extract);
-        position = GetUnderlyingContainer().insert(position, std::move(value));
+        iterator position = std::ranges::upper_bound(begin(), end(), key_extract(value), get_key_compare(), key_extract);
+        position = get_underlying_container().insert(position, std::move(value));
         return position;
     }
     /**
@@ -248,10 +247,10 @@ public:
      * @param range
      */
     template<std::ranges::forward_range RangeType>
-    void InsertEqual(const RangeType& range)
+    void insert_equal(const RangeType& range)
     {
-        container_type& container = GetUnderlyingContainer();
-        const value_compare& val_cmp = GetValueCompare();
+        container_type& container = get_underlying_container();
+        const value_compare& val_cmp = get_value_compare();
 
         //Step 1: put new elements in the back
         const iterator it = container.insert(container.cend(), range);
@@ -268,7 +267,7 @@ public:
      */
     iterator find(const key_param_type key)
     {
-        const key_compare& key_cmp = GetKeyCompare();
+        const key_compare& key_cmp = get_key_compare();
         KeyOfValue key_extract;
         iterator i = std::ranges::lower_bound(begin(), end(), key, key_cmp, key_extract);
         iterator end_it = end();
@@ -285,7 +284,7 @@ public:
      */
     const_iterator find(const key_param_type key) const
     {
-        const key_compare& key_cmp = GetKeyCompare();
+        const key_compare& key_cmp = get_key_compare();
         KeyOfValue key_extract;
         const_iterator i = std::ranges::lower_bound(begin(), end(), key, key_cmp, key_extract);
         const_iterator end_it = cend();
@@ -300,9 +299,9 @@ public:
      * @param key
      * @return Number of elements with key equivalent to the given key.
      */
-    NODISCARD size_type Count(const key_param_type key) const
+    NODISCARD size_type count(const key_param_type key) const
     {
-        const key_compare& key_cmp = GetKeyCompare();
+        const key_compare& key_cmp = get_key_compare();
         KeyOfValue key_extract;
         const_iterator lower = std::ranges::lower_bound(begin(), end(), key, key_cmp, key_extract);
         const_iterator end_it = cend();
@@ -320,7 +319,7 @@ public:
      */
     iterator remove(const_iterator where)
     {
-        return GetUnderlyingContainer().remove_at(where);
+        return get_underlying_container().remove_at(where);
     }
     /**
      * @brief Removes elements with key equivalent to the given key.
@@ -329,7 +328,7 @@ public:
      */
     size_type remove(const key_param_type key)
     {
-        const key_compare& key_cmp = GetKeyCompare();
+        const key_compare& key_cmp = get_key_compare();
         KeyOfValue key_extract;
         const_iterator lower = std::ranges::lower_bound(begin(), end(), key, key_cmp, key_extract);
         const_iterator end_it = cend();
@@ -340,7 +339,7 @@ public:
 
         const_iterator upper = std::ranges::upper_bound(begin(), end(), key, key_cmp, key_extract);
         size_type count = upper - lower;
-        GetUnderlyingContainer().remove_at(lower, count);
+        get_underlying_container().remove_at(lower, count);
         return count;
     }
     /**
@@ -348,7 +347,7 @@ public:
      * @param key
      * @return Iterator to removed element. Iterator to the end otherwise.
      */
-    size_type RemoveUnique(const key_param_type key)
+    size_type remove_unique(const key_param_type key)
     {
         const_iterator i = find(key);
         size_type ret = i != this->cend() ? 1 : 0;
@@ -362,70 +361,70 @@ public:
      * @brief Clear all elements.
      * @param reset_capacity
      */
-    void Clear(bool reset_capacity = false)
+    void clear(bool reset_capacity = false)
     {
-        GetUnderlyingContainer().clear(reset_capacity);
+        get_underlying_container().clear(reset_capacity);
     }
     /**
      * @brief Reserves memory such that the container can contain at least number elements.
      * @param capacity
      */
-    void Reserve(size_type capacity)
+    void reserve(size_type capacity)
     {
-        GetUnderlyingContainer().reserve(capacity);
+        get_underlying_container().reserve(capacity);
     }
     /**
      * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
      */
-    void ShrinkToFit()
+    void shrink_to_fit()
     {
-        GetUnderlyingContainer().shrink_to_fit();
+        get_underlying_container().shrink_to_fit();
     }
 
-    NODISCARD iterator begin() { return GetUnderlyingContainer().begin(); }
-    NODISCARD const_iterator begin() const{ return GetUnderlyingContainer().begin(); }
-    NODISCARD iterator end() { return GetUnderlyingContainer().end(); }
-    NODISCARD const_iterator end() const { return GetUnderlyingContainer().end(); }
+    NODISCARD iterator begin() { return get_underlying_container().begin(); }
+    NODISCARD const_iterator begin() const{ return get_underlying_container().begin(); }
+    NODISCARD iterator end() { return get_underlying_container().end(); }
+    NODISCARD const_iterator end() const { return get_underlying_container().end(); }
 
-    NODISCARD reverse_iterator rbegin() { return GetUnderlyingContainer().rbegin(); }
-    NODISCARD const_reverse_iterator rbegin() const { return GetUnderlyingContainer().rbegin(); }
-    NODISCARD reverse_iterator rend() { return GetUnderlyingContainer().rend(); }
-    NODISCARD const_reverse_iterator rend() const { return GetUnderlyingContainer().rend(); }
+    NODISCARD reverse_iterator rbegin() { return get_underlying_container().rbegin(); }
+    NODISCARD const_reverse_iterator rbegin() const { return get_underlying_container().rbegin(); }
+    NODISCARD reverse_iterator rend() { return get_underlying_container().rend(); }
+    NODISCARD const_reverse_iterator rend() const { return get_underlying_container().rend(); }
 
-    NODISCARD const_iterator cbegin() const { return GetUnderlyingContainer().cbegin(); }
-    NODISCARD const_iterator cend() const { return GetUnderlyingContainer().cend(); }
-    NODISCARD const_reverse_iterator crbegin() const { return GetUnderlyingContainer().crbegin(); }
-    NODISCARD const_reverse_iterator crend() const { return GetUnderlyingContainer().crend(); }
+    NODISCARD const_iterator cbegin() const { return get_underlying_container().cbegin(); }
+    NODISCARD const_iterator cend() const { return get_underlying_container().cend(); }
+    NODISCARD const_reverse_iterator crbegin() const { return get_underlying_container().crbegin(); }
+    NODISCARD const_reverse_iterator crend() const { return get_underlying_container().crend(); }
 
 private:
-    const value_compare& GetValueCompare() const
+    const value_compare& get_value_compare() const
     {
         return pair_.First();
     }
 
-    const key_compare& GetKeyCompare() const
+    const key_compare& get_key_compare() const
     {
-        return GetValueCompare().GetCompare();
+        return get_value_compare().get_compare();
     }
 
-    container_type& GetUnderlyingContainer()
+    container_type& get_underlying_container()
     {
         return pair_.Second();
     }
 
-    const container_type& GetUnderlyingContainer() const
+    const container_type& get_underlying_container() const
     {
         return pair_.Second();
     }
 
-    bool FindPositionToInsert(const key_param_type key, const_iterator& position)
+    bool find_position_to_insert(const key_param_type key, const_iterator& position)
     {
-        return FindPositionToInsert(cbegin(), cend(), key, position);
+        return find_position_to_insert(cbegin(), cend(), key, position);
     }
 
-    bool FindPositionToInsert(const_iterator begin, const_iterator end, const key_param_type key, const_iterator& position)
+    bool find_position_to_insert(const_iterator begin, const_iterator end, const key_param_type key, const_iterator& position)
     {
-        const key_compare& key_cmp = GetKeyCompare();
+        const key_compare& key_cmp = get_key_compare();
         KeyOfValue key_extract;
         position = std::ranges::lower_bound(begin, end, key, key_cmp, key_extract);
         return position == end || key_cmp(key, key_extract(*position));
