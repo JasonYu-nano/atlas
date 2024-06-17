@@ -72,6 +72,7 @@ set(ATLAS_TOOL_DIRECTORY ${CMAKE_SOURCE_DIR}/tools)
 
 include(${CMAKE_SOURCE_DIR}/cmake/detect_platform.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
 
 ## run build tool
 set(ABT_EXIST 0)

@@ -140,6 +140,7 @@ public:
     Array(Array<value_type, OtherAllocator>&& right, const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
         MoveAssign(right);
+        right.GetVal().size = 0;
     }
 
     ~Array() noexcept
@@ -178,6 +179,7 @@ public:
     Array& operator= (Array<value_type, OtherAllocator>&& right)
     {
         MoveAssign(right);
+        right.GetVal().size = 0;
         return *this;
     }
     /**
@@ -760,6 +762,62 @@ public:
             }
         }
     }
+
+    /**
+     * @brief Resizes the container to contain count elements.
+     * If the current size is greater than count, the container is reduced to its first count elements.
+     * If the current size is less than count, additional default-inserted elements are appended.
+     * @param count
+     */
+    void Resize(size_type count)
+    {
+        Resize(count, value_type{});
+    }
+    /**
+     * @brief Resizes the container to contain count elements.
+     * If the current size is greater than count, the container is reduced to its first count elements.
+     * If the current size is less than count, additional copies of value are appended.
+     * @param count
+     * @param value
+     */
+    void Resize(size_type count, const param_type value)
+    {
+        if (count < 0)
+        {
+            return;
+        }
+
+        auto&& my_val = GetVal();
+        size_type old_size = my_val.size;
+        if (count == old_size)
+        {
+            return;
+        }
+
+        if (count < old_size)
+        {
+            // trim
+            pointer data = my_val.ptr;
+            pointer end = data + old_size;
+            std::destroy(data + count, end);
+        }
+        else
+        {
+            if (count > my_val.capacity)
+            {
+                size_type new_capacity = CalculateGrowth(count);
+                Reallocate(my_val, new_capacity);
+            }
+
+            auto&& alloc = GetAlloc();
+            for (size_type i = old_size; i < count; ++i)
+            {
+                allocator_traits::construct(alloc, my_val.ptr + i, value);
+            }
+        }
+
+        my_val.size = count;
+    }
     /**
      * @brief Clear the array
      * @param reset_capacity Deallocate the remain capacity. Default is false.
@@ -807,12 +865,12 @@ public:
     NODISCARD const_iterator cend() const { return end(); }
     NODISCARD const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
     NODISCARD const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
-private:
-    allocator_type& GetAlloc() { return pair_.First(); }
-    const allocator_type& GetAlloc() const { return pair_.First(); }
 
     val_type& GetVal() { return pair_.Second(); }
     const val_type& GetVal() const { return pair_.Second(); }
+private:
+    allocator_type& GetAlloc() { return pair_.First(); }
+    const allocator_type& GetAlloc() const { return pair_.First(); }
 
     template<std::forward_iterator InputIter, std::output_iterator<T> OutputIter>
     void MoveToUninitialized(InputIter first, InputIter last, OutputIter dest)
@@ -1016,7 +1074,11 @@ private:
     {
         auto&& my_val = GetVal();
         size_type new_size = ConvertSize(std::ranges::distance(range));
-        if (new_size > my_val.capacity)
+        if (new_size == 0)
+        {
+            std::destroy(my_val.ptr, my_val.ptr + my_val.size);
+        }
+        else if (new_size > my_val.capacity)
         {
             Clear();
             Reallocate(my_val, CalculateGrowth(new_size));
@@ -1104,7 +1166,7 @@ private:
             allocator_type& allocator = GetAlloc();
             pointer new_ptr = allocator_traits::allocate(allocator, new_capacity);
             pointer old_ptr = val.ptr;
-            if (new_ptr != old_ptr)
+            if (old_ptr && new_ptr != old_ptr)
             {
                 MoveToUninitialized(old_ptr, old_ptr + val.size, new_ptr);
                 std::destroy(old_ptr, old_ptr + val.size);

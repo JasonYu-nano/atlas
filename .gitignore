@@ -43,3 +43,4 @@
 **/obj/
 **/bin/
 **/cmake-build-**/
+/test/test_core/test.txt
