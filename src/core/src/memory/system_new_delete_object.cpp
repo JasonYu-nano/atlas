@@ -1,6 +1,8 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
+#include <utility>
+
 #include "memory/system_new_delete_object.hpp"
 
 namespace atlas
@@ -15,6 +17,8 @@ void* SystemNewDeleteObject::operator new(size_t size)
 
 #if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#else
+    std::unreachable();
 #endif
 }
 
@@ -27,6 +31,8 @@ void* SystemNewDeleteObject::operator new[](size_t size)
 
 #if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#else
+    std::unreachable();
 #endif
 }
 
@@ -43,6 +49,8 @@ void* SystemNewDeleteObject::operator new(size_t size, std::align_val_t alignmen
 
 #if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#else
+    std::unreachable();
 #endif
 }
 
@@ -59,6 +67,8 @@ void* SystemNewDeleteObject::operator new[](size_t size, std::align_val_t alignm
 
 #if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#else
+    std::unreachable();
 #endif
 }
 
