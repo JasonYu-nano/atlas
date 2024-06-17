@@ -13,7 +13,9 @@ void* SystemNewDeleteObject::operator new(size_t size)
         return ptr;
     }
 
+#if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#endif
 }
 
 void* SystemNewDeleteObject::operator new[](size_t size)
@@ -23,7 +25,9 @@ void* SystemNewDeleteObject::operator new[](size_t size)
         return ptr;
     }
 
+#if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#endif
 }
 
 void* SystemNewDeleteObject::operator new(size_t size, std::align_val_t alignment)
@@ -37,7 +41,9 @@ void* SystemNewDeleteObject::operator new(size_t size, std::align_val_t alignmen
         return ptr;
     }
 
+#if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#endif
 }
 
 void* SystemNewDeleteObject::operator new[](size_t size, std::align_val_t alignment)
@@ -51,7 +57,9 @@ void* SystemNewDeleteObject::operator new[](size_t size, std::align_val_t alignm
         return ptr;
     }
 
+#if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#endif
 }
 
 void* SystemNewDeleteObject::operator new(size_t size, const std::nothrow_t &tag) noexcept

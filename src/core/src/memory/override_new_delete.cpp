@@ -16,7 +16,11 @@ void* operator new(size_t size)
         return ptr;
     }
 
+#if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#else
+    std::unreachable();
+#endif
 }
 
 void* operator new[](size_t size)
@@ -31,7 +35,11 @@ void* operator new[](size_t size)
         return ptr;
     }
 
+#if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#else
+    std::unreachable();
+#endif
 }
 
 void* operator new(size_t size, std::align_val_t alignment)
@@ -46,7 +54,11 @@ void* operator new(size_t size, std::align_val_t alignment)
         return ptr;
     }
 
+#if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#else
+    std::unreachable();
+#endif
 }
 
 void* operator new[](size_t size, std::align_val_t alignment)
@@ -61,7 +73,11 @@ void* operator new[](size_t size, std::align_val_t alignment)
         return ptr;
     }
 
+#if CPP_EXCEPTIONS
     throw std::bad_alloc{};
+#else
+    std::unreachable();
+#endif
 }
 
 void* operator new(size_t size, const std::nothrow_t &tag) noexcept
