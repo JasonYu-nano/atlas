@@ -99,7 +99,7 @@ public:
      */
     NODISCARD size_type Size() const
     {
-        return tree_.Size();
+        return tree_.size();
     }
     /**
      * @brief Get number of elements in map.
@@ -107,7 +107,7 @@ public:
      */
     NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
     {
-        return tree_.Size();
+        return tree_.size();
     }
     /**
      * @brief Get maximum number of elements in map.
@@ -115,7 +115,7 @@ public:
      */
     NODISCARD size_type MaxSize() const
     {
-        return tree_.MaxSize();
+        return tree_.max_size();
     }
     /**
      * @brief Get maximum number of elements in map.
@@ -131,7 +131,7 @@ public:
      */
     NODISCARD size_type Capacity() const
     {
-        return tree_.Capacity();
+        return tree_.capacity();
     }
     /**
      * @brief Reserves memory such that the map can contain at least number elements.
@@ -139,7 +139,7 @@ public:
      */
     void Reserve(size_type new_capacity)
     {
-        tree_.Reserve(new_capacity);
+        tree_.reserve(new_capacity);
     }
     /**
      * @brief Clear all elements.
@@ -147,14 +147,14 @@ public:
      */
     void Clear(bool reset_capacity = false)
     {
-        tree_.Clear(reset_capacity);
+        tree_.clear(reset_capacity);
     }
     /**
      * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
      */
     void ShrinkToFit()
     {
-        tree_.ShrinkToFit();
+        tree_.shrink_to_fit();
     }
     /**
      * @brief Inserts value only if there is no key equivalently.
@@ -217,7 +217,7 @@ public:
      */
     iterator FindOrInsert(const key_type& key)
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         if (it == tree_.end())
         {
             it = tree_.InsertUnique(pair_type(key, value_type()));
@@ -231,7 +231,7 @@ public:
      */
     iterator FindOrInsert(key_type&& key)
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         if (it == tree_.end())
         {
             it = tree_.InsertUnique(pair_type(std::forward<key_type>(key), value_type()));
@@ -245,7 +245,7 @@ public:
      */
     NODISCARD bool Contains(const key_param_type key) const
     {
-        return tree_.Find(key) != end();
+        return tree_.find(key) != end();
     }
     /**
      * @brief Finds the element associated with given key.
@@ -254,7 +254,7 @@ public:
      */
     NODISCARD iterator Find(const key_param_type key)
     {
-        return tree_.Find(key);
+        return tree_.find(key);
     }
     /**
      * @brief Finds the element associated with given key.
@@ -263,7 +263,7 @@ public:
      */
     NODISCARD const_iterator Find(const key_param_type key) const
     {
-        return tree_.Find(key);
+        return tree_.find(key);
     }
     /**
      * @brief Finds the value associated with given key.
@@ -272,7 +272,7 @@ public:
      */
     NODISCARD value_type* FindValue(const key_param_type key)
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         return it == tree_.end() ? nullptr : &it->second;
     }
     /**
@@ -282,7 +282,7 @@ public:
      */
     NODISCARD const value_type* FindValue(const key_param_type key) const
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         return it == tree_.end() ? nullptr : &it->second;
     }
     /**
@@ -292,7 +292,7 @@ public:
      */
     NODISCARD value_type& FindValueRef(const key_param_type key)
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         ASSERT(it != tree_.end());
         return it->second;
     }
@@ -303,7 +303,7 @@ public:
      */
     NODISCARD const value_type& FindValueRef(const key_param_type key) const
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         ASSERT(it != tree_.end());
         return it->second;
     }
@@ -323,7 +323,7 @@ public:
      */
     iterator Remove(const_iterator where)
     {
-        return tree_.Remove(where);
+        return tree_.remove(where);
     }
 
     NODISCARD iterator begin() { return tree_.begin(); }
@@ -414,7 +414,7 @@ public:
      */
     NODISCARD size_type Size() const
     {
-        return tree_.Size();
+        return tree_.size();
     }
     /**
      * @brief Get number of elements in map.
@@ -422,7 +422,7 @@ public:
      */
     NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
     {
-        return tree_.Size();
+        return tree_.size();
     }
     /**
      * @brief Get maximum number of elements in map.
@@ -430,7 +430,7 @@ public:
      */
     NODISCARD size_type MaxSize() const
     {
-        return tree_.MaxSize();
+        return tree_.max_size();
     }
     /**
      * @brief Get maximum number of elements in map.
@@ -446,7 +446,7 @@ public:
      */
     NODISCARD size_type Capacity() const
     {
-        return tree_.Capacity();
+        return tree_.capacity();
     }
     /**
      * @brief Reserves memory such that the map can contain at least number elements.
@@ -454,7 +454,7 @@ public:
      */
     void Reserve(size_type new_capacity)
     {
-        tree_.Reserve(new_capacity);
+        tree_.reserve(new_capacity);
     }
     /**
      * @brief Clear all elements.
@@ -462,14 +462,14 @@ public:
      */
     void Clear(bool reset_capacity = false)
     {
-        tree_.Clear(reset_capacity);
+        tree_.clear(reset_capacity);
     }
     /**
      * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
      */
     void ShrinkToFit()
     {
-        tree_.ShrinkToFit();
+        tree_.shrink_to_fit();
     }
     /**
      * @brief Inserts value.
@@ -528,7 +528,7 @@ public:
      */
     iterator FindOrInsert(const key_type& key)
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         if (it == tree_.end())
         {
             it = tree_.InsertEqual(pair_type(key, value_type()));
@@ -542,7 +542,7 @@ public:
      */
     iterator FindOrInsert(key_type&& key)
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         if (it == tree_.end())
         {
             it = tree_.InsertEqual(pair_type(std::forward<key_type>(key), value_type()));
@@ -556,7 +556,7 @@ public:
      */
     NODISCARD bool Contains(const key_param_type key) const
     {
-        return tree_.Find(key) != end();
+        return tree_.find(key) != end();
     }
     /**
      * @brief Get number of elements equivalent to the given one.
@@ -574,7 +574,7 @@ public:
      */
     NODISCARD iterator Find(const key_param_type key)
     {
-        return tree_.Find(key);
+        return tree_.find(key);
     }
     /**
      * @brief Finds first element associated with given key.
@@ -583,7 +583,7 @@ public:
      */
     NODISCARD const_iterator Find(const key_param_type key) const
     {
-        return tree_.Find(key);
+        return tree_.find(key);
     }
     /**
      * @brief Finds first value associated with given key.
@@ -592,7 +592,7 @@ public:
      */
     NODISCARD value_type* FindValue(const key_param_type key)
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         return it == tree_.end() ? nullptr : &it->second;
     }
     /**
@@ -602,7 +602,7 @@ public:
      */
     NODISCARD const value_type* FindValue(const key_param_type key) const
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         return it == tree_.end() ? nullptr : &it->second;
     }
     /**
@@ -612,7 +612,7 @@ public:
      */
     NODISCARD value_type& FindValueRef(const key_param_type key)
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         ASSERT(it != tree_.end());
         return it->second;
     }
@@ -623,7 +623,7 @@ public:
      */
     NODISCARD const value_type& FindValueRef(const key_param_type key) const
     {
-        iterator it = tree_.Find(key);
+        iterator it = tree_.find(key);
         ASSERT(it != tree_.end());
         return it->second;
     }
@@ -634,7 +634,7 @@ public:
      */
     size_type Remove(const key_param_type key)
     {
-        return tree_.Remove(key);
+        return tree_.remove(key);
     }
     /**
      * @brief Removes element at given position.
@@ -643,7 +643,7 @@ public:
      */
     iterator Remove(const_iterator where)
     {
-        return tree_.Remove(where);
+        return tree_.remove(where);
     }
 
     NODISCARD iterator begin() { return tree_.begin(); }

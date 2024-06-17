@@ -514,7 +514,7 @@ public:
      */
     NODISCARD bool IsBound() const
     {
-        return !invocation_list_.IsEmpty();
+        return !invocation_list_.is_empty();
     }
     /**
      * @brief Removes bound delegate by handle.
@@ -522,7 +522,7 @@ public:
      */
     void Remove(DelegateHandle handle)
     {
-        invocation_list_.RemoveSwap([=](const delegate_type& delegate){
+        invocation_list_.remove_swap([=](const delegate_type& delegate){
            return delegate.GetHandle() == handle;
         });
     }
@@ -531,7 +531,7 @@ public:
      */
     void RemoveAll()
     {
-        invocation_list_.Clear();
+        invocation_list_.clear();
     }
 
     void Broadcast(Args&&... args)
@@ -552,7 +552,7 @@ public:
      */
     DelegateHandle Add(const delegate_type& delegate)
     {
-        size_t index = invocation_list_.Add(delegate);
+        size_t index = invocation_list_.add(delegate);
         return invocation_list_[index].GetHandle();
     }
     /**
@@ -562,7 +562,7 @@ public:
      */
     DelegateHandle Add(delegate_type&& delegate)
     {
-        size_t index = invocation_list_.Add(std::forward<delegate_type >(delegate));
+        size_t index = invocation_list_.add(std::forward<delegate_type >(delegate));
         return invocation_list_[index].GetHandle();
     }
     /**
@@ -575,7 +575,7 @@ public:
     template<typename... Payload>
     DelegateHandle AddStatic(void (*fn)(Args..., Payload...), Payload&&... payload)
     {
-        size_t index = invocation_list_.Add(delegate_type::CreateStatic(fn, std::forward<Payload>(payload)...));
+        size_t index = invocation_list_.add(delegate_type::CreateStatic(fn, std::forward<Payload>(payload)...));
         return invocation_list_[index].GetHandle();
     }
     /**
@@ -590,7 +590,7 @@ public:
     template<typename Object, typename... Payload>
     DelegateHandle AddRaw(Object* object, details::MethodPointer<Object, true, void(Args..., Payload...)>::type fn, Payload&&... payload)
     {
-        size_t index = invocation_list_.Add(delegate_type::CreateRaw(object, fn, std::forward<Payload>(payload)...));
+        size_t index = invocation_list_.add(delegate_type::CreateRaw(object, fn, std::forward<Payload>(payload)...));
         return invocation_list_[index].GetHandle();
     }
     /**
@@ -605,7 +605,7 @@ public:
     template<typename Object, typename... Payload>
     DelegateHandle AddRaw(Object* object, details::MethodPointer<Object, false, void(Args..., Payload...)>::type fn, Payload&&... payload)
     {
-        size_t index = invocation_list_.Add(delegate_type::CreateRaw(object, fn, std::forward<Payload>(payload)...));
+        size_t index = invocation_list_.add(delegate_type::CreateRaw(object, fn, std::forward<Payload>(payload)...));
         return invocation_list_[index].GetHandle();
     }
     /**
@@ -620,7 +620,7 @@ public:
     template<typename Object, typename... Payload>
     DelegateHandle AddSP(std::shared_ptr<Object> object, details::MethodPointer<Object, true, void(Args..., Payload...)>::type fn, Payload&&... payload)
     {
-        size_t index = invocation_list_.Add(delegate_type::CreateSP(object, fn, std::forward<Payload>(payload)...));
+        size_t index = invocation_list_.add(delegate_type::CreateSP(object, fn, std::forward<Payload>(payload)...));
         return invocation_list_[index].GetHandle();
     }
     /**
@@ -635,7 +635,7 @@ public:
     template<typename Object, typename... Payload>
     DelegateHandle AddSP(std::shared_ptr<Object> object, details::MethodPointer<Object, false, void(Args..., Payload...)>::type fn, Payload&&... payload)
     {
-        size_t index = invocation_list_.Add(delegate_type::CreateSP(object, fn, std::forward<Payload>(payload)...));
+        size_t index = invocation_list_.add(delegate_type::CreateSP(object, fn, std::forward<Payload>(payload)...));
         return invocation_list_[index].GetHandle();
     }
 

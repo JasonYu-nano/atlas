@@ -505,7 +505,7 @@ public:
 	{
 		while (pointer_type item = pop())
 		{
-			out_array.Add(item);
+			out_array.add(item);
 		}
 	}
 

@@ -8,7 +8,7 @@ atlas::CommandOption* atlas::CommandParser::GetOption(StringView name)
     size_t index = INDEX_NONE;
     if (name != "")
     {
-        index = options_.list.Find([&](auto&& opt) {
+        index = options_.list.find([&](auto&& opt) {
             return opt->name_ == name || opt->short_name_ == name;
         });
     }

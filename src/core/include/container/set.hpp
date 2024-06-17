@@ -95,7 +95,7 @@ public:
      */
     NODISCARD size_type Size() const
     {
-        return tree_.Size();
+        return tree_.size();
     }
     /**
      * @brief Get number of elements in set.
@@ -103,7 +103,7 @@ public:
      */
     NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
     {
-        return tree_.Size();
+        return tree_.size();
     }
     /**
      * @brief Get maximum number of elements in set.
@@ -111,7 +111,7 @@ public:
      */
     NODISCARD size_type MaxSize() const
     {
-        return tree_.MaxSize();
+        return tree_.max_size();
     }
     /**
      * @brief Get maximum number of elements in set.
@@ -127,7 +127,7 @@ public:
      */
     NODISCARD size_type Capacity() const
     {
-        return tree_.Capacity();
+        return tree_.capacity();
     }
     /**
      * @brief Reserves memory such that the set can contain at least number elements.
@@ -135,7 +135,7 @@ public:
      */
     void Reserve(size_type new_capacity)
     {
-        tree_.Reserve(new_capacity);
+        tree_.reserve(new_capacity);
     }
     /**
      * @brief Clear all elements.
@@ -143,14 +143,14 @@ public:
      */
     void Clear(bool reset_capacity = false)
     {
-        tree_.Clear(reset_capacity);
+        tree_.clear(reset_capacity);
     }
     /**
      * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
      */
     void ShrinkToFit()
     {
-        tree_.ShrinkToFit();
+        tree_.shrink_to_fit();
     }
     /**
      * @brief Inserts element only if there is no element equivalently.
@@ -189,7 +189,7 @@ public:
      */
     NODISCARD bool Contains(const param_type value) const
     {
-        return tree_.Find(value) != end();
+        return tree_.find(value) != end();
     }
     /**
      * @brief Finds element equivalent to the given one.
@@ -198,7 +198,7 @@ public:
      */
     NODISCARD iterator Find(const param_type value)
     {
-        return tree_.Find(value);
+        return tree_.find(value);
     }
     /**
      * @brief Finds element equivalent to the given one.
@@ -207,7 +207,7 @@ public:
      */
     NODISCARD const_iterator Find(const param_type value) const
     {
-        return tree_.Find(value);
+        return tree_.find(value);
     }
     /**
      * @brief Removes element equivalent to the given one.
@@ -225,7 +225,7 @@ public:
      */
     iterator Remove(const_iterator where)
     {
-        return tree_.Remove(where);
+        return tree_.remove(where);
     }
 
     NODISCARD iterator begin() { return tree_.begin(); }
@@ -313,7 +313,7 @@ public:
      */
     NODISCARD size_type Size() const
     {
-        return tree_.Size();
+        return tree_.size();
     }
     /**
      * @brief Get number of elements in set.
@@ -321,7 +321,7 @@ public:
      */
     NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
     {
-        return tree_.Size();
+        return tree_.size();
     }
     /**
      * @brief Get maximum number of elements in set.
@@ -329,7 +329,7 @@ public:
      */
     NODISCARD size_type MaxSize() const
     {
-        return tree_.MaxSize();
+        return tree_.max_size();
     }
     /**
      * @brief Get maximum number of elements in set.
@@ -345,7 +345,7 @@ public:
      */
     NODISCARD size_type Capacity() const
     {
-        return tree_.Capacity();
+        return tree_.capacity();
     }
     /**
      * @brief Reserves memory such that the set can contain at least number elements.
@@ -353,7 +353,7 @@ public:
      */
     void Reserve(size_type new_capacity)
     {
-        tree_.Reserve(new_capacity);
+        tree_.reserve(new_capacity);
     }
     /**
      * @brief Clear all elements.
@@ -361,14 +361,14 @@ public:
      */
     void Clear(bool reset_capacity = false)
     {
-        tree_.Clear(reset_capacity);
+        tree_.clear(reset_capacity);
     }
     /**
      * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
      */
     void ShrinkToFit()
     {
-        tree_.ShrinkToFit();
+        tree_.shrink_to_fit();
     }
     /**
      * @brief Inserts element to set.
@@ -405,7 +405,7 @@ public:
      */
     NODISCARD bool Contains(const param_type value) const
     {
-        return tree_.Find(value) != end();
+        return tree_.find(value) != end();
     }
     /**
      * @brief Get number of elements equivalent to the given one.
@@ -423,7 +423,7 @@ public:
      */
     NODISCARD iterator Find(const param_type value)
     {
-        return tree_.Find(value);
+        return tree_.find(value);
     }
     /**
      * @brief Finds first element equivalent to the given one.
@@ -432,7 +432,7 @@ public:
      */
     NODISCARD const_iterator Find(const param_type value) const
     {
-        return tree_.Find(value);
+        return tree_.find(value);
     }
     /**
      * @brief Removes element equivalent to the given one.
@@ -441,7 +441,7 @@ public:
      */
     size_type Remove(const param_type value)
     {
-        return tree_.Remove(value);
+        return tree_.remove(value);
     }
     /**
      * @brief Removes element at given position.
@@ -450,7 +450,7 @@ public:
      */
     iterator Remove(const_iterator value)
     {
-        return tree_.Remove(value);
+        return tree_.remove(value);
     }
 
     NODISCARD iterator begin() { return tree_.begin(); }

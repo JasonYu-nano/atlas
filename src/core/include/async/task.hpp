@@ -207,7 +207,7 @@ public:
             std::unique_lock lock(mutex_);
             value_ = std::move(value);
             completion_.notify_all();
-            if (on_completed_.IsEmpty())
+            if (on_completed_.is_empty())
             {
                 lock.unlock();
                 break;
@@ -255,7 +255,7 @@ public:
         }
         else
         {
-            on_completed_.Add(std::move(func));
+            on_completed_.add(std::move(func));
         }
     }
 
@@ -332,7 +332,7 @@ public:
         }
         else
         {
-            on_completed_.Add(std::move(func));
+            on_completed_.add(std::move(func));
         }
     }
 

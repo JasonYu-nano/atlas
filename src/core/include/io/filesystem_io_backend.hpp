@@ -37,14 +37,14 @@ public:
     {
         for (uint32 i = 0; i < get_io_worker_count(); ++i)
         {
-            running_threads_.Emplace(IOTaskWorker(running_threads_.Size(), this));
+            running_threads_.emplace(IOTaskWorker(running_threads_.size(), this));
         }
     }
 
     ~FilesystemIOBackend() override
     {
         request_stop_ = true;
-        running_threads_.Clear();
+        running_threads_.clear();
     }
 
     void schedule(std::coroutine_handle<> handle, EIOPriority priority);

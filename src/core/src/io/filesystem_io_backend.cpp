@@ -75,7 +75,7 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
         co_return read;
     }
 
-    buffer.Resize(old_size + actual_read_size);
+    buffer.resize(old_size + actual_read_size);
 
     co_await schedule_on(*this, priority);
 
@@ -87,11 +87,11 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
         if (!feof(stream))
         {
             LOG_WARN(core, "Read file {} failed", file.ToString());
-            buffer.Resize(old_size);
+            buffer.resize(old_size);
         }
         else
         {
-            buffer.Resize(read);
+            buffer.resize(read);
         }
     }
 

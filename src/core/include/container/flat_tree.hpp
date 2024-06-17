@@ -141,15 +141,15 @@ public:
      * @brief Get number of elements in container.
      * @return
      */
-    NODISCARD size_type Size() const { return GetUnderlyingContainer().Size(); }
+    NODISCARD size_type Size() const { return GetUnderlyingContainer().size(); }
     NODISCARD DO_NOT_USE_DIRECTLY size_type size() const { return Size(); }
-    NODISCARD size_type MaxSize() const { return GetUnderlyingContainer().MaxSize(); }
+    NODISCARD size_type MaxSize() const { return GetUnderlyingContainer().max_size(); }
     NODISCARD DO_NOT_USE_DIRECTLY size_type max_size() const { return GetUnderlyingContainer().max_size(); }
     /**
      * @brief Get capacity of container.
      * @return
      */
-    NODISCARD size_type Capacity() const { return GetUnderlyingContainer().Capacity(); }
+    NODISCARD size_type capacity() const { return GetUnderlyingContainer().capacity(); }
     /**
      * @brief Inserts element only if there is no element with key equivalent to the key of that element.
      * @param value
@@ -162,7 +162,7 @@ public:
         bool can_insert = FindPositionToInsert(KeyOfValue()(value), position);
         if (can_insert)
         {
-            position = GetUnderlyingContainer().Insert(position, value);
+            position = GetUnderlyingContainer().insert(position, value);
         }
         if (already_in_tree)
         {
@@ -182,7 +182,7 @@ public:
         bool can_insert = FindPositionToInsert(KeyOfValue()(value), position);
         if (can_insert)
         {
-            position = GetUnderlyingContainer().Insert(position, std::move(value));
+            position = GetUnderlyingContainer().insert(position, std::move(value));
         }
         if (already_in_tree)
         {
@@ -202,7 +202,7 @@ public:
         const value_compare& val_cmp = GetValueCompare();
 
         //Step 1: put new elements in the back
-        const iterator it = container.Insert(container.cend(), range);
+        const iterator it = container.insert(container.cend(), range);
 
         //Step 2: sort them
         std::sort(it, container.end(), val_cmp);
@@ -210,7 +210,7 @@ public:
         //Step 3: only left unique values from the back not already present in the original range
         iterator const e = algorithm::InplaceSetDifference(it, container.end(), container.begin(), it, val_cmp);
 
-        container.RemoveAt(e, container.cend() - e);
+        container.remove_at(e, container.cend() - e);
         //it might be invalidated by erasing [e, seq.end) if e == it
         if (it != e)
         {
@@ -227,7 +227,7 @@ public:
     {
         KeyOfValue key_extract;
         iterator position = std::ranges::upper_bound(begin(), end(), key_extract(value), GetKeyCompare(), key_extract);
-        position = GetUnderlyingContainer().Insert(position, value);
+        position = GetUnderlyingContainer().insert(position, value);
         return position;
     }
     /**
@@ -239,7 +239,7 @@ public:
     {
         KeyOfValue key_extract;
         iterator position = std::ranges::upper_bound(begin(), end(), key_extract(value), GetKeyCompare(), key_extract);
-        position = GetUnderlyingContainer().Insert(position, std::move(value));
+        position = GetUnderlyingContainer().insert(position, std::move(value));
         return position;
     }
     /**
@@ -254,7 +254,7 @@ public:
         const value_compare& val_cmp = GetValueCompare();
 
         //Step 1: put new elements in the back
-        const iterator it = container.Insert(container.cend(), range);
+        const iterator it = container.insert(container.cend(), range);
 
         //Step 2: sort them
         std::sort(it, container.end(), val_cmp);
@@ -266,7 +266,7 @@ public:
      * @param key
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    iterator Find(const key_param_type key)
+    iterator find(const key_param_type key)
     {
         const key_compare& key_cmp = GetKeyCompare();
         KeyOfValue key_extract;
@@ -283,7 +283,7 @@ public:
      * @param key
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    const_iterator Find(const key_param_type key) const
+    const_iterator find(const key_param_type key) const
     {
         const key_compare& key_cmp = GetKeyCompare();
         KeyOfValue key_extract;
@@ -318,16 +318,16 @@ public:
      * @param where
      * @return Iterator to removed element.
      */
-    iterator Remove(const_iterator where)
+    iterator remove(const_iterator where)
     {
-        return GetUnderlyingContainer().RemoveAt(where);
+        return GetUnderlyingContainer().remove_at(where);
     }
     /**
      * @brief Removes elements with key equivalent to the given key.
      * @param key
      * @return Number of removed element.
      */
-    size_type Remove(const key_param_type key)
+    size_type remove(const key_param_type key)
     {
         const key_compare& key_cmp = GetKeyCompare();
         KeyOfValue key_extract;
@@ -340,7 +340,7 @@ public:
 
         const_iterator upper = std::ranges::upper_bound(begin(), end(), key, key_cmp, key_extract);
         size_type count = upper - lower;
-        GetUnderlyingContainer().RemoveAt(lower, count);
+        GetUnderlyingContainer().remove_at(lower, count);
         return count;
     }
     /**
@@ -350,11 +350,11 @@ public:
      */
     size_type RemoveUnique(const key_param_type key)
     {
-        const_iterator i = Find(key);
+        const_iterator i = find(key);
         size_type ret = i != this->cend() ? 1 : 0;
         if (ret != 0)
         {
-            Remove(i);
+            remove(i);
         }
         return ret;
     }
@@ -364,7 +364,7 @@ public:
      */
     void Clear(bool reset_capacity = false)
     {
-        GetUnderlyingContainer().Clear(reset_capacity);
+        GetUnderlyingContainer().clear(reset_capacity);
     }
     /**
      * @brief Reserves memory such that the container can contain at least number elements.
@@ -372,14 +372,14 @@ public:
      */
     void Reserve(size_type capacity)
     {
-        GetUnderlyingContainer().Reserve(capacity);
+        GetUnderlyingContainer().reserve(capacity);
     }
     /**
      * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
      */
     void ShrinkToFit()
     {
-        GetUnderlyingContainer().ShrinkToFit();
+        GetUnderlyingContainer().shrink_to_fit();
     }
 
     NODISCARD iterator begin() { return GetUnderlyingContainer().begin(); }

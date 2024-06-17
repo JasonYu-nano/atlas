@@ -273,7 +273,7 @@ public:
             if (!ContainsOptionName(name, short_name))
             {
                 opt = new CommandOptionImpl<typename CommandOptTraits<Type>::backend_type>(name, short_name, description);
-                options_.list.Add(opt);
+                options_.list.add(opt);
             }
             else
             {
@@ -309,7 +309,7 @@ public:
             if (!ContainsOptionName(name, short_name))
             {
                 opt = new CommandOptionImpl<typename CommandOptTraits<Type>::backend_type>(name, short_name, description, default_value);
-                options_.list.Add(opt);
+                options_.list.add(opt);
             }
             else
             {
@@ -343,7 +343,7 @@ public:
      */
     static bool ContainsOptionName(StringView name, StringView short_name)
     {
-        const size_t index = options_.list.Find([&](auto&& opt) {
+        const size_t index = options_.list.find([&](auto&& opt) {
             return opt->name_ == name || (short_name != "" && opt->short_name_ == short_name);
         });
         return index != INDEX_NONE;

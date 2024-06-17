@@ -72,11 +72,11 @@ void ModuleManager::Shutdown()
     };
 
     Array<ShutdownModuleInfo> pending_shutdown_modules;
-    pending_shutdown_modules.Reserve(module_info_map_.Size());
+    pending_shutdown_modules.reserve(module_info_map_.Size());
 
     for (auto&& it : module_info_map_)
     {
-        pending_shutdown_modules.Add(ShutdownModuleInfo{it.first, it.second.load_order, it.second.module.get()});
+        pending_shutdown_modules.add(ShutdownModuleInfo{it.first, it.second.load_order, it.second.module.get()});
     }
     // ensure first loaded module shutdown at last.
     std::sort(pending_shutdown_modules.begin(), pending_shutdown_modules.end());
@@ -87,7 +87,7 @@ void ModuleManager::Shutdown()
             it->module->Shutdown();
         }
     }
-    pending_shutdown_modules.Clear();
+    pending_shutdown_modules.clear();
     module_info_map_.Clear();
 }
 

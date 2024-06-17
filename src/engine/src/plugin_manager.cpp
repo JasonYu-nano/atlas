@@ -84,7 +84,7 @@ void ParsePluginModule(PluginDesc& desc, const toml::table& config)
                     StringView type_view = type_node->value_or("runtime");
                     module_desc.type = ConvertToModuleType(type_view);
 
-                    desc.modules.Add(std::move(module_desc));
+                    desc.modules.add(std::move(module_desc));
                 }
             }
         }
@@ -120,7 +120,7 @@ void PluginManager::ParsePluginDescription(StringView file_path)
     ParsePluginModule(plugin_desc, config);
     ParsePluginDependency(plugin_desc, config);
 
-    plugins_.Add(std::move(plugin_desc));
+    plugins_.add(std::move(plugin_desc));
 }
 
 } // namespace atlas
