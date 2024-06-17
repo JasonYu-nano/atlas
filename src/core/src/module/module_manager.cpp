@@ -11,48 +11,48 @@ namespace atlas
 
 DEFINE_LOGGER(module_manager);
 
-bool ModuleManager::IsModuleLoaded(StringName name)
+bool ModuleManager::is_module_loaded(StringName name)
 {
     std::shared_lock lock(mutex_);
-    return module_info_map_.Contains(name);
+    return module_info_map_.contains(name);
 }
 
-IModule* ModuleManager::Load(StringName name)
+IModule* ModuleManager::load(StringName name)
 {
     {
         std::shared_lock lock(mutex_);
-        auto module_it = module_info_map_.Find(name);
+        auto module_it = module_info_map_.find(name);
         if (module_it != module_info_map_.end())
         {
             return module_it->second.module.get();
         }
     }
 
-    return AddModule(name);
+    return add_module(name);
 }
 
-void ModuleManager::Unload(StringName name)
+void ModuleManager::unload(StringName name)
 {
     ModuleInfo pending_unload_module;
     {
         std::unique_lock lock(mutex_);
-        auto it = module_info_map_.Find(name);
+        auto it = module_info_map_.find(name);
         if (it == module_info_map_.end())
         {
             return;
         }
 
         pending_unload_module = std::move(it->second);
-        module_info_map_.Remove(it);
+        module_info_map_.remove(it);
     }
 
     if (pending_unload_module.module)
     {
-        pending_unload_module.module->Shutdown();
+        pending_unload_module.module->shutdown();
     }
 }
 
-void ModuleManager::Shutdown()
+void ModuleManager::shutdown()
 {
     struct ShutdownModuleInfo
     {
@@ -72,11 +72,11 @@ void ModuleManager::Shutdown()
     };
 
     Array<ShutdownModuleInfo> pending_shutdown_modules;
-    pending_shutdown_modules.Reserve(module_info_map_.Size());
+    pending_shutdown_modules.reserve(module_info_map_.size());
 
     for (auto&& it : module_info_map_)
     {
-        pending_shutdown_modules.Add(ShutdownModuleInfo{it.first, it.second.load_order, it.second.module.get()});
+        pending_shutdown_modules.add(ShutdownModuleInfo{it.first, it.second.load_order, it.second.module.get()});
     }
     // ensure first loaded module shutdown at last.
     std::sort(pending_shutdown_modules.begin(), pending_shutdown_modules.end());
@@ -84,61 +84,61 @@ void ModuleManager::Shutdown()
     {
         if (it->module)
         {
-            it->module->Shutdown();
+            it->module->shutdown();
         }
     }
-    pending_shutdown_modules.Clear();
-    module_info_map_.Clear();
+    pending_shutdown_modules.clear();
+    module_info_map_.clear();
 }
 
-IModule* ModuleManager::AddModule(StringName name)
+IModule* ModuleManager::add_module(StringName name)
 {
     auto&& it = module_info_map_.end();
     {
         std::unique_lock lock(mutex_);
         // double check to avoid construct duplicate module info.
-        auto module_it = module_info_map_.Find(name);
+        auto module_it = module_info_map_.find(name);
         if (module_it != module_info_map_.end())
         {
             return module_it->second.module.get();
         }
 
-        it = module_info_map_.Insert(name, ModuleInfo());
+        it = module_info_map_.insert(name, ModuleInfo());
         // ensure can always get correct instance.
         it->second.name = name;
 
-        CreateModuleImp(it->second);
+        create_module_impl(it->second);
     }
     // to avoid deadlock in Startup(), don't put in lock scope.
     if (it->second.module)
     {
-        it->second.module->Startup();
+        it->second.module->startup();
     }
     // start up may load other dependency modules. current load order should after dependency modules.
     it->second.load_order = ++ModuleInfo::current_load_order;
     return it->second.module.get();
 }
 
-void ModuleManager::CreateModuleImp(ModuleInfo& module_info)
+void ModuleManager::create_module_impl(ModuleInfo& module_info)
 {
     Path search_path;
-    if (Path* p = module_search_path_map_.FindValue(module_info.name))
+    if (Path* p = module_search_path_map_.find_value(module_info.name))
     {
         search_path = *p;
     }
     else
     {
-        search_path = Directory::GetEngineDirectory();
-        module_search_path_map_.Insert(module_info.name, search_path);
+        search_path = Directory::get_engine_directory();
+        module_search_path_map_.insert(module_info.name, search_path);
     }
 
-    const Path lib_path = PlatformTraits::GetDynamicLibraryPath(Directory::GetModuleDirectory(search_path), module_info.name);
+    const Path lib_path = PlatformTraits::get_library_path(Directory::get_module_directory(search_path), module_info.name);
 
-    void* handle = PlatformTraits::LoadDynamicLibrary(lib_path);
+    void* handle = PlatformTraits::load_library(lib_path);
     if (handle)
     {
         module_info.module_handle = std::unique_ptr<void, ReleaseModuleHandle>(handle);
-        fn_create_module fn_address = (fn_create_module)PlatformTraits::GetExportedSymbol(handle, "CreateModule");
+        fn_create_module fn_address = (fn_create_module)PlatformTraits::get_exported_symbol(handle, "CreateModule");
         if (fn_address)
         {
             module_info.module = std::unique_ptr<IModule>(fn_address());
@@ -156,7 +156,7 @@ void ModuleManager::CreateModuleImp(ModuleInfo& module_info)
     }
     else
     {
-        LOG_ERROR(module_manager, "Failed to load module library from path {0}", search_path.ToString());
+        LOG_ERROR(module_manager, "Failed to load module library from path {0}", search_path.to_string());
     }
 }
 

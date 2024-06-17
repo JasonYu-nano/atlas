@@ -8,18 +8,18 @@ namespace atlas
 
 IMPLEMENT_MODULE(ApplicationModule, "application");
 
-void ApplicationModule::Startup()
+void ApplicationModule::startup()
 {
     application_ = std::make_unique<PlatformApplication>();
     application_->Initialize();
 }
 
-void ApplicationModule::Shutdown()
+void ApplicationModule::shutdown()
 {
     application_->DeInitialize();
 }
 
-void ApplicationModule::Tick(float delta_time)
+void ApplicationModule::tick(float delta_time)
 {
     application_->Tick(delta_time);
 }

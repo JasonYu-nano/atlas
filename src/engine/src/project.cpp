@@ -11,10 +11,10 @@
 namespace atlas
 {
 
-Project Project::Parse(const Path& project_file)
+Project Project::parse(const Path& project_file)
 {
     Project proj;
-    std::ifstream f(project_file.ToOSPath());
+    std::ifstream f(project_file.to_os_path());
     json json_object = json::parse(f);
     if (!json_object.contains("name"))
     {
@@ -26,8 +26,8 @@ Project Project::Parse(const Path& project_file)
 
     proj.name_ = StringName(StringView(name));
 
-    ModuleManager::AddModuleSearchPath(proj.name_, project_file.ParentPath());
-    proj.module_ = ModuleManager::Load(proj.name_);
+    ModuleManager::add_module_search_path(proj.name_, project_file.parent_path());
+    proj.module_ = ModuleManager::load(proj.name_);
 
     return proj;
 }

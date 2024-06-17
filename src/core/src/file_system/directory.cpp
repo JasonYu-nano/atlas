@@ -7,25 +7,25 @@
 namespace atlas
 {
 
-Path Directory::GetEngineDirectory()
+Path Directory::get_engine_directory()
 {
-    static Path directory = PlatformTraits::GetEngineDirectory().Normalize();
+    static Path directory = PlatformTraits::get_engine_directory().normalize();
     return directory;
 }
 
-Path Directory::GetEngineModuleDirectory()
+Path Directory::get_engine_module_directory()
 {
-    return GetModuleDirectory(GetEngineDirectory());
+    return get_module_directory(get_engine_directory());
 }
 
-Path Directory::GetModuleDirectory(const Path& search_path)
+Path Directory::get_module_directory(const Path& search_path)
 {
-    return search_path / PlatformTraits::GetRelativeBuildDirectory();
+    return search_path / PlatformTraits::get_relative_build_directory();
 }
 
-Path Directory::GetEnginePluginsDirectory()
+Path Directory::get_engine_plugins_directory()
 {
-    Path engine_root = GetEngineDirectory();
+    Path engine_root = get_engine_directory();
     Path dir = engine_root / "plugins\\";
     return dir;
 }

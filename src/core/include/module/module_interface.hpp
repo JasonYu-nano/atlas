@@ -23,11 +23,11 @@ public:
      * @brief Called after construct the module instance.
      * Loads dependent modules here, and they will be guaranteed to be available during Shutdown.
      */
-    virtual void Startup() = 0;
+    virtual void startup() = 0;
     /**
      * @brief Called before the module is unloaded, right before the module object is destroyed.
      */
-    virtual void Shutdown() = 0;
+    virtual void shutdown() = 0;
 };
 
 /**
@@ -40,7 +40,7 @@ public:
      * @brief 
      * @param delta_time 
      */
-    virtual void Tick(float delta_time) = 0;
+    virtual void tick(float delta_time) = 0;
 };
 
 } // namespace atlas

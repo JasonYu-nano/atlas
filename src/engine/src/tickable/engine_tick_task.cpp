@@ -8,19 +8,19 @@ namespace atlas
 {
 
 
-void EngineTickTask::RegisterSelf()
+void EngineTickTask::register_self()
 {
     if (g_engine)
     {
-        g_engine->GetTickTaskManager()->AddTask(this);
+        g_engine->get_tick_task_manager()->add_task(this);
     }
 }
 
-void EngineTickTask::UnregisterSelf()
+void EngineTickTask::unregister_self()
 {
     if (g_engine)
     {
-        g_engine->GetTickTaskManager()->RemoveTask(this);
+        g_engine->get_tick_task_manager()->remove_task(this);
     }
 }
 }// namespace atlas

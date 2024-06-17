@@ -8,7 +8,7 @@
 
 namespace atlas
 {
-std::unique_ptr<spdlog::logger> CreateLogger(const std::string &logger_name, const std::string &file_to_save)
+std::unique_ptr<spdlog::logger> create_logger(const std::string &logger_name, const std::string &file_to_save)
 {
     std::vector<spdlog::sink_ptr> sinks;
 

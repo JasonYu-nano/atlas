@@ -12,7 +12,6 @@
 #include "core_macro.hpp"
 #include "misc/iterator.hpp"
 #include "utility/compression_pair.hpp"
-#include "utility/untyped_data.hpp"
 
 
 namespace atlas
@@ -33,24 +32,24 @@ template<typename T, typename Allocator = HeapAllocator<T>>
 class Array
 {
 public:
-    using value_type = T;
-    using allocator_type = AllocatorRebind<Allocator, T>::type;
-    using allocator_traits = AllocatorTraits<allocator_type>;
-    using size_type = allocator_traits::size_type;
-    using difference_type = allocator_traits::difference_type;
-    using pointer = value_type*;
-    using const_pointer = const value_type*;
-    using reference = CallTraits<value_type>::reference;
-    using const_reference = CallTraits<value_type>::const_reference;
-    using param_type = CallTraits<value_type>::param_type;
-    using const_param_type = const param_type;
-    using iterator = PointerIterator<value_type>;
-    using const_iterator = ConstPointerIterator<value_type>;
-    using reverse_iterator = std::reverse_iterator<iterator>;
-    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+    using value_type                = T;
+    using allocator_type            = typename AllocatorRebind<Allocator, T>::type;
+    using allocator_traits          = AllocatorTraits<allocator_type>;
+    using size_type                 = typename allocator_traits::size_type;
+    using difference_type           = typename allocator_traits::difference_type;
+    using pointer                   = value_type*;
+    using const_pointer             = const value_type*;
+    using reference                 = typename CallTraits<value_type>::reference;
+    using const_reference           = typename CallTraits<value_type>::const_reference;
+    using param_type                = typename CallTraits<value_type>::param_type;
+    using const_param_type          = const param_type;
+    using iterator                  = PointerIterator<value_type>;
+    using const_iterator            = ConstPointerIterator<value_type>;
+    using reverse_iterator          = std::reverse_iterator<iterator>;
+    using const_reverse_iterator    = std::reverse_iterator<const_iterator>;
 
 private:
-    using val_type = details::ArrayVal<value_type, size_type>;
+    using val_type                  = details::ArrayVal<value_type, size_type>;
 
 public:
     /**
@@ -59,7 +58,7 @@ public:
      */
     explicit Array(const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
-        Reserve(GetInitializeCapacity());
+        reserve(get_initialize_capacity());
     }
     /**
      * @brief Constructor, initialize with given capacity.
@@ -68,19 +67,19 @@ public:
      */
     explicit Array(size_type capacity, const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
-        Reserve(math::Max(capacity, GetInitializeCapacity()));
+        reserve(math::max(capacity, get_initialize_capacity()));
     }
     /**
-     * @brief Constructor from an initializer
+     * @brief Constructor from an initializer.
      * @param initializer
      * @param alloc
      */
     Array(const std::initializer_list<value_type>& initializer, const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
-        Construct(initializer);
+        construct(initializer);
     }
     /**
-     * @brief Constructor from a range
+     * @brief Constructor from a range.
      * @tparam RangeType
      * @param range
      * @param alloc
@@ -88,7 +87,7 @@ public:
     template<std::ranges::forward_range RangeType>
     explicit Array(const RangeType& range, const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
-        Construct(range);
+        construct(range);
     }
     /**
      * @brief Constructor from given number elements.
@@ -98,15 +97,15 @@ public:
      */
     Array(const_param_type value, size_type count, const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
-        Construct(value, count);
+        construct(value, count);
     }
     /**
      * @brief Copy constructor.
      * @param right
      */
-    Array(const Array& right) : pair_(allocator_traits::select_on_container_copy_construction(right.GetAlloc()))
+    Array(const Array& right) : pair_(allocator_traits::select_on_container_copy_construction(right.get_alloc()))
     {
-        Construct(right);
+        construct(right);
     }
     /**
      * @brief Copy constructs from other allocator type array.
@@ -117,7 +116,7 @@ public:
     template<typename OtherAllocator>
     Array(const Array<value_type, OtherAllocator>& right, const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
-        Construct(right);
+        construct(right);
     }
     /**
      * @brief Move constructor.
@@ -125,10 +124,10 @@ public:
      */
     Array(Array&& right) noexcept
         : pair_(OneThenVariadicArgs()
-        , std::move(right.GetAlloc())
-        , std::exchange(right.GetVal().size, 0)
-        , std::exchange(right.GetVal().capacity, 0)
-        , std::exchange(right.GetVal().ptr, nullptr))
+        , std::move(right.get_alloc())
+        , std::exchange(right.get_val().size, 0)
+        , std::exchange(right.get_val().capacity, 0)
+        , std::exchange(right.get_val().ptr, nullptr))
     {}
     /**
      * @brief Move constructs from other allocator type array.
@@ -137,23 +136,23 @@ public:
      * @param alloc
      */
     template<typename OtherAllocator>
-    Array(Array<value_type, OtherAllocator>&& right, const allocator_type& alloc = allocator_type()) : pair_(alloc)
+    Array(Array<value_type, OtherAllocator>&& right, const allocator_type& alloc = allocator_type()) noexcept : pair_(alloc)
     {
-        MoveAssign(right);
-        right.GetVal().size = 0;
+        move_assign(right);
+        right.get_val().size = 0;
     }
 
     ~Array() noexcept
     {
-        Clear(true);
+        clear(true);
     }
 
     Array& operator= (const Array& right)
     {
         if (this != std::addressof(right))
         {
-            CopyAssignAllocator(right.GetAlloc());
-            CopyAssign(right);
+            copy_assign_allocator(right.get_alloc());
+            copy_assign(right);
         }
         return *this;
     }
@@ -162,7 +161,7 @@ public:
     {
         if (this != std::addressof(right))
         {
-            MoveAssign(right, std::integral_constant<bool,
+            move_assign(right, std::integral_constant<bool,
                 allocator_traits::propagate_on_container_move_assignment::value>());
         }
         return *this;
@@ -171,15 +170,15 @@ public:
     template<typename OtherAllocator>
     Array& operator= (const Array<value_type, OtherAllocator>& right)
     {
-        CopyAssign(right);
+        copy_assign(right);
         return *this;
     }
 
     template<typename OtherAllocator>
     Array& operator= (Array<value_type, OtherAllocator>&& right)
     {
-        MoveAssign(right);
-        right.GetVal().size = 0;
+        move_assign(right);
+        right.get_val().size = 0;
         return *this;
     }
     /**
@@ -189,8 +188,8 @@ public:
      */
     NODISCARD reference operator[] (size_type index)
     {
-        ASSERT(IsValidIndex(index));
-        return Data()[index];
+        ASSERT(is_valid_index(index));
+        return data()[index];
     }
     /**
      * @brief Get const reference to element at given index.
@@ -199,104 +198,100 @@ public:
      */
     NODISCARD const_reference operator[] (size_type index) const
     {
-        ASSERT(IsValidIndex(index));
-        return Data()[index];
+        ASSERT(is_valid_index(index));
+        return data()[index];
     }
     /**
      * @brief Get number of elements in array.
      * @return
      */
-    NODISCARD size_type Size() const { return GetVal().size; }
-    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const { return Size(); }
+    NODISCARD size_type size() const { return get_val().size; }
     /**
      * @brief Get maximum number of elements in array.
      * @return
      */
-    NODISCARD constexpr size_type MaxSize() const { return allocator_traits::max_size(GetAlloc()); }
-    NODISCARD DO_NOT_USE_DIRECTLY constexpr size_type max_size() const { return MaxSize(); }
+    NODISCARD constexpr size_type max_size() const { return allocator_traits::max_size(get_alloc()); }
     /**
      * @brief Returns pointer to the first array element.
      * @return
      */
-    NODISCARD pointer Data() { return GetVal().ptr; }
+    NODISCARD pointer data() { return get_val().ptr; }
     /**
      * @brief Returns const pointer to the first array element.
      * @return
      */
-    NODISCARD const_pointer Data() const { return GetVal().ptr; }
-    NODISCARD DO_NOT_USE_DIRECTLY pointer data() { return GetVal().ptr; }
-    NODISCARD DO_NOT_USE_DIRECTLY const_pointer data() const { return GetVal().ptr; }
+    NODISCARD const_pointer data() const { return get_val().ptr; }
     /**
      * @brief Get last index of array.
      * @return
      */
-    NODISCARD size_type LastIndex() const
+    NODISCARD size_type last_index() const
     {
-        ASSERT(Size() > 0);
-        return Size() - 1;
+        ASSERT(size() > 0);
+        return size() - 1;
     }
     /**
      * @brief Get n-th last element from the array.
      * @return
      */
-    NODISCARD reference Last(size_type index_from_end = 0)
+    NODISCARD reference last(size_type index_from_end = 0)
     {
-        return Data()[LastIndex() - index_from_end];
+        return data()[last_index() - index_from_end];
     }
     /**
      * @brief Get n-th last element from the array.
      * @return
      */
-    NODISCARD const_reference Last(size_type index_from_end = 0) const
+    NODISCARD const_reference last(size_type index_from_end = 0) const
     {
-        return Data()[LastIndex() - index_from_end];
+        return data()[last_index() - index_from_end];
     }
     /**
      * @brief Get capacity of array
      * @return
      */
-    NODISCARD size_type Capacity() const { return GetVal().capacity; }
+    NODISCARD size_type capacity() const { return get_val().capacity; }
     /**
      * @brief Returns true if the array is empty and contains no elements.
      * @return
      */
-    NODISCARD bool IsEmpty() const { return Size() <= 0; }
+    NODISCARD bool is_empty() const { return size() <= 0; }
     /**
      * @brief Tests if index is valid.
      * @return
      */
-    NODISCARD bool IsValidIndex(size_type index) const { return index >= 0 && index < Size(); }
+    NODISCARD bool is_valid_index(size_type index) const { return index >= 0 && index < size(); }
     /**
      * @brief Copies a new element to the end of the array, possibly reallocating the whole array to fit.
      * @param elem
      * @return Index to the new element
      */
-    size_type Add(const param_type elem) { return Emplace(elem); }
+    size_type add(const param_type elem) { return emplace(elem); }
     /**
      * @brief Moves a new element to the end of the array, possibly reallocating the whole array to fit.
      * @param elem
      * @return Index to the new element
      */
-    size_type Add(value_type&& elem) { return Emplace(elem); }
+    size_type add(value_type&& elem) { return emplace(elem); }
     /**
      * @brief Copies unique element to array if it doesn't exist.
      * @param elem
      * @return Index to the element
      */
-    size_type AddUnique(const param_type elem)
+    size_type add_unique(const param_type elem)
     {
-        size_type index = Find(elem);
-        return index != INDEX_NONE ? index : Emplace(elem);
+        size_type index = find(elem);
+        return index != INDEX_NONE ? index : emplace(elem);
     }
     /**
      * @brief Moves unique element to array if it doesn't exist.
      * @param elem
      * @return Index to the element
      */
-    size_type AddUnique(value_type&& elem)
+    size_type add_unique(value_type&& elem)
     {
-        size_type index = Find(elem);
-        return index != INDEX_NONE ? index : Emplace(std::forward<value_type>(elem));
+        size_type index = find(elem);
+        return index != INDEX_NONE ? index : emplace(std::forward<value_type>(elem));
     }
     /**
      * @brief Constructs a new item at the end of the array, possibly reallocating the whole array to fit.
@@ -305,13 +300,13 @@ public:
      * @return Index to the new element
      */
     template<typename... Args>
-    size_type Emplace(Args&&... args)
+    size_type emplace(Args&&... args)
     {
         size_type increase = 1;
-        size_type index = AddUninitialized(increase);
+        size_type index = add_uninitialized(increase);
         if (index != INDEX_NONE)
         {
-            new (Data() + index) value_type(std::forward<Args>(args)...);
+            new (data() + index) value_type(std::forward<Args>(args)...);
         }
         return index;
     }
@@ -322,17 +317,17 @@ public:
      * @return Index to the first append element
      */
     template<std::ranges::forward_range RangeType>
-    size_type Append(const RangeType& others)
+    size_type append(const RangeType& others)
     {
-        size_type increase_size = ConvertSize(std::ranges::distance(others));
-        size_type index = AddUninitialized(increase_size);
-        if constexpr (std::is_trivially_copyable<value_type>::value)
+        size_type increase_size = convert_size(std::ranges::distance(others));
+        size_type index = add_uninitialized(increase_size);
+        if constexpr (std::is_trivially_copyable_v<value_type>)
         {
-            std::memmove(Data() + index, IteratorToPointer(std::ranges::begin(others)), increase_size * sizeof(value_type));
+            std::memmove(data() + index, iterator_to_pointer(std::ranges::begin(others)), increase_size * sizeof(value_type));
         }
         else
         {
-            pointer ptr = Data() + index;
+            pointer ptr = data() + index;
             auto&& it = std::ranges::begin(others);
             for (size_type i = 0; i < increase_size; ++i, ++it)
             {
@@ -349,24 +344,24 @@ public:
      * @return Index to the first append element
      */
     template<typename AllocatorType>
-    size_type Append(Array<value_type, AllocatorType>&& others)
+    size_type append(Array<value_type, AllocatorType>&& others)
     {
-        size_type increase_size = others.Size();
-        size_type index = AddUninitialized(increase_size);
-        if constexpr (std::is_trivially_copyable<value_type>::value)
+        size_type increase_size = others.size();
+        size_type index = add_uninitialized(increase_size);
+        if constexpr (std::is_trivially_copyable_v<value_type>)
         {
-            std::memmove(Data() + index, others.Data(), increase_size * sizeof(value_type));
+            std::memmove(data() + index, others.data(), increase_size * sizeof(value_type));
         }
         else
         {
-            pointer ptr = Data() + index;
-            const_pointer source = others.Data();
+            pointer ptr = data() + index;
+            const_pointer source = others.data();
             for (size_type i = 0; i < increase_size; ++i)
             {
                 new (ptr + i) value_type(std::move(source[i]));
             }
         }
-        auto&& other_val = others.GetVal();
+        auto&& other_val = others.get_val();
         other_val.size = 0;
 
         return index;
@@ -376,54 +371,54 @@ public:
      * @param where
      * @param elem
      */
-    iterator Insert(const_iterator where, const param_type elem)
+    iterator insert(const_iterator where, const param_type elem)
     {
-        return InsertCountedRange(where, &elem, 1);
+        return insert_counted_range(where, &elem, 1);
     }
     /**
      * @brief Inserts given element into the array at given position.
      * @param where
      * @param elem
      */
-    iterator Insert(const_iterator where, value_type&& elem)
+    iterator insert(const_iterator where, value_type&& elem)
     {
-        return InsertCountedRange(where, &elem, 1, true);
+        return insert_counted_range(where, &elem, 1, true);
     }
     /**
      * @brief Inserts given elements into the array at given position.
      * @param where
-     * @param elem
+     * @param elems
      */
     template<std::ranges::range RangeType>
-    iterator Insert(const_iterator where, const RangeType& elems)
+    iterator insert(const_iterator where, const RangeType& elems)
     {
         if constexpr (std::ranges::sized_range<RangeType> || std::ranges::forward_range<RangeType>)
         {
-            return InsertCountedRange(where, std::ranges::begin(elems), std::ranges::distance(elems));
+            return insert_counted_range(where, std::ranges::begin(elems), std::ranges::distance(elems));
         }
         return begin() + (where - cbegin());
     }
     /**
      * @brief Inserts other array into the array at given position.
      * @param where
-     * @param elem
+     * @param elems
      */
     template<typename AllocatorType>
-    iterator Insert(const_iterator where, Array<value_type, AllocatorType>&& elems)
+    iterator insert(const_iterator where, Array<value_type, AllocatorType>&& elems)
     {
-        return InsertCountedRange(where, elems.begin(), elems.Size(), true);
+        return insert_counted_range(where, elems.begin(), elems.size(), true);
     }
     /**
      * @brief Removes first matched element in the array.
      * @param elem
      * @return Index of removed element
      */
-    size_type Remove(const param_type elem)
+    size_type remove(const param_type elem)
     {
-        size_type index = Find(elem);
+        size_type index = find(elem);
         if (index != INDEX_NONE)
         {
-            RemoveAt(cbegin() + index);
+            remove_at(cbegin() + index);
         }
         return index;
     }
@@ -433,12 +428,12 @@ public:
      * @return Index of removed element
      */
     template<typename Predicate>
-    size_type Remove(const Predicate& predicate) requires std::predicate<Predicate, const param_type>
+    size_type remove(const Predicate& predicate) requires std::predicate<Predicate, const param_type>
     {
-        size_type index = Find(predicate);
+        size_type index = find(predicate);
         if (index != INDEX_NONE)
         {
-            RemoveAt(cbegin() + index);
+            remove_at(cbegin() + index);
         }
         return index;
     }
@@ -447,12 +442,12 @@ public:
      * @param elem
      * @return Index of removed element
      */
-    size_type RemoveSwap(const param_type elem)
+    size_type remove_swap(const param_type elem)
     {
-        size_type index = Find(elem);
+        size_type index = find(elem);
         if (index != INDEX_NONE)
         {
-            RemoveAtSwap(cbegin() + index);
+            remove_at_swap(cbegin() + index);
         }
         return index;
     }
@@ -462,12 +457,12 @@ public:
      * @return Index of removed element
      */
     template<typename Predicate>
-    size_type RemoveSwap(const Predicate& predicate) requires std::predicate<Predicate, const param_type>
+    size_type remove_swap(const Predicate& predicate) requires std::predicate<Predicate, const param_type>
     {
-        size_type index = Find(predicate);
+        size_type index = find(predicate);
         if (index != INDEX_NONE)
         {
-            RemoveAtSwap(cbegin() + index);
+            remove_at_swap(cbegin() + index);
         }
         return index;
     }
@@ -476,9 +471,9 @@ public:
      * @param elem
      * @return Numbers of removed elements
      */
-    size_type RemoveAll(const param_type elem)
+    size_type remove_all(const param_type elem)
     {
-        return RemoveAll([&elem](const param_type value) { return value == elem; });
+        return remove_all([&elem](const param_type value) { return value == elem; });
     }
     /**
      * @brief Removes all instances in the array that matched element.
@@ -486,9 +481,9 @@ public:
      * @return Numbers of removed elements
      */
     template<typename Predicate>
-    size_type RemoveAll(const Predicate& predicate) requires std::predicate<Predicate, const param_type>
+    size_type remove_all(const Predicate& predicate) requires std::predicate<Predicate, const param_type>
     {
-        auto&& my_val = GetVal();
+        auto&& my_val = get_val();
         size_type num_of_matches = 0;
         if (my_val.size > 0)
         {
@@ -534,9 +529,9 @@ public:
      * @param elem
      * @return Numbers of removed elements
      */
-    size_type RemoveAllSwap(const param_type elem)
+    size_type remove_all_swap(const param_type elem)
     {
-        return RemoveAllSwap([&elem](const param_type value) { return value == elem; });
+        return remove_all_swap([&elem](const param_type value) { return value == elem; });
     }
     /**
      * @brief Removes all instances in the array that matched element. It's faster than RemoveAll but breaks the order
@@ -544,10 +539,10 @@ public:
      * @return Numbers of removed elements
      */
     template<typename Predicate>
-    size_type RemoveAllSwap(const Predicate& predicate) requires std::predicate<Predicate, const param_type>
+    size_type remove_all_swap(const Predicate& predicate) requires std::predicate<Predicate, const param_type>
     {
         size_type num_of_matches = 0;
-        if (Size() > 0)
+        if (size() > 0)
         {
             const_iterator read = cbegin();
             const_iterator last = cend();
@@ -556,7 +551,7 @@ public:
             {
                 if (predicate(*read))
                 {
-                    RemoveAtSwap(read);
+                    remove_at_swap(read);
                     ++num_of_matches;
                     --last;
                 }
@@ -574,9 +569,9 @@ public:
      * @param where
      * @return Next element iterator
      */
-    iterator RemoveAt(size_type where)
+    iterator remove_at(size_type where)
     {
-        return RemoveAt(begin() + where, 1);
+        return remove_at(begin() + where, 1);
     }
     /**
      * @brief Removes multiple elements at given position.
@@ -584,18 +579,18 @@ public:
      * @param count
      * @return Next element iterator
      */
-    iterator RemoveAt(size_type where, size_type count)
+    iterator remove_at(size_type where, size_type count)
     {
-        return RemoveAt(begin() + where, count);
+        return remove_at(begin() + where, count);
     }
     /**
      * @brief Removes element at given position.
      * @param where
      * @return Next element iterator
      */
-    iterator RemoveAt(const_iterator where)
+    iterator remove_at(const_iterator where)
     {
-        return RemoveAt(where, 1);
+        return remove_at(where, 1);
     }
     /**
      * @brief Removes multiple elements at given position.
@@ -603,14 +598,14 @@ public:
      * @param count
      * @return Next element iterator
      */
-    iterator RemoveAt(const_iterator where, size_type count)
+    iterator remove_at(const_iterator where, size_type count)
     {
         if (count <= 0)
         {
-            return iterator(const_cast<value_type*>(IteratorToPointer(where)));
+            return iterator(const_cast<value_type*>(iterator_to_pointer(where)));
         }
         ASSERT(cbegin() <= where && where < cend() && where + count <= cend());
-        auto&& my_val = GetVal();
+        auto&& my_val = get_val();
         pointer data = my_val.ptr;
         size_type offset = where - cbegin();
         pointer location = data + offset;
@@ -625,9 +620,9 @@ public:
      * @param where
      * @return Next element iterator
      */
-    iterator RemoveAtSwap(size_type where)
+    iterator remove_at_swap(size_type where)
     {
-        return RemoveAtSwap(begin() + where, 1);
+        return remove_at_swap(begin() + where, 1);
     }
     /**
      * @brief Removes multiple elements at given position. It's faster than RemoveAt but breaks the order
@@ -635,18 +630,18 @@ public:
      * @param count
      * @return Next element iterator
      */
-    iterator RemoveAtSwap(size_type where, size_type count)
+    iterator remove_at_swap(size_type where, size_type count)
     {
-        return RemoveAtSwap(begin() + where, count);
+        return remove_at_swap(begin() + where, count);
     }
     /**
      * @brief Removes element at given position. It's faster than RemoveAt but breaks the order
      * @param where
      * @return Next element iterator
      */
-    iterator RemoveAtSwap(const_iterator where)
+    iterator remove_at_swap(const_iterator where)
     {
-        return RemoveAtSwap(where, 1);
+        return remove_at_swap(where, 1);
     }
     /**
      * @brief Removes multiple elements at given position. It's faster than RemoveAt but breaks the order
@@ -654,10 +649,10 @@ public:
      * @param count
      * @return Next element iterator
      */
-    iterator RemoveAtSwap(const_iterator where, size_type count)
+    iterator remove_at_swap(const_iterator where, size_type count)
     {
         ASSERT(cbegin() <= where && where < cend() && where + count <= cend());
-        auto&& my_val = GetVal();
+        auto&& my_val = get_val();
         pointer data = my_val.ptr;
         size_type offset = where - cbegin();
         pointer location = data + offset;
@@ -680,7 +675,7 @@ public:
      * @param search
      * @return Index of the found element. INDEX_NONE otherwise.
      */
-    NODISCARD size_type Find(const param_type search) const
+    NODISCARD size_type find(const param_type search) const
     {
         for (auto it = cbegin(); it < cend(); ++it)
         {
@@ -697,7 +692,7 @@ public:
      * @return Index of the found element. INDEX_NONE otherwise.
      */
     template<typename Predicate>
-    NODISCARD size_type Find(const Predicate& predicate) const requires std::predicate<Predicate, const param_type>
+    NODISCARD size_type find(const Predicate& predicate) const requires std::predicate<Predicate, const param_type>
     {
         for (auto it = cbegin(); it < cend(); ++it)
         {
@@ -713,7 +708,7 @@ public:
      * @param search
      * @return Index of the found element. INDEX_NONE otherwise.
      */
-    NODISCARD size_type FindLast(const param_type search) const
+    NODISCARD size_type find_last(const param_type search) const
     {
         for (auto it = crbegin(); it < crend(); ++it)
         {
@@ -730,7 +725,7 @@ public:
      * @return Index of the found element. INDEX_NONE otherwise.
      */
     template<typename Predicate>
-    NODISCARD size_type FindLast(const Predicate& predicate) const requires std::predicate<Predicate, const param_type>
+    NODISCARD size_type find_last(const Predicate& predicate) const requires std::predicate<Predicate, const param_type>
     {
         for (auto it = crbegin(); it < crend(); ++it)
         {
@@ -745,20 +740,20 @@ public:
      * @brief Reserves memory such that the array can contain at least number elements.
      * @param capacity
      */
-    void Reserve(size_type capacity)
+    void reserve(size_type capacity)
     {
-        auto&& my_val = GetVal();
+        auto&& my_val = get_val();
         if (capacity > my_val.capacity)
         {
-            size_type new_capacity = CalculateGrowth(capacity);
+            size_type new_capacity = calculate_growth(capacity);
             if (my_val.capacity <= 0)
             {
-                my_val.ptr = allocator_traits::allocate(GetAlloc(), new_capacity);
+                my_val.ptr = allocator_traits::allocate(get_alloc(), new_capacity);
                 my_val.capacity = new_capacity;
             }
             else
             {
-                Reallocate(my_val, new_capacity);
+                reallocate(my_val, new_capacity);
             }
         }
     }
@@ -769,9 +764,9 @@ public:
      * If the current size is less than count, additional default-inserted elements are appended.
      * @param count
      */
-    void Resize(size_type count)
+    void resize(size_type count)
     {
-        Resize(count, value_type{});
+        resize(count, value_type{});
     }
     /**
      * @brief Resizes the container to contain count elements.
@@ -780,14 +775,14 @@ public:
      * @param count
      * @param value
      */
-    void Resize(size_type count, const param_type value)
+    void resize(size_type count, const param_type value)
     {
         if (count < 0)
         {
             return;
         }
 
-        auto&& my_val = GetVal();
+        auto&& my_val = get_val();
         size_type old_size = my_val.size;
         if (count == old_size)
         {
@@ -805,11 +800,11 @@ public:
         {
             if (count > my_val.capacity)
             {
-                size_type new_capacity = CalculateGrowth(count);
-                Reallocate(my_val, new_capacity);
+                size_type new_capacity = calculate_growth(count);
+                reallocate(my_val, new_capacity);
             }
 
-            auto&& alloc = GetAlloc();
+            auto&& alloc = get_alloc();
             for (size_type i = old_size; i < count; ++i)
             {
                 allocator_traits::construct(alloc, my_val.ptr + i, value);
@@ -822,9 +817,9 @@ public:
      * @brief Clear the array
      * @param reset_capacity Deallocate the remain capacity. Default is false.
      */
-    void Clear(bool reset_capacity = false)
+    void clear(bool reset_capacity = false)
     {
-        auto&& my_val = GetVal();
+        auto&& my_val = get_val();
         if (my_val.size > 0)
         {
             std::destroy(my_val.ptr, my_val.ptr + my_val.size);
@@ -833,7 +828,7 @@ public:
 
         if (reset_capacity && my_val.capacity > 0)
         {
-            auto&& alloc = GetAlloc();
+            auto&& alloc = get_alloc();
             allocator_traits::deallocate(alloc, my_val.ptr, my_val.capacity);
             my_val.ptr = nullptr;
             my_val.capacity = 0;
@@ -842,19 +837,19 @@ public:
     /**
      * @brief Shrinks the array's used memory to smallest possible to store elements currently in it.
      */
-    void ShrinkToFit()
+    void shrink_to_fit()
     {
-        auto&& my_val = GetVal();
-        if (my_val.capacity > 0 && my_val.size < my_val.capacity)
+        auto&& my_val = get_val();
+        if (my_val.capacity > 0 && my_val.capacity > my_val.size)
         {
-            Reallocate(my_val, my_val.size);
+            reallocate(my_val, my_val.size);
         }
     }
 
-    NODISCARD iterator begin() { return iterator(Data()); }
-    NODISCARD const_iterator begin() const{ return const_iterator(Data()); }
-    NODISCARD iterator end() { return iterator(Data() + Size()); }
-    NODISCARD const_iterator end() const { return const_iterator(Data() + Size()); }
+    NODISCARD iterator begin() { return iterator(data()); }
+    NODISCARD const_iterator begin() const{ return const_iterator(data()); }
+    NODISCARD iterator end() { return iterator(data() + size()); }
+    NODISCARD const_iterator end() const { return const_iterator(data() + size()); }
 
     NODISCARD reverse_iterator rbegin() { return reverse_iterator(end()); }
     NODISCARD const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
@@ -866,26 +861,26 @@ public:
     NODISCARD const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
     NODISCARD const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
 
-    val_type& GetVal() { return pair_.Second(); }
-    const val_type& GetVal() const { return pair_.Second(); }
+    val_type& get_val() { return pair_.second(); }
+    const val_type& get_val() const { return pair_.second(); }
 private:
-    allocator_type& GetAlloc() { return pair_.First(); }
-    const allocator_type& GetAlloc() const { return pair_.First(); }
+    allocator_type& get_alloc() { return pair_.first(); }
+    const allocator_type& get_alloc() const { return pair_.first(); }
 
     template<std::forward_iterator InputIter, std::output_iterator<T> OutputIter>
-    void MoveToUninitialized(InputIter first, InputIter last, OutputIter dest)
+    void move_to_uninitialized(InputIter first, InputIter last, OutputIter dest)
     {
-        if constexpr (std::is_trivially_copyable<value_type>::value)
+        if constexpr (std::is_trivially_copyable_v<value_type>)
         {
-            std::memmove(static_cast<void*>(IteratorToPointer(dest)), static_cast<const void*>(IteratorToPointer(first)), std::distance(first, last) * sizeof(value_type));
+            std::memmove(static_cast<void*>(iterator_to_pointer(dest)), static_cast<const void*>(iterator_to_pointer(first)), std::distance(first, last) * sizeof(value_type));
         }
         else
         {
-            auto&& alloc = GetAlloc();
+            auto&& alloc = get_alloc();
             InputIter it = first;
             while (it != last)
             {
-                allocator_traits::construct(alloc, IteratorToPointer(dest), std::move(*it));
+                allocator_traits::construct(alloc, iterator_to_pointer(dest), std::move(*it));
                 std::advance(it, 1);
                 std::advance(dest, 1);
             }
@@ -893,19 +888,19 @@ private:
     }
 
     template<std::forward_iterator InputIter, std::output_iterator<T> OutputIter>
-    void CopyToUninitialized(InputIter first, InputIter last, OutputIter dest)
+    void copy_to_uninitialized(InputIter first, InputIter last, OutputIter dest)
     {
-        if constexpr (std::is_trivially_copyable<value_type>::value)
+        if constexpr (std::is_trivially_copyable_v<value_type>)
         {
-            std::memmove(static_cast<void*>(IteratorToPointer(dest)), static_cast<const void*>(IteratorToPointer(first)), std::distance(first, last) * sizeof(value_type));
+            std::memmove(static_cast<void*>(iterator_to_pointer(dest)), static_cast<const void*>(iterator_to_pointer(first)), std::distance(first, last) * sizeof(value_type));
         }
         else
         {
-            auto&& alloc = GetAlloc();
+            auto&& alloc = get_alloc();
             InputIter it = first;
             while (it != last)
             {
-                allocator_traits::construct(alloc, IteratorToPointer(dest), *it);
+                allocator_traits::construct(alloc, iterator_to_pointer(dest), *it);
                 std::advance(it, 1);
                 std::advance(dest, 1);
             }
@@ -913,14 +908,14 @@ private:
     }
 
     template<typename Iter>
-    iterator InsertCountedRange(const_iterator where, Iter first, size_type count, bool move_assign = false)
+    iterator insert_counted_range(const_iterator where, Iter first, size_type count, bool move_assign = false)
     {
         if (count <= 0)
         {
             return begin() + (where - cbegin());
         }
 
-        auto&& my_val = GetVal();
+        auto&& my_val = get_val();
         size_type unused_capacity = my_val.capacity - my_val.size;
 
         if (count <= unused_capacity)
@@ -934,49 +929,49 @@ private:
                 if (move_count <= count)
                 {
                     // move to uninitialized location
-                    MoveToUninitialized(where, end, data + offset + count);
+                    move_to_uninitialized(where, end, data + offset + count);
                     std::destroy(where, end);
                 }
                 else
                 {
-                    MoveToUninitialized(end - count, end, data + my_val.size);
+                    move_to_uninitialized(end - count, end, data + my_val.size);
                     std::move_backward(where, end - count, this->end());
                     std::destroy(where, where + count);
                 }
             }
             move_assign ?
-            MoveToUninitialized(first, first + count, data + offset) :
-            CopyToUninitialized(first, first + count, data + offset);
+            move_to_uninitialized(first, first + count, data + offset) :
+            copy_to_uninitialized(first, first + count, data + offset);
             my_val.size += count;
             return begin() + offset;;
         }
         else
         {
-            if (count > MaxSize() - my_val.size)
+            if (count > max_size() - my_val.size)
             {
                 ASSERT(0);
-                count = MaxSize() - my_val.size;
+                count = max_size() - my_val.size;
             }
 
             size_type new_size = my_val.size + count;
-            size_type new_capacity = CalculateGrowth(new_size);
-            auto&& alloc = GetAlloc();
+            size_type new_capacity = calculate_growth(new_size);
+            auto&& alloc = get_alloc();
 
             pointer new_ptr = allocator_traits::allocate(alloc, new_capacity);
             const_iterator begin = cbegin();
             const_iterator end = cend();
             size_type offset = where - begin;
             move_assign ?
-            MoveToUninitialized(first, first + count, new_ptr + offset) :
-            CopyToUninitialized(first, first + count, new_ptr + offset);
+            move_to_uninitialized(first, first + count, new_ptr + offset) :
+            copy_to_uninitialized(first, first + count, new_ptr + offset);
             if (where == end)
             {
-                MoveToUninitialized(begin, end, new_ptr);
+                move_to_uninitialized(begin, end, new_ptr);
             }
             else
             {
-                MoveToUninitialized(begin, where, new_ptr);
-                MoveToUninitialized(where, end, new_ptr + offset + count);
+                move_to_uninitialized(begin, where, new_ptr);
+                move_to_uninitialized(where, end, new_ptr + offset + count);
             }
             std::destroy(begin, end);
             allocator_traits::deallocate(alloc, my_val.ptr, my_val.capacity);
@@ -988,21 +983,21 @@ private:
     }
 
     template<std::ranges::forward_range RangeType>
-    void Construct(const RangeType& range)
+    void construct(const RangeType& range)
     {
         size_type size = std::ranges::distance(range);
-        Reserve(math::Max(size, GetInitializeCapacity()));
-        CopyToUninitialized(std::ranges::begin(range), std::ranges::end(range), end());
-        GetVal().size = size;
+        reserve(math::max(size, get_initialize_capacity()));
+        copy_to_uninitialized(std::ranges::begin(range), std::ranges::end(range), end());
+        get_val().size = size;
     }
 
-    void Construct(const_param_type value, size_type count)
+    void construct(const_param_type value, size_type count)
     {
-        Reserve(math::Max(count, GetInitializeCapacity()));
+        reserve(math::max(count, get_initialize_capacity()));
         if (count > 0)
         {
-            auto&& my_val = GetVal();
-            auto&& alloc = GetAlloc();
+            auto&& my_val = get_val();
+            auto&& alloc = get_alloc();
             for (int32 i = 0; i < count; ++i)
             {
                 allocator_traits::construct(alloc, my_val.ptr + i, value);
@@ -1012,36 +1007,36 @@ private:
         }
     }
 
-    void CopyAssignAllocator(const allocator_type& alloc)
+    void copy_assign_allocator(const allocator_type& alloc)
     {
         if constexpr (allocator_traits::propagate_on_container_copy_assignment::value)
         {
-            if (GetAlloc() != alloc)
+            if (get_alloc() != alloc)
             {
-                Clear(true);
+                clear(true);
             }
-            GetAlloc() = alloc;
+            get_alloc() = alloc;
         }
     }
 
-    void MoveAssignAllocator(allocator_type& alloc) noexcept(std::is_nothrow_move_assignable_v<allocator_type>)
+    void move_assign_allocator(allocator_type& alloc) noexcept(std::is_nothrow_move_assignable_v<allocator_type>)
     {
         if constexpr (allocator_traits::propagate_on_container_move_assignment::value)
         {
-            GetAlloc() = std::move(alloc);
+            get_alloc() = std::move(alloc);
         }
     }
 
     template<std::ranges::forward_range RangeType>
-    void CopyAssign(const RangeType& range)
+    void copy_assign(const RangeType& range)
     {
-        auto&& my_val = GetVal();
-        size_type new_size = ConvertSize(std::ranges::distance(range));
+        auto&& my_val = get_val();
+        size_type new_size = convert_size(std::ranges::distance(range));
         if (new_size > my_val.capacity)
         {
-            Clear();
-            Reallocate(my_val, CalculateGrowth(new_size));
-            CopyToUninitialized(std::ranges::begin(range), std::ranges::end(range), my_val.ptr);
+            clear();
+            reallocate(my_val, calculate_growth(new_size));
+            copy_to_uninitialized(std::ranges::begin(range), std::ranges::end(range), my_val.ptr);
         }
         else
         {
@@ -1059,7 +1054,7 @@ private:
             pointer next = std::copy(first, mid, my_val.ptr);
             if (growing)
             {
-                CopyToUninitialized(mid, last, next);
+                copy_to_uninitialized(mid, last, next);
             }
             else
             {
@@ -1070,19 +1065,19 @@ private:
     }
 
     template<std::ranges::forward_range RangeType>
-    void MoveAssign(const RangeType& range) noexcept
+    void move_assign(const RangeType& range) noexcept
     {
-        auto&& my_val = GetVal();
-        size_type new_size = ConvertSize(std::ranges::distance(range));
+        auto&& my_val = get_val();
+        size_type new_size = convert_size(std::ranges::distance(range));
         if (new_size == 0)
         {
             std::destroy(my_val.ptr, my_val.ptr + my_val.size);
         }
         else if (new_size > my_val.capacity)
         {
-            Clear();
-            Reallocate(my_val, CalculateGrowth(new_size));
-            MoveToUninitialized(std::ranges::begin(range), std::ranges::end(range), my_val.ptr);
+            clear();
+            reallocate(my_val, calculate_growth(new_size));
+            move_to_uninitialized(std::ranges::begin(range), std::ranges::end(range), my_val.ptr);
         }
         else
         {
@@ -1100,7 +1095,7 @@ private:
             pointer next = std::move(first, mid, my_val.ptr);
             if (growing)
             {
-                MoveToUninitialized(mid, last, next);
+                move_to_uninitialized(mid, last, next);
             }
             else
             {
@@ -1110,11 +1105,11 @@ private:
         my_val.size = new_size;
     }
 
-    void MoveAssign(Array& right, std::true_type) noexcept
+    void move_assign(Array& right, std::true_type) noexcept
     {
-        if constexpr (GetAlloc() != right.GetAlloc())
+        if constexpr (get_alloc() != right.get_alloc())
         {
-            CopyAssign(right);
+            copy_assign(right);
         }
         else
         {
@@ -1122,11 +1117,11 @@ private:
         }
     }
 
-    void MoveAssign(Array& right, std::false_type) noexcept
+    void move_assign(Array& right, std::false_type) noexcept
     {
-        MoveAssignAllocator(right.GetAlloc());
-        auto&& my_val = GetVal();
-        auto&& right_val = right.GetVal();
+        move_assign_allocator(right.get_alloc());
+        auto&& my_val = get_val();
+        auto&& right_val = right.get_val();
         my_val.ptr = right_val.ptr;
         my_val.size = right_val.size;
         my_val.capacity = right_val.capacity;
@@ -1134,43 +1129,43 @@ private:
         right_val.size = right_val.capacity = 0;
     }
 
-    constexpr size_type GetInitializeCapacity() const
+    constexpr size_type get_initialize_capacity() const
     {
-        return math::Min(math::Max(size_type(4), allocator_traits::get_initialize_size(pair_.First())), MaxSize());
+        return math::min(math::max(size_type(4), allocator_traits::get_initialize_size(pair_.first())), max_size());
     }
 
-    size_type CalculateGrowth(size_type requested) const
+    size_type calculate_growth(size_type requested) const
     {
-        if (requested > MaxSize())
+        if (requested > max_size())
         {
-            return MaxSize();
+            return max_size();
         }
 
-        size_type old = GetVal().capacity;
-        if (old > MaxSize() - old)
+        size_type old = get_val().capacity;
+        if (old > max_size() - old)
         {
-            return MaxSize();
+            return max_size();
         }
 
-        return math::Max(requested, 2 * old);
+        return math::max(requested, 2 * old);
     }
 
-    void Reallocate(val_type& val, size_type new_capacity)
+    void reallocate(val_type& val, size_type new_capacity)
     {
-        if constexpr (std::is_trivially_copyable<value_type>::value)
+        if constexpr (std::is_trivially_copyable_v<value_type>)
         {
-            val.ptr = allocator_traits::reallocate(GetAlloc(), val.ptr, val.capacity, new_capacity);
+            val.ptr = allocator_traits::reallocate(get_alloc(), val.ptr, val.capacity, new_capacity);
         }
         else
         {
-            allocator_type& allocator = GetAlloc();
+            allocator_type& allocator = get_alloc();
             pointer new_ptr = allocator_traits::allocate(allocator, new_capacity);
             pointer old_ptr = val.ptr;
             if (old_ptr && new_ptr != old_ptr)
             {
-                MoveToUninitialized(old_ptr, old_ptr + val.size, new_ptr);
+                move_to_uninitialized(old_ptr, old_ptr + val.size, new_ptr);
                 std::destroy(old_ptr, old_ptr + val.size);
-                allocator_traits::deallocate(GetAlloc(), old_ptr, val.capacity);
+                allocator_traits::deallocate(get_alloc(), old_ptr, val.capacity);
             }
             val.ptr = new_ptr;
         }
@@ -1178,14 +1173,14 @@ private:
         val.capacity = new_capacity;
     }
 
-    size_type AddUninitialized(size_type& increase_size)
+    size_type add_uninitialized(size_type& increase_size)
     {
-        auto&& my_val = GetVal();
+        auto&& my_val = get_val();
         size_type old_size = my_val.size;
-        if (MaxSize() - old_size < increase_size)
+        if (max_size() - old_size < increase_size)
         {
             ASSERT(0);
-            increase_size = MaxSize() - old_size;
+            increase_size = max_size() - old_size;
         }
 
         if (increase_size <= 0)
@@ -1196,10 +1191,10 @@ private:
         size_type new_size = old_size + increase_size;
         if (new_size > my_val.capacity)
         {
-            size_type new_capacity = CalculateGrowth(new_size);
+            size_type new_capacity = calculate_growth(new_size);
             if (new_capacity > my_val.capacity)
             {
-                auto&& alloc = GetAlloc();
+                auto&& alloc = get_alloc();
                 if (my_val.capacity <= 0)
                 {
                     my_val.ptr = allocator_traits::allocate(alloc, new_capacity);
@@ -1207,7 +1202,7 @@ private:
                 }
                 else
                 {
-                    Reallocate(my_val, new_capacity);
+                    reallocate(my_val, new_capacity);
                 }
             }
         }
@@ -1217,9 +1212,9 @@ private:
     }
 
     template<std::integral SizeType>
-    constexpr size_type ConvertSize(SizeType size)
+    constexpr size_type convert_size(SizeType size)
     {
-        ASSERT(size <= MaxSize());
+        ASSERT(size <= max_size());
         if constexpr (!std::is_same_v<SizeType, size_type>)
         {
             return static_cast<size_type>(size);

@@ -16,67 +16,67 @@ Engine* g_engine = nullptr;
 
 DEFINE_COMMAND_OPTION(String, project, "p", "The path of the project to start")
 
-void Engine::Startup(int argc, char** argv)
+void Engine::startup(int argc, char** argv)
 {
-    CommandParser::ParseCommandLineOptions(argc, argv);
+    CommandParser::parse_command_line_options(argc, argv);
 
     current_time_ = duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
 
     tick_task_manager_ = std::make_unique<TickTaskManager>();
 
     plugin_manager_ = std::make_unique<PluginManager>();
-    plugin_manager_->Initialize();
+    plugin_manager_->initialize();
 
-    LoadProject();
+    load_project();
 
-    if (!project_.IsValid())
+    if (!project_.is_valid())
     {
 
     }
 }
 
-void Engine::Shutdown()
+void Engine::shutdown()
 {
-    plugin_manager_->DeInitialize();
-    ModuleManager::Shutdown();
+    plugin_manager_->deinitialize();
+    ModuleManager::shutdown();
 }
 
-void Engine::Loop()
+void Engine::loop()
 {
 
 }
 
-void Engine::UpdateTickTime()
+void Engine::update_tick_time()
 {
     last_time_ = current_time_;
     current_time_ = duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
     delta_time_ = static_cast<double>((current_time_ - last_time_).count()) * std::nano::num / std::nano::den;
 }
 
-void Engine::LoadProject()
+void Engine::load_project()
 {
-    std::optional<String> project_path = CommandParser::ValueOf<String>("project");
+    std::optional<String> project_path = CommandParser::value_of<String>("project");
     if (!project_path.has_value())
     {
         return;
     }
 
     Path path = *project_path;
-    path = path.Normalize();
+    path = path.normalize();
 
-    if (path.Extension().ToString() != ".aproj")
+    if (path.extension().to_string() != ".aproj")
     {
         return;
     }
 
-    if (path.IsRelative())
+    if (path.is_relative())
     {
         // try convert to absolute path
-        const Path root = Directory::GetEngineDirectory();
+        const Path root = Directory::get_engine_directory();
         path = root / path;
     }
 
-    project_ = Project::Parse(path);
+    project_ = Project::parse(path);
 }
 
 } // namespace atlas

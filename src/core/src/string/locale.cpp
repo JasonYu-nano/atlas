@@ -8,16 +8,16 @@ namespace atlas::locale
 
 namespace
 {
-std::locale DefaultLocaleImpl()
+std::locale default_locale_impl()
 {
     boost::locale::generator gen;
     return gen("en_US.UTF-8");
 }
 }
 
-const std::locale& DefaultLocale()
+const std::locale& default_locale()
 {
-    static std::locale default_locale = DefaultLocaleImpl();
+    static std::locale default_locale = default_locale_impl();
     return default_locale;
 }
 }

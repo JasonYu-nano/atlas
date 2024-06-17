@@ -95,13 +95,13 @@ public:
 };
 
 template<typename Iter>
-Iter* IteratorToPointer(Iter* it)
+Iter* iterator_to_pointer(Iter* it)
 {
     return it;
 }
 
 template<std::input_iterator Iter>
-std::iterator_traits<Iter>::pointer IteratorToPointer(Iter it)
+std::iterator_traits<Iter>::pointer iterator_to_pointer(Iter it)
 {
     return it.operator->();
 }

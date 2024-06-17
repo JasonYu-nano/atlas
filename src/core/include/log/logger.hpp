@@ -12,16 +12,16 @@ using spdlog::level::level_enum;
 namespace atlas
 {
 
-CORE_API std::unique_ptr<spdlog::logger> CreateLogger(const std::string& logger_name, const std::string& file_to_save);
+CORE_API std::unique_ptr<spdlog::logger> create_logger(const std::string& logger_name, const std::string& file_to_save);
 
 template<typename... Args>
-static void Log(spdlog::logger& logger, level_enum level, fmt::format_string<Args...> fmt, Args&&... args)
+static void log(spdlog::logger& logger, level_enum level, fmt::format_string<Args...> fmt, Args&&... args)
 {
     logger.log(level, fmt, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
-static void Log(spdlog::logger& logger, spdlog::source_loc src, level_enum level, fmt::format_string<Args...> fmt, Args&&... args)
+static void log(spdlog::logger& logger, spdlog::source_loc src, level_enum level, fmt::format_string<Args...> fmt, Args&&... args)
 {
     logger.log(src, level, fmt, std::forward<Args>(args)...);
 }
@@ -31,13 +31,13 @@ class Logger_##logger_name                                                      
 {                                                                                                               \
 public:                                                                                                         \
     Logger_##logger_name() = delete;                                                                            \
-    static inline std::unique_ptr<spdlog::logger> logger_ = atlas::CreateLogger(#logger_name, #file_to_save);   \
+    static inline std::unique_ptr<spdlog::logger> logger_ = atlas::create_logger(#logger_name, #file_to_save);   \
 };
 
 #define DEFINE_LOGGER(logger_name) DEFINE_LOGGER_DETAILED(logger_name, game)
 
-#define LOG_INTERNAL(logger, level, fmt, ...) { Log(*Logger_##logger::logger_.get(), spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, fmt, ## __VA_ARGS__); }
-#define LOG_INTERNAL_NO_SOURCE(logger, level, fmt, ...) { Log(*Logger_##logger::logger_.get(), level, fmt, ## __VA_ARGS__); }
+#define LOG_INTERNAL(logger, level, fmt, ...) { log(*Logger_##logger::logger_.get(), spdlog::source_loc{ __FILE__, __LINE__, SPDLOG_FUNCTION }, level, fmt, ## __VA_ARGS__); }
+#define LOG_INTERNAL_NO_SOURCE(logger, level, fmt, ...) { log(*Logger_##logger::logger_.get(), level, fmt, ## __VA_ARGS__); }
 
 #define LOG_TRACE(logger, fmt, ...)  LOG_INTERNAL_NO_SOURCE(logger, level_enum::trace, fmt, ## __VA_ARGS__)
 #define LOG_DEBUG(logger, fmt, ...)  LOG_INTERNAL_NO_SOURCE(logger, level_enum::debug, fmt, ## __VA_ARGS__)

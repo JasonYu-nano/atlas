@@ -16,9 +16,9 @@ public:
 
     ~GameEngine() override = default;
 
-    void Startup(int argc, char** argv) override;
-    void Shutdown() override;
-    void Loop() override;
+    void startup(int argc, char** argv) override;
+    void shutdown() override;
+    void loop() override;
 
 private:
     IManualTickableModule* application_module_;

@@ -56,7 +56,7 @@ public:
     explicit UnorderedMap(const std::initializer_list<init_type>& initializer, size_type bucket_size = 0, const allocator_type& alloc = allocator_type())
         : UnorderedMap(bucket_size, alloc)
     {
-        Insert(initializer);
+        insert(initializer);
     }
     /**
      * @brief Constructor from a range
@@ -69,7 +69,7 @@ public:
     explicit UnorderedMap(RangeType range, size_type n = 0, const allocator_type& alloc = allocator_type())
         : UnorderedMap(n, alloc)
     {
-        Insert(range);
+        insert(range);
     }
 
     UnorderedMap(const UnorderedMap& right) : table_(right.table_) {};
@@ -91,15 +91,7 @@ public:
      * @brief Get number of elements in map.
      * @return
      */
-    NODISCARD size_type Size() const
-    {
-        return table_.size();
-    }
-    /**
-     * @brief Get number of elements in map.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
+    NODISCARD size_type size() const
     {
         return table_.size();
     }
@@ -107,24 +99,19 @@ public:
      * @brief Get maximum number of elements in map.
      * @return
      */
-    NODISCARD constexpr size_type MaxSize() const { return table_.max_size(); }
+    NODISCARD constexpr size_type max_size() const { return table_.max_size(); }
     /**
      * @brief Get maximum number of elements in map.
      * @return
      */
-    NODISCARD DO_NOT_USE_DIRECTLY constexpr size_type max_size() const { return table_.max_size(); }
-    /**
-     * @brief Get capacity of map.
-     * @return
-     */
-    NODISCARD size_type Capacity() const
+    NODISCARD size_type capacity() const
     {
         return table_.capacity();
     }
     /**
      * @brief Clear all elements.
      */
-    void Clear()
+    void clear()
     {
         table_.clear();
     }
@@ -132,7 +119,7 @@ public:
      * @brief Reserves memory such that the map can contain at least number elements.
      * @param new_capacity
      */
-    void Reserve(size_type new_capacity)
+    void reserve(size_type new_capacity)
     {
         table_.reserve(new_capacity);
     }
@@ -143,7 +130,7 @@ public:
      * @param already_in_set Optional pointer to bool that will be set depending on whether element is already in map.
      * @return
      */
-    iterator Insert(const key_type& key, const value_type& value, bool* already_in_set = nullptr)
+    iterator insert(const key_type& key, const value_type& value, bool* already_in_set = nullptr)
     {
         auto ret = table_.insert({key, value});
         if (already_in_set)
@@ -159,7 +146,7 @@ public:
      * @param already_in_set Optional pointer to bool that will be set depending on whether element is already in map.
      * @return
      */
-    iterator Insert(const key_type& key, value_type&& value, bool* already_in_set = nullptr)
+    iterator insert(const key_type& key, value_type&& value, bool* already_in_set = nullptr)
     {
         auto ret = table_.insert({key, std::forward<value_type>(value)});
         if (already_in_set)
@@ -175,7 +162,7 @@ public:
      * @param already_in_set Optional pointer to bool that will be set depending on whether element is already in map.
      * @return
      */
-    iterator Insert(key_type&& key, const value_type& value, bool* already_in_set = nullptr)
+    iterator insert(key_type&& key, const value_type& value, bool* already_in_set = nullptr)
     {
         auto ret = table_.insert({std::forward<key_type>(key), value});
         if (already_in_set)
@@ -191,7 +178,7 @@ public:
      * @param already_in_set Optional pointer to bool that will be set depending on whether element is already in map.
      * @return
      */
-    iterator Insert(key_type&& key, value_type&& value, bool* already_in_set = nullptr)
+    iterator insert(key_type&& key, value_type&& value, bool* already_in_set = nullptr)
     {
         auto ret = table_.insert({std::forward<key_type>(key), std::forward<value_type>(value)});
         if (already_in_set)
@@ -206,7 +193,7 @@ public:
      * @param range
      */
     template<std::ranges::input_range RangeType>
-    void Insert(const RangeType& range)
+    void insert(const RangeType& range)
     {
         table_.insert(std::ranges::begin(range), std::ranges::end(range));
     }
@@ -215,7 +202,7 @@ public:
      * @param key
      * @return
      */
-    iterator FindOrInsert(const key_type& key)
+    iterator find_or_insert(const key_type& key)
     {
         iterator it = table_.find(key);
         if (it == end())
@@ -229,7 +216,7 @@ public:
      * @param key
      * @return
      */
-    iterator FindOrInsert(key_type&& key)
+    iterator find_or_insert(key_type&& key)
     {
         iterator it = table_.find(key);
         if (it == end())
@@ -243,7 +230,7 @@ public:
      * @param key
      * @return
      */
-    NODISCARD bool Contains(const key_param_type key) const
+    NODISCARD bool contains(const key_param_type key) const
     {
         return table_.find(key) != end();
     }
@@ -252,7 +239,7 @@ public:
      * @param key
      * @return
      */
-    NODISCARD iterator Find(const key_param_type key)
+    NODISCARD iterator find(const key_param_type key)
     {
         return table_.find(key);
     }
@@ -261,7 +248,7 @@ public:
      * @param key
      * @return
      */
-    NODISCARD const_iterator Find(const key_param_type key) const
+    NODISCARD const_iterator find(const key_param_type key) const
     {
         return table_.find(key);
     }
@@ -270,7 +257,7 @@ public:
      * @param key
      * @return
      */
-    NODISCARD value_type* FindValue(const key_param_type key)
+    NODISCARD value_type* find_value(const key_param_type key)
     {
         iterator it = table_.find(key);
         return it == end() ? nullptr : &it->second;
@@ -280,7 +267,7 @@ public:
      * @param key
      * @return
      */
-    NODISCARD const value_type* FindValue(const key_param_type key) const
+    NODISCARD const value_type* find_value(const key_param_type key) const
     {
         const_iterator it = table_.find(key);
         return it == end() ? nullptr : &it->second;
@@ -290,7 +277,7 @@ public:
      * @param key
      * @return
      */
-    NODISCARD value_type& FindValueRef(const key_param_type key)
+    NODISCARD value_type& find_value_ref(const key_param_type key)
     {
         iterator it = table_.find(key);
         ASSERT(it == end());
@@ -301,7 +288,7 @@ public:
      * @param key
      * @return
      */
-    NODISCARD const value_type& FindValueRef(const key_param_type key) const
+    NODISCARD const value_type& find_value_ref(const key_param_type key) const
     {
         iterator it = table_.find(key);
         ASSERT(it == end());
@@ -312,7 +299,7 @@ public:
      * @param value
      * @return
      */
-    bool Remove(const typename CallTraits<key_type>::param_type value)
+    bool remove(const typename CallTraits<key_type>::param_type value)
     {
         return table_.erase(value);
     }
@@ -321,7 +308,7 @@ public:
      * @param where
      * @return
      */
-    iterator Remove(const_iterator where)
+    iterator remove(const_iterator where)
     {
         return table_.erase(where);
     }

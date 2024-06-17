@@ -14,8 +14,8 @@ template <class T>
 concept Scheduler = requires{ typename T::awaiter_type; };
 
 /**
- * @brief Standard awaiter for scheduleer.
- * Forwards coroutine handle to scheduler directly.
+ * @brief Standard awaiter for scheduler.
+ * Forwards a coroutine handle to scheduler directly.
  * @tparam Scheduler
  */
 template<typename Scheduler, typename... Args>
@@ -93,7 +93,7 @@ private:
 };
 
 /**
- * @brief AsyncScheduler will dispatch coroutine exection to thread pool by std::async
+ * @brief AsyncScheduler will dispatch coroutine execution to thread pool by std::async
  */
 class AsyncScheduler
 {
@@ -111,14 +111,14 @@ private:
 };
 
 /**
- * @brief Transfer exection to the scheduler after called this function.
+ * @brief Transfer execution to the scheduler after called this function.
  * @tparam S
  * @param scheduler
- * @param args Variadics that will be pass to scheduler
+ * @param args Variadic that will be pass to scheduler
  * @return 
  */
 template<Scheduler S, typename... Args>
-typename S::awaiter_type schedule_on(S& scheduler, Args&&... args)
+typename S::awaiter_type co_schedule_on(S& scheduler, Args&&... args)
 {
     using schedule_awaiter = typename S::awaiter_type;
     return schedule_awaiter(scheduler, std::forward<Args>(args)...);

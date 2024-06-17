@@ -8,15 +8,18 @@
 namespace atlas::algorithm
 {
 
-//Moves the elements from the sorted range [first1, last1) which are not found in the sorted
-//range [first2, last2) to the range beginning at first1.
-//The resulting range is also sorted. Equivalent elements from range 1 are moved past to end
-//of the result,
-//that is, if some element is found m times in [first1, last1) and n times in [first2, last2),
-//it will be moved to result exactly max(m-n, 0) times.
-//The resulting range cannot overlap with either of the input ranges.
+
+/**
+ * @brief Moves the elements from the sorted range [first1, last1) which are not found in the sorted
+ * range [first2, last2) to the range beginning at first1.
+ * The resulting range is also sorted. Equivalent elements from range 1 are moved past to end
+ * of the result,
+ * that is, if some element is found m times in [first1, last1) and n times in [first2, last2),
+ * it will be moved to result exactly max(m-n, 0) times.
+ * The resulting range cannot overlap with either of the input ranges.
+ */
 template<typename Iter, typename Compare>
-Iter SetDifference(Iter first1, Iter last1, Iter first2, Iter last2, Iter result, const Compare& cmp)
+Iter set_difference(Iter first1, Iter last1, Iter first2, Iter last2, Iter result, const Compare& cmp)
 {
     while (first1 != last1)
     {
@@ -70,7 +73,7 @@ Iter SetDifference(Iter first1, Iter last1, Iter first2, Iter last2, Iter result
 }
 
 template<typename Iter, typename Compare>
-Iter InplaceSetDifference(Iter first1, Iter last1, Iter first2, Iter last2, const Compare& cmp)
+Iter inplace_set_difference(Iter first1, Iter last1, Iter first2, Iter last2, const Compare& cmp)
 {
     while (first1 != last1)
     {
@@ -99,7 +102,7 @@ Iter InplaceSetDifference(Iter first1, Iter last1, Iter first2, Iter last2, cons
             if (++first1 != last1 && !cmp(*result, *first1)) {
                 //Some elements from range 1 must be skipped, no longer an inplace operation
                 while (++first1 != last1 && !cmp(*result, *first1)){}
-                return SetDifference(first1, last1, first2, last2, ++result, cmp);
+                return set_difference(first1, last1, first2, last2, ++result, cmp);
             }
         }
         else
@@ -108,7 +111,7 @@ Iter InplaceSetDifference(Iter first1, Iter last1, Iter first2, Iter last2, cons
             //Some elements from range 1 must be skipped, no longer an inplace operation
             while (++first1 != last1 && !cmp(*result, *first1)){}
             //An element from range 1 must be skipped, no longer an inplace operation
-            return SetDifference(first1, last1, first2, last2, result, cmp);
+            return set_difference(first1, last1, first2, last2, result, cmp);
         }
     }
     return first1;

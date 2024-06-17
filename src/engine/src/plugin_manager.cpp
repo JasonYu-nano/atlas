@@ -9,14 +9,14 @@
 namespace atlas
 {
 
-void PluginManager::Initialize()
+void PluginManager::initialize()
 {
 #if WITH_EDITOR
-    ScanPlugins(Directory::GetEnginePluginsDirectory());
+    scan_plugins(Directory::get_engine_plugins_directory());
 #endif
 }
 
-void PluginManager::ScanPlugins(const Path& directory)
+void PluginManager::scan_plugins(const Path& directory)
 {
     for (auto const& dir_entry : std::filesystem::directory_iterator(directory))
     {
@@ -25,7 +25,7 @@ void PluginManager::ScanPlugins(const Path& directory)
             auto plugin_path = dir_entry.path() / "plugin.toml";
             if (std::filesystem::exists(plugin_path))
             {
-                ParsePluginDescription(String::From(plugin_path));
+                parse_plugin_description(String::from(plugin_path));
             }
         }
     }
@@ -76,7 +76,7 @@ void ParsePluginModule(PluginDesc& desc, const toml::table& config)
                         module_desc.module_name = *module_name;
                     }
 
-                    if (module_desc.module_name.IsNone())
+                    if (module_desc.module_name.is_none())
                     {
                         continue;
                     }
@@ -84,7 +84,7 @@ void ParsePluginModule(PluginDesc& desc, const toml::table& config)
                     StringView type_view = type_node->value_or("runtime");
                     module_desc.type = ConvertToModuleType(type_view);
 
-                    desc.modules.Add(std::move(module_desc));
+                    desc.modules.add(std::move(module_desc));
                 }
             }
         }
@@ -99,19 +99,19 @@ void ParsePluginDependency(PluginDesc& desc, const toml::table& config)
         {
             if (auto name_view = plugin_node.value<std::string_view>())
             {
-                desc.dependency_plugins.Insert(*name_view);
+                desc.dependency_plugins.insert(*name_view);
             }
         }
     }
 }
 
-void PluginManager::ParsePluginDescription(StringView file_path)
+void PluginManager::parse_plugin_description(StringView file_path)
 {
     auto config = toml::parse_file(file_path);
     PluginDesc plugin_desc;
 
     ParsePluginBaseInfo(plugin_desc, config);
-    if (plugin_desc.name.IsNone())
+    if (plugin_desc.name.is_none())
     {
         // plugin name is necessary
         return;
@@ -120,7 +120,7 @@ void PluginManager::ParsePluginDescription(StringView file_path)
     ParsePluginModule(plugin_desc, config);
     ParsePluginDependency(plugin_desc, config);
 
-    plugins_.Add(std::move(plugin_desc));
+    plugins_.add(std::move(plugin_desc));
 }
 
 } // namespace atlas

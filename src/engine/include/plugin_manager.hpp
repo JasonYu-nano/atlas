@@ -32,18 +32,17 @@ struct ENGINE_API PluginDesc
 class ENGINE_API PluginManager
 {
 public:
-    void Initialize();
+    void initialize();
 
-    void DeInitialize()
+    void deinitialize()
     {
 
     }
 
 private:
-    void LoadPluginManifest();
-    void ScanPlugins(const Path& directory);
+    void scan_plugins(const Path& directory);
 
-    void ParsePluginDescription(StringView file_path);
+    void parse_plugin_description(StringView file_path);
 
     Array<PluginDesc> plugins_;
 };

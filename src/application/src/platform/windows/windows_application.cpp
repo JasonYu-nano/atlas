@@ -62,7 +62,7 @@ void WindowsApplication::RegisterWinClass()
         LOG_ERROR(temp, "RegisterClassEx failed in windows platform");
         if (g_engine)
         {
-            g_engine->RequestShutdown();
+            g_engine->request_shutdown();
         }
     }
 }
@@ -112,7 +112,7 @@ LRESULT WindowsApplication::HandleWindowsMsg(HWND hwnd, UINT message, WPARAM wpa
         {
             if (g_engine)
             {
-                g_engine->RequestShutdown();
+                g_engine->request_shutdown();
             }
             PostQuitMessage(0);
         } break;

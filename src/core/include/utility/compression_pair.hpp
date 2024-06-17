@@ -76,10 +76,10 @@ public:
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
         : first_(std::forward<Arg1>(arg1)), second_{std::forward<Arg2>(arg2)...} {}
 
-    first_reference First() { return first_; }
-    first_const_reference First() const { return first_; }
-    second_reference Second() { return second_; }
-    second_const_reference Second() const { return second_; }
+    first_reference first() { return first_; }
+    first_const_reference first() const { return first_; }
+    second_reference second() { return second_; }
+    second_const_reference second() const { return second_; }
 
 private:
     first_type first_;
@@ -111,10 +111,10 @@ public:
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
         : first_type(std::forward<Arg1>(arg1)), second_{std::forward<Arg2>(arg2)...} {}
 
-    first_reference First() { return *this; }
-    first_const_reference First() const { return *this; }
-    second_reference Second() { return second_; }
-    second_const_reference Second() const { return second_; }
+    first_reference first() { return *this; }
+    first_const_reference first() const { return *this; }
+    second_reference second() { return second_; }
+    second_const_reference second() const { return second_; }
 
 private:
     second_type second_;
@@ -145,10 +145,10 @@ public:
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
         : first_(std::forward<Arg1>(arg1)), second_type{std::forward<Arg2>(arg2)...} {}
 
-    first_reference First() { return first_; }
-    first_const_reference First() const { return first_; }
-    second_reference Second() { return *this; }
-    second_const_reference Second() const { return *this; }
+    first_reference first() { return first_; }
+    first_const_reference first() const { return first_; }
+    second_reference second() { return *this; }
+    second_const_reference second() const { return *this; }
 
 private:
     first_type first_;
@@ -179,10 +179,10 @@ public:
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
         : first_type(std::forward<Arg1>(arg1)), second_type{std::forward<Arg2>(arg2)...} {}
 
-    first_reference First() { return *this; }
-    first_const_reference First() const { return *this; }
-    second_reference Second() { return *this; }
-    second_const_reference Second() const { return *this; }
+    first_reference first() { return *this; }
+    first_const_reference first() const { return *this; }
+    second_reference second() { return *this; }
+    second_const_reference second() const { return *this; }
 };
 
 template<typename T1, typename T2>
@@ -207,10 +207,10 @@ public:
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
         : first_(std::forward<Arg1>(arg1)), second_{std::forward<Arg2>(arg2)...} {}
 
-    first_reference First() { return first_; }
-    first_const_reference First() const { return first_; }
-    second_reference Second() { return second_; }
-    second_const_reference Second() const { return second_; }
+    first_reference first() { return first_; }
+    first_const_reference first() const { return first_; }
+    second_reference second() { return second_; }
+    second_const_reference second() const { return second_; }
 
 private:
     first_type first_;
@@ -239,10 +239,10 @@ public:
     CompressionPairImpl(OneThenVariadicArgs, Arg1&& arg1, Arg2&&... arg2)
         : first_type(std::forward<Arg1>(arg1)), second_{std::forward<Arg2>(arg2)...} {}
 
-    first_reference First() { return *this; }
-    first_const_reference First() const { return *this; }
-    second_reference Second() { return second_; }
-    second_const_reference Second() const { return second_; }
+    first_reference first() { return *this; }
+    first_const_reference first() const { return *this; }
+    second_reference second() { return second_; }
+    second_const_reference second() const { return second_; }
 
 private:
     second_type second_;
@@ -276,8 +276,8 @@ public:
     CompressionPair(OneThenVariadicArgs tag, Arg1&& arg1, Arg2&&... arg2)
         : base(tag, std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)...) {}
 
-    using base::First;
-    using base::Second;
+    using base::first;
+    using base::second;
 };
 
 template<typename T1, typename T2>
@@ -303,8 +303,8 @@ public:
     CompressionPair(OneThenVariadicArgs tag, Arg1&& arg1, Arg2&&... arg2)
         : base(tag, std::forward<Arg1>(arg1), std::forward<Arg2>(arg2)...) {}
 
-    using base::First;
-    using base::Second;
+    using base::first;
+    using base::second;
 };
 
 }

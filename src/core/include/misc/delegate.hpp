@@ -14,10 +14,9 @@ namespace atlas
 class CORE_API DelegateHandle
 {
 public:
-    static DelegateHandle Create()
+    static DelegateHandle create()
     {
-        DelegateHandle handle(next_id_);
-        ++next_id_;
+        DelegateHandle handle(next_id_.fetch_add(1));
         return handle;
     }
 
@@ -39,12 +38,12 @@ public:
         return id_ != rhs.id_;
     }
 
-    NODISCARD bool IsValid() const
+    NODISCARD bool is_valid() const
     {
         return id_ == 0;
     }
 
-    void Invalidate()
+    void invalidate()
     {
         id_ = 0;
     }
@@ -66,10 +65,10 @@ class IDelegateInstance
 public:
     IDelegateInstance() = default;
     virtual ~IDelegateInstance() = default;
-    NODISCARD virtual DelegateHandle GetHandle() const = 0;
-    NODISCARD virtual bool IsBoundToObject(const void* obj) const = 0;
-    NODISCARD virtual bool IsSafeToExecute() const = 0;
-    NODISCARD virtual RetType Execute(Args&&... args) = 0;
+    NODISCARD virtual DelegateHandle get_handle() const = 0;
+    NODISCARD virtual bool is_bound_to_object(const void* obj) const = 0;
+    NODISCARD virtual bool is_safe_to_execute() const = 0;
+    NODISCARD virtual RetType execute(Args&&... args) = 0;
 };
 
 /////////////////////////////////// base delegate /////////////////////////////////////
@@ -82,7 +81,7 @@ class DelegateInstance<RetType(Args...), Payload...> : public IDelegateInstance<
 {
 public:
     explicit DelegateInstance(Payload&&... payload)
-        : handle_(DelegateHandle::Create()), payload_(std::forward<Payload>(payload)...) {}
+        : handle_(DelegateHandle::create()), payload_(std::forward<Payload>(payload)...) {}
 
     DelegateInstance(const DelegateInstance&) = default;
     DelegateInstance(DelegateInstance&&) = default;
@@ -90,17 +89,17 @@ public:
     DelegateInstance& operator= (const DelegateInstance&) = default;
     DelegateInstance& operator= (DelegateInstance&&) = default;
 
-    NODISCARD DelegateHandle GetHandle() const final
+    NODISCARD DelegateHandle get_handle() const final
     {
         return handle_;
     }
 
-    NODISCARD bool IsBoundToObject(const void* obj) const override
+    NODISCARD bool is_bound_to_object(const void* obj) const override
     {
         return false;
     }
 
-    NODISCARD bool IsSafeToExecute() const override
+    NODISCARD bool is_safe_to_execute() const override
     {
         return true;
     }
@@ -146,7 +145,7 @@ public:
     StaticDelegateInstance& operator= (const StaticDelegateInstance&) = default;
     StaticDelegateInstance& operator= (StaticDelegateInstance&&) = default;
 
-    NODISCARD RetType Execute(Args&&... args) override
+    NODISCARD RetType execute(Args&&... args) override
     {
         return base::Invoke(function_pointer_, std::forward<Args>(args)...);
     }
@@ -191,17 +190,17 @@ public:
     RawDelegateInstance& operator= (const RawDelegateInstance&) = default;
     RawDelegateInstance& operator= (RawDelegateInstance&&) = default;
 
-    NODISCARD RetType Execute(Args&&... args) override
+    NODISCARD RetType execute(Args&&... args) override
     {
         return base::Invoke(function_pointer_, object_, std::forward<Args>(args)...);
     }
 
-    NODISCARD bool IsBoundToObject(const void* obj) const override
+    NODISCARD bool is_bound_to_object(const void* obj) const override
     {
         return obj == object_;
     }
 
-    NODISCARD bool IsSafeToExecute() const override
+    NODISCARD bool is_safe_to_execute() const override
     {
         return object_ != nullptr;
     }
@@ -230,17 +229,17 @@ public:
     SPDelegateInstance& operator= (const SPDelegateInstance&) = default;
     SPDelegateInstance& operator= (SPDelegateInstance&&) = default;
 
-    NODISCARD RetType Execute(Args&&... args) override
+    NODISCARD RetType execute(Args&&... args) override
     {
         return base::Invoke(function_pointer_, object_.get(), std::forward<Args>(args)...);
     }
 
-    NODISCARD bool IsBoundToObject(const void* obj) const override
+    NODISCARD bool is_bound_to_object(const void* obj) const override
     {
         return object_.get() == obj;
     }
 
-    NODISCARD bool IsSafeToExecute() const override
+    NODISCARD bool is_safe_to_execute() const override
     {
         return object_ != nullptr;
     }
@@ -271,30 +270,30 @@ public:
 
     ~Delegate()
     {
-        Unbind();
+        unbind();
     }
 
     Delegate& operator= (const Delegate&) = default;
     Delegate& operator= (Delegate&&) = default;
     bool operator == (const Delegate& rhs) const
     {
-        return GetHandle() == rhs.GetHandle();
+        return get_handle() == rhs.get_handle();
     }
     bool operator != (const Delegate& rhs) const
     {
-        return GetHandle() != rhs.GetHandle();
+        return get_handle() != rhs.get_handle();
     }
 
-    NODISCARD DelegateHandle GetHandle() const
+    NODISCARD DelegateHandle get_handle() const
     {
-        return IsBound() ? instance_->GetHandle() : DelegateHandle();
+        return is_bound() ? instance_->get_handle() : DelegateHandle();
     }
 
     /**
      * @brief Returns whether delegate has bound.
      * @return
      */
-    NODISCARD bool IsBound() const
+    NODISCARD bool is_bound() const
     {
         return instance_ != nullptr;
     }
@@ -302,28 +301,28 @@ public:
      * @brief Returns whether delegate is safe to execute.
      * @return
      */
-    NODISCARD bool IsSafeToExecute() const
+    NODISCARD bool is_safe_to_execute() const
     {
-        return instance_ ? instance_->IsSafeToExecute() : false;
+        return instance_ ? instance_->is_safe_to_execute() : false;
     }
     /**
      * @brief Executes delegate.
      * @param args
      * @return
      */
-    NODISCARD RetType Execute(Args... args)
+    NODISCARD RetType execute(Args... args)
     {
-        return instance_->Execute(std::forward<Args>(args)...);
+        return instance_->execute(std::forward<Args>(args)...);
     }
     /**
      * @brief Executes only if it is safe.
      * @param args
      */
-    void ExecuteSafe(Args... args)
+    void execute_safe(Args... args)
     {
-        if (IsSafeToExecute())
+        if (is_safe_to_execute())
         {
-            instance_->Execute(std::forward<Args>(args)...);
+            instance_->execute(std::forward<Args>(args)...);
         }
     }
     /**
@@ -333,7 +332,7 @@ public:
      * @param payload
      */
     template<typename... Payload>
-    void BindStatic(RetType (*fn)(Args..., Payload...), Payload&&... payload)
+    void bind_static(RetType (*fn)(Args..., Payload...), Payload&&... payload)
     {
         if (instance_ == nullptr)
         {
@@ -349,7 +348,7 @@ public:
      * @param payload
      */
     template<typename Object, typename... Payload>
-    void BindRaw(Object* object, details::MethodPointer<Object, true, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
+    void bind_raw(Object* object, details::MethodPointer<Object, true, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
     {
         if (instance_ == nullptr)
         {
@@ -365,7 +364,7 @@ public:
      * @param payload
      */
     template<typename Object, typename... Payload>
-    void BindRaw(Object* object, details::MethodPointer<Object, false, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
+    void bind_raw(Object* object, details::MethodPointer<Object, false, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
     {
         if (instance_ == nullptr)
         {
@@ -381,7 +380,7 @@ public:
      * @param payload
      */
     template<typename Object, typename... Payload>
-    void BindSP(std::shared_ptr<Object> object, details::MethodPointer<Object, true, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
+    void bind_sp(std::shared_ptr<Object> object, details::MethodPointer<Object, true, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
     {
         if (instance_ == nullptr)
         {
@@ -397,7 +396,7 @@ public:
      * @param payload
      */
     template<typename Object, typename... Payload>
-    void BindSP(std::shared_ptr<Object> object, details::MethodPointer<Object, false, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
+    void bind_sp(std::shared_ptr<Object> object, details::MethodPointer<Object, false, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
     {
         if (instance_ == nullptr)
         {
@@ -407,7 +406,7 @@ public:
     /**
      * @brief Unbinds delegate.
      */
-    void Unbind()
+    void unbind()
     {
         instance_.reset();
     }
@@ -419,7 +418,7 @@ public:
      * @return
      */
     template<typename... Payload>
-    static Delegate CreateStatic(RetType (*fn)(Args...), Payload&&... payload)
+    static Delegate create_static(RetType (*fn)(Args...), Payload&&... payload)
     {
         return Delegate(std::make_shared<details::StaticDelegateInstance<RetType(Args...), Payload...>>(fn, std::forward<Payload>(payload)...));
     }
@@ -433,7 +432,7 @@ public:
      * @return
      */
     template<typename Object, typename... Payload>
-    static Delegate CreateRaw(Object* object, details::MethodPointer<Object, true, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
+    static Delegate create_raw(Object* object, details::MethodPointer<Object, true, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
     {
         return Delegate(std::make_shared<details::RawDelegateInstance<Object, true, RetType(Args...), Payload...>>(object, fn, std::forward<Payload>(payload)...));
     }
@@ -447,7 +446,7 @@ public:
      * @return
      */
     template<typename Object, typename... Payload>
-    static Delegate CreateRaw(Object* object, details::MethodPointer<Object, false, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
+    static Delegate create_raw(Object* object, details::MethodPointer<Object, false, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
     {
         return Delegate(std::make_shared<details::RawDelegateInstance<Object, false, RetType(Args...), Payload...>>(object, fn, std::forward<Payload>(payload)...));
     }
@@ -461,7 +460,7 @@ public:
      * @return
      */
     template<typename Object, typename... Payload>
-    static Delegate CreateSP(std::shared_ptr<Object> object, details::MethodPointer<Object, true, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
+    static Delegate create_sp(std::shared_ptr<Object> object, details::MethodPointer<Object, true, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
     {
         return Delegate(std::make_shared<details::SPDelegateInstance<Object, true, RetType(Args...), Payload...>>(object, fn, std::forward<Payload>(payload)...));
     }
@@ -475,7 +474,7 @@ public:
      * @return
      */
     template<typename Object, typename... Payload>
-    static Delegate CreateSP(std::shared_ptr<Object> object, details::MethodPointer<Object, false, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
+    static Delegate create_sp(std::shared_ptr<Object> object, details::MethodPointer<Object, false, RetType(Args..., Payload...)>::type fn, Payload&&... payload)
     {
         return Delegate(std::make_shared<details::SPDelegateInstance<Object, false, RetType(Args...), Payload...>>(object, fn, std::forward<Payload>(payload)...));
     }
@@ -512,36 +511,36 @@ public:
      * @brief Returns whether delegate has bound.
      * @return
      */
-    NODISCARD bool IsBound() const
+    NODISCARD bool is_bound() const
     {
-        return !invocation_list_.IsEmpty();
+        return !invocation_list_.is_empty();
     }
     /**
      * @brief Removes bound delegate by handle.
      * @param handle
      */
-    void Remove(DelegateHandle handle)
+    void remove(DelegateHandle handle)
     {
-        invocation_list_.RemoveSwap([=](const delegate_type& delegate){
-           return delegate.GetHandle() == handle;
+        invocation_list_.remove_swap([=](const delegate_type& delegate){
+           return delegate.get_handle() == handle;
         });
     }
     /**
      * @brief Removes all bound delegates. It's safe to call in delegate.
      */
-    void RemoveAll()
+    void remove_all()
     {
-        invocation_list_.Clear();
+        invocation_list_.clear();
     }
 
-    void Broadcast(Args&&... args)
+    void broadcast(Args&&... args)
     {
-        if (IsBound())
+        if (is_bound())
         {
             InlineArray<delegate_type, 20> invocation_list = invocation_list_;
             for (auto&& delegate : invocation_list)
             {
-                delegate.ExecuteSafe(std::forward<Args>(args)...);
+                delegate.execute_safe(std::forward<Args>(args)...);
             }
         }
     }
@@ -550,20 +549,20 @@ public:
      * @param delegate
      * @return
      */
-    DelegateHandle Add(const delegate_type& delegate)
+    DelegateHandle add(const delegate_type& delegate)
     {
-        size_t index = invocation_list_.Add(delegate);
-        return invocation_list_[index].GetHandle();
+        size_t index = invocation_list_.add(delegate);
+        return invocation_list_[index].get_handle();
     }
     /**
      * @brief Moves specified delegate.
      * @param delegate
      * @return
      */
-    DelegateHandle Add(delegate_type&& delegate)
+    DelegateHandle add(delegate_type&& delegate)
     {
-        size_t index = invocation_list_.Add(std::forward<delegate_type >(delegate));
-        return invocation_list_[index].GetHandle();
+        size_t index = invocation_list_.add(std::forward<delegate_type >(delegate));
+        return invocation_list_[index].get_handle();
     }
     /**
      * @brief Add function pointer or static method to multicast delegate.
@@ -573,10 +572,10 @@ public:
      * @return
      */
     template<typename... Payload>
-    DelegateHandle AddStatic(void (*fn)(Args..., Payload...), Payload&&... payload)
+    DelegateHandle add_static(void (*fn)(Args..., Payload...), Payload&&... payload)
     {
-        size_t index = invocation_list_.Add(delegate_type::CreateStatic(fn, std::forward<Payload>(payload)...));
-        return invocation_list_[index].GetHandle();
+        size_t index = invocation_list_.add(delegate_type::create_static(fn, std::forward<Payload>(payload)...));
+        return invocation_list_[index].get_handle();
     }
     /**
      * @brief Add member method to multicast delegate.
@@ -588,10 +587,10 @@ public:
      * @return
      */
     template<typename Object, typename... Payload>
-    DelegateHandle AddRaw(Object* object, details::MethodPointer<Object, true, void(Args..., Payload...)>::type fn, Payload&&... payload)
+    DelegateHandle add_raw(Object* object, details::MethodPointer<Object, true, void(Args..., Payload...)>::type fn, Payload&&... payload)
     {
-        size_t index = invocation_list_.Add(delegate_type::CreateRaw(object, fn, std::forward<Payload>(payload)...));
-        return invocation_list_[index].GetHandle();
+        size_t index = invocation_list_.add(delegate_type::create_raw(object, fn, std::forward<Payload>(payload)...));
+        return invocation_list_[index].get_handle();
     }
     /**
      * @brief Add member method to multicast delegate.
@@ -603,10 +602,10 @@ public:
      * @return
      */
     template<typename Object, typename... Payload>
-    DelegateHandle AddRaw(Object* object, details::MethodPointer<Object, false, void(Args..., Payload...)>::type fn, Payload&&... payload)
+    DelegateHandle add_raw(Object* object, details::MethodPointer<Object, false, void(Args..., Payload...)>::type fn, Payload&&... payload)
     {
-        size_t index = invocation_list_.Add(delegate_type::CreateRaw(object, fn, std::forward<Payload>(payload)...));
-        return invocation_list_[index].GetHandle();
+        size_t index = invocation_list_.add(delegate_type::create_raw(object, fn, std::forward<Payload>(payload)...));
+        return invocation_list_[index].get_handle();
     }
     /**
      * @brief Add member method to multicast delegate.
@@ -618,10 +617,10 @@ public:
      * @return
      */
     template<typename Object, typename... Payload>
-    DelegateHandle AddSP(std::shared_ptr<Object> object, details::MethodPointer<Object, true, void(Args..., Payload...)>::type fn, Payload&&... payload)
+    DelegateHandle add_sp(std::shared_ptr<Object> object, details::MethodPointer<Object, true, void(Args..., Payload...)>::type fn, Payload&&... payload)
     {
-        size_t index = invocation_list_.Add(delegate_type::CreateSP(object, fn, std::forward<Payload>(payload)...));
-        return invocation_list_[index].GetHandle();
+        size_t index = invocation_list_.add(delegate_type::create_sp(object, fn, std::forward<Payload>(payload)...));
+        return invocation_list_[index].get_handle();
     }
     /**
      * @brief Add member method to multicast delegate.
@@ -633,10 +632,10 @@ public:
      * @return
      */
     template<typename Object, typename... Payload>
-    DelegateHandle AddSP(std::shared_ptr<Object> object, details::MethodPointer<Object, false, void(Args..., Payload...)>::type fn, Payload&&... payload)
+    DelegateHandle add_sp(std::shared_ptr<Object> object, details::MethodPointer<Object, false, void(Args..., Payload...)>::type fn, Payload&&... payload)
     {
-        size_t index = invocation_list_.Add(delegate_type::CreateSP(object, fn, std::forward<Payload>(payload)...));
-        return invocation_list_[index].GetHandle();
+        size_t index = invocation_list_.add(delegate_type::create_sp(object, fn, std::forward<Payload>(payload)...));
+        return invocation_list_[index].get_handle();
     }
 
 private:

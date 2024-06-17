@@ -2,6 +2,7 @@
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
 #include <fstream>
+#include <stdio.h>
 
 #include "io/filesystem_io_backend.hpp"
 
@@ -42,10 +43,10 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
         co_return read;
     }
 
-    FILE* stream;
-    if (fopen_s(&stream, file.ToString().data(), "r") != 0)
+    FILE* stream = fopen(file.to_string().data(), "r");
+    if (!stream)
     {
-        LOG_WARN(core, "Failed to open file {0}", file.ToString());
+        LOG_WARN(core, "Failed to open file {0}", file);
         co_return read;
     }
 
@@ -62,7 +63,7 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
         co_return read;
     }
 
-    size_t actual_read_size = read_size == INDEX_NONE ? size : std::min(read_size, size - offset);
+    size_t actual_read_size = read_size == INDEX_NONE ? size : math::min(read_size, size - offset);
     if (actual_read_size <= 0)
     {
         co_return read;
@@ -75,9 +76,9 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
         co_return read;
     }
 
-    buffer.Resize(old_size + actual_read_size);
+    buffer.resize(old_size + actual_read_size);
 
-    co_await schedule_on(*this, priority);
+    co_await co_schedule_on(*this, priority);
 
     fseek(stream, offset, SEEK_SET);
     read = std::fread(buffer.data() + old_size, sizeof(byte), actual_read_size, stream);
@@ -86,12 +87,12 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
     {
         if (!feof(stream))
         {
-            LOG_WARN(core, "Read file {} failed", file.ToString());
-            buffer.Resize(old_size);
+            LOG_WARN(core, "Read file {} failed", file);
+            buffer.resize(old_size);
         }
         else
         {
-            buffer.Resize(read);
+            buffer.resize(read);
         }
     }
 
@@ -106,10 +107,10 @@ Task<size_t> FilesystemIOBackend::async_write(Path file, IOBufferView buffer, bo
         co_return write;
     }
 
-    FILE* stream;
-    if (fopen_s(&stream, file.ToString().data(), append ? "a" : "w") != 0)
+    FILE* stream = fopen(file.to_string().data(), append ? "a" : "w");
+    if (!stream)
     {
-        LOG_WARN(core, "Failed to open file {0}", file.ToString());
+        LOG_WARN(core, "Failed to open file {0}", file);
         co_return write;
     }
 
@@ -117,7 +118,7 @@ Task<size_t> FilesystemIOBackend::async_write(Path file, IOBufferView buffer, bo
         fclose(stream);
     });
 
-    co_await schedule_on(*this, priority);
+    co_await co_schedule_on(*this, priority);
 
     write = fwrite(buffer.data(), sizeof(byte), buffer.size(), stream);
 

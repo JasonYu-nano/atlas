@@ -85,17 +85,17 @@ public:
      */
     Path& operator/= (const Path& other)
     {
-        if (other.IsAbsolute())
+        if (other.is_absolute())
         {
             return *this = other;
         }
 
-        const_pointer my_first = text_.Data();
-        const_pointer my_last = my_first + text_.Size();
-        const_pointer other_first = other.text_.Data();
-        const_pointer other_last = other_first + other.text_.Size();
-        const_pointer my_root_end = FindRootNameEnd(my_first, my_last);
-        const_pointer other_root_end = FindRootNameEnd(other_first, other_last);
+        const_pointer my_first = text_.data();
+        const_pointer my_last = my_first + text_.size();
+        const_pointer other_first = other.text_.data();
+        const_pointer other_last = other_first + other.text_.size();
+        const_pointer my_root_end = find_root_name_end(my_first, my_last);
+        const_pointer other_root_end = find_root_name_end(other_first, other_last);
 
         StringView my_root(my_first, my_root_end - my_first);
         StringView other_root(other_first, other_root_end - other_first);
@@ -107,26 +107,26 @@ public:
 
         if (other_root_end != other_last && is_separator_(*other_root_end))
         {
-            text_.Remove(0, static_cast<size_t>(my_root_end - my_first));
+            text_.remove(0, static_cast<size_t>(my_root_end - my_first));
         }
         else
         {
             if (my_root_end == my_last) {
                 if (my_root_end - my_first >= 3)
                 {
-                    text_.Append(preferred_separator_);
+                    text_.append(preferred_separator_);
                 }
             }
             else
             {
                 if (!is_separator_(my_last[-1]))
                 {
-                    text_.Append(preferred_separator_);
+                    text_.append(preferred_separator_);
                 }
             }
         }
 
-        text_.Append(StringView(other_root_end, other_last - other_root_end));
+        text_.append(StringView(other_root_end, other_last - other_root_end));
         return *this;
     }
     /**
@@ -161,7 +161,7 @@ public:
      */
     Path& operator+= (const Path& other)
     {
-        text_.Append(other.text_);
+        text_.append(other.text_);
         return *this;
     }
     /**
@@ -172,7 +172,7 @@ public:
      */
     Path& operator+= (const String& other)
     {
-        text_.Append(other);
+        text_.append(other);
         return *this;
     }
     /**
@@ -181,7 +181,7 @@ public:
      */
     operator String() const
     {
-        return ToString();
+        return to_string();
     }
     /**
      * @brief Implicitly converts path into a std::filesystem::path.
@@ -189,7 +189,7 @@ public:
      */
     operator std_path() const
     {
-        return ToStdPath();
+        return to_std_path();
     }
     bool operator== (const Path& rhs) const
     {
@@ -212,49 +212,49 @@ public:
      * @brief Checks if the path is empty.
      * @return
      */
-    NODISCARD bool IsEmpty() const
+    NODISCARD bool is_empty() const
     {
-        return text_.IsEmpty();
+        return text_.is_empty();
     }
     /**
      * @brief Checks if the path is an absolute path.
      * @return
      */
-    NODISCARD bool IsAbsolute() const
+    NODISCARD bool is_absolute() const
     {
         // paths with a root-name that is a drive letter and no root-directory are drive relative, such as x:example
         // paths with no root-name or root-directory are relative, such as example
         // paths with no root-name but a root-directory are root relative, such as \example
         // all other paths are absolute
-        const auto first = text_.Data();
-        const auto last  = first + text_.Size();
-        if (HasDriveLetterPrefix(first, last)) // test for X:\ but not X:cat
+        const auto first = text_.data();
+        const auto last  = first + text_.size();
+        if (has_drive_letter_prefix(first, last)) // test for X:\ but not X:cat
         {
             return last - first >= 3 && is_separator_(first[2]);
         }
 
         // if root-name is otherwise nonempty, then it must be one of the always-absolute prefixes like
         // \\?\ or \\server, so the path is absolute. Otherwise it is relative.
-        return first != FindRootNameEnd(first, last);
+        return first != find_root_name_end(first, last);
     }
     /**
      * @brief Checks if the path is a relative path.
      * @return
      */
-    NODISCARD bool IsRelative() const
+    NODISCARD bool is_relative() const
     {
-        return !IsAbsolute();
+        return !is_absolute();
     }
     /**
      * @brief Replaces separator to preferred separator.
      */
-    NODISCARD Path MakePreferred()
+    NODISCARD Path make_preferred() const
     {
         Path ret = *this;
 #if PLATFORM_WINDOWS
-        ret.text_.Replace('/', preferred_separator_);
+        ret.text_.replace('/', preferred_separator_);
 #else
-        ret.text_.Replace('\\', preferred_separator_);
+        ret.text_.replace('\\', preferred_separator_);
 #endif
         return ret;
     }
@@ -265,19 +265,19 @@ public:
      * @see https://en.cppreference.com/w/cpp/filesystem/path know about algorithm.
      * @return
      */
-    NODISCARD Path Normalize() const
+    NODISCARD Path normalize() const
     {
         // 1. if the path is empty, stop (normal form of an empty path is an empty path).
-        if (IsEmpty())
+        if (is_empty())
         {
             return {};
         }
 
-        const_pointer first = text_.Data();
-        const_pointer last = text_.Data() + text_.Size();
-        const_pointer root_end = FindRootNameEnd(first, last);
+        const_pointer first = text_.data();
+        const_pointer last = text_.data() + text_.size();
+        const_pointer root_end = find_root_name_end(first, last);
         String normalized(first, root_end - first);
-        normalized.Reserve(text_.Length());
+        normalized.reserve(text_.length());
 
         // 2. replace each slash character in the root-name with path::preferred_separator.
 #if PLATFORM_WINDOWS
@@ -386,7 +386,7 @@ public:
         }
 
         // "8. If the path is empty, add a dot."
-        if (normalized.IsEmpty())
+        if (normalized.is_empty())
         {
             normalized = dot;
         }
@@ -397,23 +397,23 @@ public:
      * @brief Gets the extension of path.
      * @return
      */
-    NODISCARD Path Extension() const
+    NODISCARD Path extension() const
     {
-        return {String{ParseExtension()}};
+        return {String{parse_extension()}};
     }
     /** Gets the parent path.
      * @brief
      * @return
      */
-    NODISCARD Path ParentPath() const
+    NODISCARD Path parent_path() const
     {;
-        return {String{ParseParentPath(text_)}};
+        return {String{parse_parent_path(text_)}};
     }
     /**
      * @brief Converts path into a string.
      * @return
      */
-    NODISCARD String ToString() const
+    NODISCARD const String& to_string() const
     {
         return text_;
     }
@@ -421,7 +421,7 @@ public:
      * @brief Converts path into a std::filesystem::path.
      * @return
      */
-    NODISCARD std_path ToStdPath() const
+    NODISCARD std_path to_std_path() const
     {
         if constexpr (std::is_same_v<std_path::value_type, char>)
         {
@@ -429,15 +429,15 @@ public:
         }
         else if constexpr (std::is_same_v<std_path::value_type, wchar_t>)
         {
-            return {text_.ToWide() };
+            return {text_.to_wide() };
         }
         else if constexpr (std::is_same_v<std_path::value_type, char16_t>)
         {
-            return {text_.ToUtf16() };
+            return {text_.to_utf16() };
         }
         else if constexpr (std::is_same_v<std_path::value_type, char32_t>)
         {
-            return {text_.ToUtf32() };
+            return {text_.to_utf32() };
         }
 
         return {};
@@ -448,9 +448,9 @@ public:
      * @brief Converts to OS style string.
      * @return
      */
-    NODISCARD std::wstring ToOSPath() const
+    NODISCARD std::wstring to_os_path() const
     {
-        return text_.ToWide();
+        return text_.to_wide();
     }
 #else
     /**
@@ -469,7 +469,7 @@ public:
     static inline char preferred_separator_ = '/';
 #endif
 private:
-    NODISCARD bool IsDrivePrefix(const_pointer const first) const
+    NODISCARD bool is_drive_prefix(const_pointer const first) const
     {
         // test if first points to a prefix of the form X:
         if (*(first + 1) != ':')
@@ -481,12 +481,12 @@ private:
         return v - 'a' < 26;
     }
 
-    NODISCARD bool HasDriveLetterPrefix(const_pointer const first, const_pointer const last) const
+    NODISCARD bool has_drive_letter_prefix(const_pointer const first, const_pointer const last) const
     {
-        return last - first >= 2 && IsDrivePrefix(first);
+        return last - first >= 2 && is_drive_prefix(first);
     }
 
-    NODISCARD const_pointer FindRootNameEnd(const_pointer const first, const_pointer const last) const
+    NODISCARD const_pointer find_root_name_end(const_pointer const first, const_pointer const last) const
     {
         // attempt to parse [_First, _Last) as a path and return the end of root-name if it exists; otherwise, _First
         if (last - first < 2)
@@ -495,7 +495,7 @@ private:
         }
 
         // check for X: first because it's the most common root-name
-        if (HasDriveLetterPrefix(first, last))
+        if (has_drive_letter_prefix(first, last))
         {
             return first + 2;
         }
@@ -523,15 +523,15 @@ private:
         return first;
     }
 
-    NODISCARD const_pointer FindRelativePath(const_pointer const first, const_pointer const last) const
+    NODISCARD const_pointer find_relative_path(const_pointer const first, const_pointer const last) const
     {
         // attempt to parse [_First, _Last) as a path and return the start of relative-path
-        return std::find_if_not(FindRootNameEnd(first, last), last, is_separator_);
+        return std::find_if_not(find_root_name_end(first, last), last, is_separator_);
     }
 
-    NODISCARD const_pointer FindFileName(const_pointer const first, const_pointer const last) const
+    NODISCARD const_pointer find_file_name(const_pointer const first, const_pointer const last) const
     {
-        const auto relative_path = FindRelativePath(first, last);
+        const auto relative_path = find_relative_path(first, last);
         pointer mutable_last = const_cast<pointer>(last);
         while (relative_path != mutable_last && !is_separator_(mutable_last[-1]))
         {
@@ -541,7 +541,7 @@ private:
         return mutable_last;
     }
 
-    NODISCARD const_pointer FindExtension(const_pointer filename, const_pointer ads) const
+    NODISCARD const_pointer find_extension(const_pointer filename, const_pointer ads) const
     {
         // find dividing point between stem and extension in a generic format filename consisting of [_Filename, _Ads)
         auto extension = ads;
@@ -579,23 +579,23 @@ private:
         return ads;
     }
 
-    StringView ParseExtension() const
+    NODISCARD StringView parse_extension() const
     {
         // attempt to parse _Str as a path and return the extension if it exists; otherwise, an empty view
         const auto first    = text_.data();
         const auto last     = first + text_.size();
-        const auto filename = FindFileName(first, last);
+        const auto filename = find_file_name(first, last);
         const auto ads = std::find(filename, last, ':'); // strip alternate data streams in intra-filename decomposition
-        const auto extension = FindExtension(filename, ads);
+        const auto extension = find_extension(filename, ads);
         return StringView(extension, static_cast<size_t>(ads - extension));
     }
 
-    NODISCARD StringView ParseParentPath(const StringView str) const
+    NODISCARD StringView parse_parent_path(const StringView str) const
     {
         // attempt to parse _Str as a path and return the parent_path if it exists; otherwise, an empty view
         const auto first         = str.data();
         auto last                = first + str.size();
-        const auto relative_path = FindRelativePath(first, last);
+        const auto relative_path = find_relative_path(first, last);
         // case 1: relative-path ends in a directory-separator, remove the separator to remove "magic empty path"
         //  for example: R"(/cat/dog/\//\)"
         // case 2: relative-path doesn't end in a directory-separator, remove the filename and last directory-separator
@@ -620,3 +620,13 @@ private:
 };
 
 } // namespace atlas
+
+template<>
+struct CORE_API fmt::formatter<atlas::Path> : formatter<atlas::String>
+{
+    template <typename FormatContext>
+    auto format(const atlas::Path& path, FormatContext& ctx)
+    {
+        return formatter<atlas::String>::format(path.to_string(), ctx);
+    }
+};

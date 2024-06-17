@@ -33,12 +33,12 @@ public:
 
     NameEntryID& operator= (const NameEntryID& rhs) noexcept = default;
 
-    NODISCARD uint32 GetCompressID() const
+    NODISCARD uint32 compress_id() const
     {
         return compress_id_;
     }
 
-    NODISCARD uint32 GetDisplayID() const
+    NODISCARD uint32 display_id() const
     {
 #if NAME_PRESERVING_CASE_SENSITIVE
         return display_id_;
@@ -47,12 +47,12 @@ public:
 #endif
     }
 
-    NODISCARD bool IsNone() const
+    NODISCARD bool is_none() const
     {
         return compress_id_ == 0;
     }
 
-    NODISCARD int32 Compare(const NameEntryID& rhs) const
+    NODISCARD int32 compare(const NameEntryID& rhs) const
     {
         return static_cast<int32>(compress_id_ - rhs.compress_id_);
     }
@@ -90,69 +90,69 @@ namespace details
 class NameEntryPool
 {
 public:
-    static NameEntryPool& Get()
+    static NameEntryPool& get()
     {
         static NameEntryPool pool;
         return pool;
     }
 
     template<typename ViewType>
-    NameEntryID GetEntryID(const ViewType& view)
+    NameEntryID get_entry_id(const ViewType& view)
     {
 #if NAME_PRESERVING_CASE_SENSITIVE
-        NameEntryID entry_id(CalcCompressID(view), CalcDisplayID(view));
+        NameEntryID entry_id(calc_compress_id(view), calc_display_id(view));
 #else
         NameEntryID entry_id(CalcCompressID(view));
 #endif
-        if (!ContainsEntry(entry_id))
+        if (!contains_entry(entry_id))
         {
-            StoreEntry(entry_id, view);
+            store_entry(entry_id, view);
         }
 
         return entry_id;
     }
 
-    String GetEntry(const NameEntryID& entry_id) const
+    String get_entry(const NameEntryID& entry_id) const
     {
         std::shared_lock lock(mutex_);
-        if (const String* val = entry_map_.FindValue(entry_id.GetDisplayID()))
+        if (const String* val = entry_map_.find_value(entry_id.display_id()))
         {
             return *val;
         }
         return {};
     }
 
-    StringView GetEntryView(const NameEntryID& entry_id) const
+    StringView get_entry_view(const NameEntryID& entry_id) const
     {
         std::shared_lock lock(mutex_);
-        if (const String* val = entry_map_.FindValue(entry_id.GetDisplayID()))
+        if (const String* val = entry_map_.find_value(entry_id.display_id()))
         {
             return StringView(*val);
         }
         return {};
     }
 
-    bool ContainsEntry(const NameEntryID& entry_id) const
+    bool contains_entry(const NameEntryID& entry_id) const
     {
         std::shared_lock lock(mutex_);
-        return entry_map_.Contains(entry_id.GetDisplayID());
+        return entry_map_.contains(entry_id.display_id());
     }
 
 private:
     NameEntryPool() = default;
 
     template<typename ViewType>
-    void StoreEntry(const NameEntryID& entry_id, const ViewType& view)
+    void store_entry(const NameEntryID& entry_id, const ViewType& view)
     {
         std::unique_lock lock(mutex_);
-        if (!entry_map_.Contains(entry_id.GetDisplayID()))
+        if (!entry_map_.contains(entry_id.display_id()))
         {
-            entry_map_.Insert(entry_id.GetDisplayID(), String(view.data(), view.length()));
+            entry_map_.insert(entry_id.display_id(), String(view.data(), view.length()));
         }
     }
 
     template<typename ViewType>
-    uint32 CalcCompressID(ViewType view) const
+    uint32 calc_compress_id(ViewType view) const
     {
         if (view.length() <= MAX_ENTRY_LENGTH)
         {
@@ -161,19 +161,19 @@ private:
             char_type lower_case[MAX_ENTRY_LENGTH];
             for (size_type i = 0; i < view.length(); ++i)
             {
-                lower_case[i] = ToLower(view.at(i));
+                lower_case[i] = to_lower(view.at(i));
             }
-            return city_hash::CityHash32(reinterpret_cast<const char*>(lower_case), sizeof(char_type) / sizeof(char) * view.length());
+            return city_hash::city_hash32(reinterpret_cast<const char*>(lower_case), sizeof(char_type) / sizeof(char) * view.length());
         }
         return 0;
     }
 
     template<typename ViewType>
-    uint32 CalcDisplayID(ViewType view) const
+    uint32 calc_display_id(ViewType view) const
     {
         if (view.length() <= MAX_ENTRY_LENGTH)
         {
-            return city_hash::CityHash32(reinterpret_cast<const char*>(view.data()), sizeof(typename ViewType::value_type) / sizeof(char) * view.length());
+            return city_hash::city_hash32(reinterpret_cast<const char*>(view.data()), sizeof(typename ViewType::value_type) / sizeof(char) * view.length());
         }
         return 0;
     }

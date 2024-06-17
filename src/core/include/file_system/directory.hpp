@@ -4,10 +4,6 @@
 #pragma once
 
 #include "file_system/path.hpp"
-#include "string/string_name.hpp"
-#include "misc/delegate.hpp"
-
-#include <filesystem>
 
 namespace atlas
 {
@@ -19,22 +15,22 @@ public:
      * @brief Gets root directory of engine.
      * @return
      */
-    static Path GetEngineDirectory();
+    static Path get_engine_directory();
     /**
      * @brief Gets directory of engine module library.
      * @return
      */
-    static Path GetEngineModuleDirectory();
+    static Path get_engine_module_directory();
     /**
      * @brief Format module library directory by given path.
      * @return
      */
-    static Path GetModuleDirectory(const Path& search_path);
+    static Path get_module_directory(const Path& search_path);
     /**
      * @brief Gets directory of engine plugins.
      * @return
      */
-    static Path GetEnginePluginsDirectory();
+    static Path get_engine_plugins_directory();
 };
 
 }

@@ -24,30 +24,30 @@ public:
 
     virtual ~Engine() = default;
 
-    virtual void Startup(int argc, char** argv);
+    virtual void startup(int argc, char** argv);
 
-    virtual void Shutdown();
+    virtual void shutdown();
 
-    virtual void Loop();
+    virtual void loop();
 
-    virtual void RequestShutdown()
+    virtual void request_shutdown()
     {
         is_shutdown_requested_ = true;
     }
 
-    virtual bool IsShutdownRequested() const
+    virtual bool is_shutdown_requested() const
     {
         return is_shutdown_requested_;
     }
 
-    virtual void UpdateTickTime();
+    virtual void update_tick_time();
 
-    double GetDeletaTime() const{ return delta_time_; }
+    double get_delta_time() const{ return delta_time_; }
 
-    TickTaskManager* GetTickTaskManager() const { return tick_task_manager_.get(); }
+    TickTaskManager* get_tick_task_manager() const { return tick_task_manager_.get(); }
 
 protected:
-    void LoadProject();
+    void load_project();
 
     bool is_shutdown_requested_{ false };
 

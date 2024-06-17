@@ -22,17 +22,17 @@ namespace atlas
 
 CORE_API void lock_free_tag_counter_has_overflowed();
 
-CORE_API inline void lock_free_links_exhausted(uint32 total_num);
+CORE_API void lock_free_links_exhausted(uint32 total_num);
 
-CORE_API inline void* lock_free_alloc_links(size_t alloc_size);
+CORE_API void* lock_free_alloc_links(size_t alloc_size);
 
-CORE_API inline void lock_free_free_links(size_t alloc_size, void* ptr);
+CORE_API void lock_free_free_links(size_t alloc_size, void* ptr);
 
-CORE_API inline void* atomic_compare_exchange_pointer(void* volatile* dest, void* exchange, void* comparand);
+CORE_API void* atomic_compare_exchange_pointer(void* volatile* dest, void* exchange, void* comparand);
 
-CORE_API inline int64 atomic_compare_exchange(volatile int64* dest, int64 exchange, int64 comparand);
+CORE_API int64 atomic_compare_exchange(volatile int64* dest, int64 exchange, int64 comparand);
 
-CORE_API inline int64 atomic_read(volatile const int64* src);
+CORE_API int64 atomic_read(volatile const int64* src);
 
 template<typename T, uint32 MaxTotalItems, uint32 ItemsPerPage>
 class LockFreeAllocOnceIndexedAllocator
@@ -191,7 +191,7 @@ private:
 	uint64 ptrs_;
 };
 
-struct FIndexedLockFreeLink
+struct IndexedLockFreeLink
 {
     IndexedPointer double_next;
     void* payload;
@@ -203,15 +203,15 @@ struct LockFreeLinkPolicy
 {
     static constexpr int32 max_bits_in_link_ptr = MAX_LOCK_FREE_LINKS_AS_BITS;
     using index_pointer     = IndexedPointer;
-    using link_type         = FIndexedLockFreeLink;
+    using link_type         = IndexedLockFreeLink;
     using link_ptr_type     = uint32;
-    using allocator_type    = LockFreeAllocOnceIndexedAllocator<FIndexedLockFreeLink, MAX_LOCK_FREE_LINKS, 16384>;
+    using allocator_type    = LockFreeAllocOnceIndexedAllocator<IndexedLockFreeLink, MAX_LOCK_FREE_LINKS, 16384>;
 
-    static FIndexedLockFreeLink* deref_link(uint32 ptr)
+    static IndexedLockFreeLink* deref_link(uint32 ptr)
     {
         return link_allocator.get_item(ptr);
     }
-    static FIndexedLockFreeLink* index_to_link(uint32 index)
+    static IndexedLockFreeLink* index_to_link(uint32 index)
     {
         return link_allocator.get_item(index);
     }
@@ -382,7 +382,7 @@ private:
 };
 
 template<typename T, int32 PaddingForCacheContention, uint64 ABAInc = 1>
-class FLockFreePointerFIFOBase
+class LockFreePointerFIFOBase
 {
     using pointer_type  = T*;
     using index_pointer = LockFreeLinkPolicy::index_pointer;
@@ -390,7 +390,7 @@ class FLockFreePointerFIFOBase
     using link_ptr_type = LockFreeLinkPolicy::link_ptr_type;
 public:
 
-	FLockFreePointerFIFOBase()
+	LockFreePointerFIFOBase()
 	{
 		// We want to make sure we have quite a lot of extra counter values to avoid the ABA problem. This could probably be relaxed, but eventually it will be dangerous.
 		// The question is "how many queue operations can a thread starve for".
@@ -404,12 +404,12 @@ public:
 		tail_.set_ptr(stub);
 	}
 
-    FLockFreePointerFIFOBase(const FLockFreePointerFIFOBase&) = delete;
-    FLockFreePointerFIFOBase(FLockFreePointerFIFOBase&&) = delete;
-    FLockFreePointerFIFOBase& operator= (const FLockFreePointerFIFOBase&) = delete;
-    FLockFreePointerFIFOBase& operator= (FLockFreePointerFIFOBase&&) = delete;
+    LockFreePointerFIFOBase(const LockFreePointerFIFOBase&) = delete;
+    LockFreePointerFIFOBase(LockFreePointerFIFOBase&&) = delete;
+    LockFreePointerFIFOBase& operator= (const LockFreePointerFIFOBase&) = delete;
+    LockFreePointerFIFOBase& operator= (LockFreePointerFIFOBase&&) = delete;
 
-	~FLockFreePointerFIFOBase()
+	~LockFreePointerFIFOBase()
 	{
 		while (pop()) {};
 		LockFreeLinkPolicy::free_lock_free_link(head_.get_ptr());
@@ -505,7 +505,7 @@ public:
 	{
 		while (pointer_type item = pop())
 		{
-			out_array.Add(item);
+			out_array.add(item);
 		}
 	}
 

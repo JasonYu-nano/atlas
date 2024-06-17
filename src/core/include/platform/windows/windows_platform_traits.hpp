@@ -3,25 +3,21 @@
 
 #pragma once
 
-#include "file_system/path.hpp"
+#include "platform/generic_platform_traits.hpp"
 
 namespace atlas
 {
 
-class CORE_API WindowsPlatformTraits
+class CORE_API WindowsPlatformTraits : public GenericPlatformTraits
 {
 public:
     WindowsPlatformTraits() = delete;
 
-    static void* LoadDynamicLibrary(const Path& path);
-    static void FreeDynamicLibrary(void* module_handle);
-    static void* GetExportedSymbol(void* handle, const String& symbol_name);
-    static const Path& GetEngineDirectory();
-    static const Path& GetRelativeBuildDirectory();
-    static Path GetDynamicLibraryPath(const Path& module_dir, const class StringName& lib_name);
+    static void* load_library(const Path& path);
 
-private:
-    static Path GetEngineDirectoryImpl();
+    static void free_library(void* module_handle);
+
+    static void* get_exported_symbol(void* handle, const String& symbol_name);
 };
 
 using PlatformTraits = WindowsPlatformTraits;

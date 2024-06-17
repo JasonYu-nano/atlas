@@ -3,12 +3,12 @@
 
 #include "misc/cmd_options.hpp"
 
-atlas::CommandOption* atlas::CommandParser::GetOption(StringView name)
+atlas::CommandOption* atlas::CommandParser::get_option(StringView name)
 {
     size_t index = INDEX_NONE;
     if (name != "")
     {
-        index = options_.list.Find([&](auto&& opt) {
+        index = options_.list.find([&](auto&& opt) {
             return opt->name_ == name || opt->short_name_ == name;
         });
     }
@@ -16,7 +16,7 @@ atlas::CommandOption* atlas::CommandParser::GetOption(StringView name)
     return index == INDEX_NONE ? nullptr : options_.list[index];
 }
 
-void atlas::CommandParser::ParseCommandLineInternal(int32 argc, char** argv)
+void atlas::CommandParser::parse_command_line_internal(int32 argc, char** argv)
 {
     CommandOption* cmd_arg = nullptr;
     for (int i = 1; i < argc; i++)
@@ -28,7 +28,7 @@ void atlas::CommandParser::ParseCommandLineInternal(int32 argc, char** argv)
             // must be a program argument: "-" is an argument, not a flag
             if (cmd_arg)
             {
-                cmd_arg->Set(arg);
+                cmd_arg->set(arg);
                 cmd_arg = nullptr;
             }
             continue;
@@ -37,7 +37,7 @@ void atlas::CommandParser::ParseCommandLineInternal(int32 argc, char** argv)
         if (cmd_arg)
         {
             // option not follow an argument. set an empty value.
-            cmd_arg->Set();
+            cmd_arg->set();
             cmd_arg = nullptr;
         }
 
@@ -57,7 +57,7 @@ void atlas::CommandParser::ParseCommandLineInternal(int32 argc, char** argv)
         {
             // no equal sign found. it's a pure options.
             const int32 offset = arg[1] == '-' ? 2 : 1;
-            cmd_arg = GetOption(StringView(arg + offset, len - offset));
+            cmd_arg = get_option(StringView(arg + offset, len - offset));
         }
         else
         {
@@ -68,7 +68,7 @@ void atlas::CommandParser::ParseCommandLineInternal(int32 argc, char** argv)
             if (option.length() > 1)
             {
                 const int32 offset = option[1] == '-' ? 2 : 1;
-                cmd_arg = GetOption(StringView(option.data() + offset, option.length() - offset));
+                cmd_arg = get_option(StringView(option.data() + offset, option.length() - offset));
             }
         }
     }

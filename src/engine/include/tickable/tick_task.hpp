@@ -19,7 +19,7 @@ public:
      * @brief Called from task manager.
      * @param delta_time
      */
-    virtual void Execute(float delta_time) = 0;
+    virtual void execute(float delta_time) = 0;
 
     /**
      * @brief Determines whether the tick can be called from an asynchronous thread.
@@ -30,8 +30,8 @@ public:
      */
     bool allowed_tick_when_pause_{ false };
 protected:
-    virtual void RegisterSelf() = 0;
-    virtual void UnregisterSelf() = 0;
+    virtual void register_self() = 0;
+    virtual void unregister_self() = 0;
 };
 
 }// namespace atlas

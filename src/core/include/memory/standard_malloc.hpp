@@ -21,12 +21,12 @@ public:
 
     ~StandardMalloc() override = default;
 
-    void* Malloc(size_t size) override
+    void* malloc(size_t size) override
     {
         return std::malloc(size);
     }
 
-    void* AlignedMalloc(size_t size, size_t alignment) override
+    void* aligned_malloc(size_t size, size_t alignment) override
     {
 #if PLATFORM_WINDOWS
         return ::_aligned_malloc(size, alignment);
@@ -38,12 +38,12 @@ public:
 #endif
     }
 
-    void* Realloc(void* ptr, size_t new_size) override
+    void* realloc(void* ptr, size_t new_size) override
     {
         return std::realloc(ptr, new_size);
     }
 
-    void* AlignedRealloc(void *ptr, size_t new_size, size_t alignment) override
+    void* aligned_realloc(void *ptr, size_t new_size, size_t alignment) override
     {
 #if PLATFORM_WINDOWS
         return ::_aligned_realloc(ptr, new_size, alignment);
@@ -53,19 +53,19 @@ public:
         if (ptr == nullptr)
         {
             // if ptr is nullptr, treat it as malloc
-            return AlignedMalloc(new_size, alignment);
+            return aligned_malloc(new_size, alignment);
         }
 
         if (new_size == 0)
         {
             // if new size is 0, treat it as free
-            AlignedFree(ptr);
+            aligned_free(ptr);
             return nullptr;
         }
 
         // allocate a new block with the desired alignment
         void* new_ptr;
-        new_ptr = AlignedMalloc(new_size, alignment);
+        new_ptr = aligned_malloc(new_size, alignment);
         if (new_ptr == nullptr)
         {
             // allocation failed
@@ -77,18 +77,18 @@ public:
         std::memcpy(new_ptr, ptr, copy_size);
 
         // free the old block
-        AlignedFree(ptr);
+        aligned_free(ptr);
 
         return new_ptr;
 #endif
     }
 
-    void Free(void* ptr) override
+    void free(void* ptr) override
     {
         std::free(ptr);
     }
 
-    void AlignedFree(void *ptr) override
+    void aligned_free(void *ptr) override
     {
 #if PLATFORM_WINDOWS
         ::_aligned_free(ptr);

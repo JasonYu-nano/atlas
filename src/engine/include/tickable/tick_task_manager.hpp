@@ -12,27 +12,27 @@ namespace atlas
 class ENGINE_API TickTaskManager
 {
 public:
-    void AddTask(TickTask* task)
+    void add_task(TickTask* task)
     {
         if (task)
         {
-            task_set_.Insert(task);
+            task_set_.insert(task);
         }
     }
 
-    void RemoveTask(TickTask* task)
+    void remove_task(TickTask* task)
     {
         if (task)
         {
-            task_set_.Remove(task);
+            task_set_.remove(task);
         }
     }
 
-    void Tick(float delta_time)
+    void tick(float delta_time)
     {
         for (auto task : task_set_)
         {
-            task->Execute(delta_time);
+            task->execute(delta_time);
         }
     }
 

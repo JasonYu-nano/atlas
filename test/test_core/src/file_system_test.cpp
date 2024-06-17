@@ -18,11 +18,11 @@ TEST(FileSystemTest, PathTest)
     }
     {
         Path path("c:/user/atlas");
-        EXPECT_TRUE(path.MakePreferred() == Path("c:\\user\\atlas"));
+        EXPECT_TRUE(path.make_preferred() == Path("c:\\user\\atlas"));
     }
     {
         Path path("c:\\user/atlas/..////game/./");
-        Path npath = path.Normalize();
+        Path npath = path.normalize();
         EXPECT_TRUE(npath == Path("c:\\user\\game\\"));
     }
 #else
@@ -33,11 +33,11 @@ TEST(FileSystemTest, PathTest)
     }
     {
         Path path("\\user\\atlas");
-        EXPECT_TRUE(path.MakePreferred() == Path("/user/atlas"));
+        EXPECT_TRUE(path.make_preferred() == Path("/user/atlas"));
     }
     {
         Path path("\\user/atlas/..////game/./");
-        Path npath = path.Normalize();
+        Path npath = path.normalize();
         EXPECT_TRUE(npath == Path("/user/game/"));
     }
 #endif

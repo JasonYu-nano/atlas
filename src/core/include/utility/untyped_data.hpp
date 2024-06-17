@@ -28,8 +28,8 @@ template <typename T>
 struct UntypedData : private AlignedBytes<sizeof(T), alignof(T)>
 {
     using value_type = T;
-    value_type* GetData() { return (value_type*)this; }
-    const value_type* GetData() const { return (value_type*)this; }
+    value_type* data() { return (value_type*)this; }
+    const value_type* data() const { return (value_type*)this; }
 };
 
 }

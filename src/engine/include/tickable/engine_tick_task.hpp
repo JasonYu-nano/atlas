@@ -21,22 +21,22 @@ public:
     explicit EngineTickTask(const OnEngineTick& delegate) : base(), tick_delegate_(delegate)
     {
         allowed_tick_when_pause_ = true;
-        EngineTickTask::RegisterSelf();
+        EngineTickTask::register_self();
     }
 
     ~EngineTickTask() override
     {
-        EngineTickTask::UnregisterSelf();
+        EngineTickTask::unregister_self();
     }
 
-    void Execute(float delta_time) override
+    void execute(float delta_time) override
     {
-        tick_delegate_.ExecuteSafe(delta_time);
+        tick_delegate_.execute_safe(delta_time);
     }
 
 protected:
-    void RegisterSelf() override;
-    void UnregisterSelf() override;
+    void register_self() override;
+    void unregister_self() override;
 
     OnEngineTick tick_delegate_;
 };

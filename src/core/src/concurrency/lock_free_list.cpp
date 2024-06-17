@@ -1,8 +1,12 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
+#include <thread>
+
 #include "concurrency/lock_free_list.hpp"
+#if PLATFORM_WINDOWS
 #include "platform/windows/windows_minimal_api.hpp"
+#endif
 
 namespace atlas
 {
@@ -19,18 +23,21 @@ void lock_free_links_exhausted(uint32 total_num)
 
 void* lock_free_alloc_links(size_t alloc_size)
 {
-    return Memory::Malloc(alloc_size);
+    return Memory::malloc(alloc_size);
 }
 
 void lock_free_free_links(size_t alloc_size, void* ptr)
 {
-    Memory::Free(ptr);
+    Memory::free(ptr);
 }
 
 void* atomic_compare_exchange_pointer(void* volatile* dest, void* exchange, void* comparand)
 {
 #if PLATFORM_WINDOWS
     return ::_InterlockedCompareExchangePointer(dest, exchange, comparand);
+#elif PLATFORM_APPLE
+    __atomic_compare_exchange_n(dest, &comparand, exchange, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+    return comparand;
 #endif
 }
 
@@ -38,15 +45,22 @@ int64 atomic_compare_exchange(volatile int64* dest, int64 exchange, int64 compar
 {
 #if PLATFORM_WINDOWS
     return ::_InterlockedCompareExchange64(dest, exchange, comparand);
+#elif PLATFORM_APPLE
+    __atomic_compare_exchange_n(dest, &comparand, exchange, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+    return comparand;
 #endif
 }
 
 int64 atomic_read(volatile const int64* src)
 {
+#if PLATFORM_WINDOWS
     return atomic_compare_exchange(const_cast<int64*>(src), 0, 0);
+#elif PLATFORM_APPLE
+    return __atomic_load_n(src, __ATOMIC_SEQ_CST);
+#endif
 }
 
-static uint32 AllocTlsSlot()
+static uint32 alloc_tls_slot()
 {
 #if PLATFORM_WINDOWS
     return ::TlsAlloc();
@@ -55,14 +69,14 @@ static uint32 AllocTlsSlot()
 #endif
 }
 
-static void FreeTlsSlot(uint32 slot)
+static void free_tls_slot(uint32 slot)
 {
 #if PLATFORM_WINDOWS
     ::TlsFree(slot);
 #endif
 }
 
-static void* GetTlsValue(uint32 slot)
+static void* get_tls_value(uint32 slot)
 {
 #if PLATFORM_WINDOWS
     return ::TlsGetValue(slot);
@@ -71,7 +85,7 @@ static void* GetTlsValue(uint32 slot)
 #endif
 }
 
-static void SetTlsValue(uint32 slot, void* value)
+static void set_tls_value(uint32 slot, void* value)
 {
 #if PLATFORM_WINDOWS
 	::TlsSetValue(slot, value);
@@ -90,13 +104,13 @@ public:
 	LockFreeLinkAllocator_TLSCache()
 	{
 		// check(IsInGameThread());
-		tls_slot_ = AllocTlsSlot();
+		tls_slot_ = alloc_tls_slot();
 		// check(FPlatformTLS::IsValidTlsSlot(TlsSlot));
 	}
 	/** Destructor, leaks all of the memory **/
 	~LockFreeLinkAllocator_TLSCache()
 	{
-		FreeTlsSlot(tls_slot_);
+		free_tls_slot(tls_slot_);
 		tls_slot_ = 0;
 	}
 
@@ -111,9 +125,9 @@ public:
 	* @return Pointer to the allocated memory.
 	* @see Free
 	*/
-	link_ptr_type Pop()
+	link_ptr_type pop()
 	{
-		FThreadLocalCache& tls = GetTLS();
+		ThreadLocalCache& tls = get_tls();
 
 		if (!tls.partial_bundle)
 		{
@@ -156,9 +170,9 @@ public:
 	* @param item The item to free.
 	* @see Allocate
 	*/
-	void Push(link_ptr_type item)
+	void push(link_ptr_type item)
 	{
-		FThreadLocalCache& tls = GetTLS();
+		ThreadLocalCache& tls = get_tls();
 		if (tls.num_partial >= per_bundle_size_)
 		{
 			if (tls.full_bundle)
@@ -181,13 +195,13 @@ public:
 private:
 
 	/** struct for the TLS cache. */
-	struct FThreadLocalCache
+	struct ThreadLocalCache
 	{
 		link_ptr_type full_bundle;
 		link_ptr_type partial_bundle;
 		int32 num_partial;
 
-		FThreadLocalCache()
+		ThreadLocalCache()
 			: full_bundle(0)
 			, partial_bundle(0)
 			, num_partial(0)
@@ -195,14 +209,14 @@ private:
 		}
 	};
 
-	FThreadLocalCache& GetTLS()
+	ThreadLocalCache& get_tls()
 	{
 		// checkSlow(FPlatformTLS::IsValidTlsSlot(TlsSlot));
-		FThreadLocalCache* tls = (FThreadLocalCache*)GetTlsValue(tls_slot_);
+		ThreadLocalCache* tls = (ThreadLocalCache*)get_tls_value(tls_slot_);
 		if (!tls)
 		{
-			tls = new FThreadLocalCache();
-			SetTlsValue(tls_slot_, tls);
+			tls = new ThreadLocalCache();
+			set_tls_value(tls_slot_, tls);
 		}
 		return *tls;
 	}
@@ -214,7 +228,7 @@ private:
 	LockFreePointerListLIFORoot<PLATFORM_CACHE_LINE_SIZE> global_free_list_bundles_;
 };
 
-static LockFreeLinkAllocator_TLSCache& GetLockFreeAllocator()
+static LockFreeLinkAllocator_TLSCache& get_lock_free_allocator()
 {
 	// make memory that will not go away, a replacement for TLazySingleton, which will still get destructed
 	alignas(LockFreeLinkAllocator_TLSCache) static unsigned char data[sizeof(LockFreeLinkAllocator_TLSCache)];
@@ -229,7 +243,7 @@ static LockFreeLinkAllocator_TLSCache& GetLockFreeAllocator()
 
 uint32 LockFreeLinkPolicy::alloc_lock_free_link()
 {
-    LockFreeLinkPolicy::link_ptr_type result = GetLockFreeAllocator().Pop();
+    LockFreeLinkPolicy::link_ptr_type result = get_lock_free_allocator().pop();
     // this can only really be a mem stomp
     ASSERT(result && !LockFreeLinkPolicy::deref_link(result)->double_next.get_ptr() && !LockFreeLinkPolicy::deref_link(result)->payload && !LockFreeLinkPolicy::deref_link(result)->single_next);
     return result;
@@ -237,7 +251,7 @@ uint32 LockFreeLinkPolicy::alloc_lock_free_link()
 
 void LockFreeLinkPolicy::free_lock_free_link(uint32 item)
 {
-    GetLockFreeAllocator().Push(item);
+    get_lock_free_allocator().push(item);
 }
 
 LockFreeLinkPolicy::allocator_type LockFreeLinkPolicy::link_allocator;

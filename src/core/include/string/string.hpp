@@ -43,7 +43,6 @@ struct FoldCaseUnsafeSwitcher<T, false, true>
 template<typename CharType, int32>
 struct FoldCaseUnsafeImpl
 {
-public:
     CharType operator() (const CharType ch, const std::locale& loc)
     {
         return std::tolower(ch, loc);
@@ -53,7 +52,6 @@ public:
 template<typename CharType>
 struct FoldCaseUnsafeImpl<CharType, 1>
 {
-public:
     CharType operator() (const CharType ch, const std::locale& loc)
     {
         return static_cast<CharType>(std::tolower(static_cast<char>(ch), loc));
@@ -63,7 +61,6 @@ public:
 template<typename CharType>
 struct FoldCaseUnsafeImpl<CharType, 2>
 {
-public:
     CharType operator() (const CharType ch, const std::locale& loc)
     {
         return static_cast<CharType>(std::tolower(static_cast<wchar_t>(ch), loc));
@@ -97,20 +94,20 @@ private:
 template<typename CharTraits, typename SizeType>
 class StringVal
 {
-    using char_type = CharTraits::char_type;
+    using char_type = typename CharTraits::char_type;
 public:
-    static constexpr size_t INLINE_SIZE = (16 / sizeof(char_type) < 1) ? 1 : 16 / sizeof(char_type);
+    static constexpr size_t inline_size_ = (16 / sizeof(char_type) < 1) ? 1 : 16 / sizeof(char_type);
 
-    bool LargeStringEngaged() const { return INLINE_SIZE <= capacity_; }
-    char_type* GetPtr() { return LargeStringEngaged() ? u_.ptr_ : u_.buffer_; }
-    const char_type* GetPtr() const { return LargeStringEngaged() ? u_.ptr_ : u_.buffer_; }
+    bool large_string_engaged() const { return inline_size_ <= capacity_; }
+    char_type* get_ptr() { return large_string_engaged() ? u_.ptr_ : u_.buffer_; }
+    const char_type* get_ptr() const { return large_string_engaged() ? u_.ptr_ : u_.buffer_; }
 
     SizeType size_{ 0 };
-    SizeType capacity_{ INLINE_SIZE - 1 };
+    SizeType capacity_{ inline_size_ - 1 };
 
     union UnionBuffer
     {
-        char_type buffer_[INLINE_SIZE];
+        char_type buffer_[inline_size_];
         char_type* ptr_;
     } u_;
 };
@@ -129,151 +126,192 @@ enum class ECaseSensitive : uint8
 class CORE_API String
 {
 public:
-    using value_type = char;
-    using char_traits = std::char_traits<value_type>;
-    using allocator_type = HeapAllocator<value_type>;
-    using allocator_traits = AllocatorTraits<allocator_type>;
-    using size_type = allocator_traits::size_type;
-    using view_type = BasicStringView<value_type>;
-    using pointer = value_type*;
-    using const_pointer = const value_type*;
-    using iterator = PointerIterator<value_type>;
-    using const_iterator = ConstPointerIterator<value_type>;
-    using reverse_iterator = std::reverse_iterator<iterator>;
-    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+    using value_type                = char;
+    using char_traits               = std::char_traits<value_type>;
+    using allocator_type            = HeapAllocator<value_type>;
+    using allocator_traits          = AllocatorTraits<allocator_type>;
+    using size_type                 = allocator_traits::size_type;
+    using view_type                 = BasicStringView<value_type>;
+    using pointer                   = value_type*;
+    using const_pointer             = const value_type*;
+    using iterator                  = PointerIterator<value_type>;
+    using const_iterator            = ConstPointerIterator<value_type>;
+    using reverse_iterator          = std::reverse_iterator<iterator>;
+    using const_reverse_iterator    = std::reverse_iterator<const_iterator>;
 
 private:
-    using val_type = details::StringVal<char_traits, size_type>;
-    using param_type = typename CallTraits<value_type>::param_type;
+    using val_type                  = details::StringVal<char_traits, size_type>;
+    using param_type                = CallTraits<value_type>::param_type;
 
 public:
-    String() noexcept { Eos(0); }
+    String() noexcept { eos(0); }
+    /** Constructor from a character.
+     * @brief
+     * @param ch
+     */
     explicit String(value_type ch)
     {
-        Construct(ch, 1);
+        construct(ch, 1);
     }
-
+    /** Constructor from given count characters.
+     * @brief 
+     * @param ch
+     * @param count 
+     */
     String(value_type ch, size_type count)
     {
-        Construct(ch, count);
+        construct(ch, count);
     }
-
+    /**
+     * @brief Constructor from character pointer.
+     * @param str
+     */
     String(const_pointer str)
     {
-        Construct(str, ConvertSize(char_traits::length(str)));
+        construct(str, convert_size(char_traits::length(str)));
     }
+    /**
+     * @brief Constructor from character pointer.
+     * @param str
+     * @param length
+     */
     String(const_pointer str, size_type length)
     {
-        Construct(str, length);
+        construct(str, length);
     }
+    /**
+     * @brief Constructor from string view.
+     * @param view
+     */
     explicit String(BasicStringView<value_type> view)
     {
-        Construct(view.data(), view.length());
+        construct(view.data(), view.length());
     }
-
+    /**
+     * @brief Copy constructor.
+     * @param right
+     */
     String(const String& right)
     {
-        Construct(right, 0, MaxSize());
-    }
-    String(const String& right, size_type offset, size_type size = MaxSize())
-    {
-        Construct(right, offset, size);
-    }
-    String(String&& right) noexcept : pair_(OneThenVariadicArgs(), std::move(right.GetAlloc())
-        , std::exchange(right.GetVal().size_, 0)
-        , std::exchange(right.GetVal().capacity_, 0)
-        , std::exchange(right.GetVal().u_, val_type::UnionBuffer()))
-    {}
-    String(String&& right, size_type offset, size_type size = MaxSize()) noexcept
-    {
-        MoveConstruct(right, offset, size);
+        construct(right, 0, max_size());
     }
 
-    ~String() noexcept;
+    /**
+     * @brief Copy constructor.
+     * @param right
+     * @param offset
+     * @param size
+     */
+    String(const String& right, size_type offset, size_type size = max_size())
+    {
+        construct(right, offset, size);
+    }
+    /**
+     * @brief Move constructor.
+     * @param right
+     */
+    String(String&& right) noexcept : pair_(OneThenVariadicArgs(), std::move(right.get_alloc())
+                                            , std::exchange(right.get_val().size_, 0)
+                                            , std::exchange(right.get_val().capacity_, 0)
+                                            , std::exchange(right.get_val().u_, val_type::UnionBuffer()))
+    {}
+    String(String&& right, size_type offset, size_type size = max_size()) noexcept
+    {
+        move_construct(right, offset, size);
+    }
+
+    ~String() noexcept
+    {
+        auto&& my_val = get_val();
+        if (my_val.large_string_engaged())
+        {
+            allocator_traits::deallocate(get_alloc(), my_val.get_ptr(), my_val.capacity_ + 1);
+        }
+        my_val.size_ = 0;
+        my_val.capacity_ = val_type::inline_size_ - 1;
+    }
 
     String& operator= (const String& right)
     {
-        Assign(right.Data(), right.Length());
+        assign(right.data(), right.length());
         return *this;
     }
     String& operator= (String&& right) noexcept
     {
-        MoveAssign(right);
+        move_assign(right);
         return *this;
     }
     String& operator= (const_pointer right)
     {
-        Assign(right, char_traits::length(right));
+        assign(right, char_traits::length(right));
         return *this;
     }
     String& operator= (view_type right)
     {
-        Assign(right.data(), right.length());
+        assign(right.data(), right.length());
         return *this;
     }
 
     operator view_type() const
     {
-        return {Data(), Length()};
+        return {data(), length()};
     }
 
-    bool operator== (const String& right) const { return Equals(right, ECaseSensitive::Sensitive); }
-    bool operator!= (const String& right) const { return !Equals(right, ECaseSensitive::Sensitive); }
-    bool operator< (const String& right) const  { return Compare(right, ECaseSensitive::Sensitive) < 0; }
-    bool operator> (const String& right) const  { return Compare(right, ECaseSensitive::Sensitive) > 0; }
+    bool operator== (const String& right) const { return equals(right, ECaseSensitive::Sensitive); }
+    bool operator!= (const String& right) const { return !equals(right, ECaseSensitive::Sensitive); }
+    bool operator< (const String& right) const  { return compare(right, ECaseSensitive::Sensitive) < 0; }
+    bool operator> (const String& right) const  { return compare(right, ECaseSensitive::Sensitive) > 0; }
 
     value_type& operator[] (size_type index)
     {
-        ASSERT(IsValidIndex(index));
-        return GetVal().GetPtr()[index];
+        ASSERT(is_valid_index(index));
+        return get_val().get_ptr()[index];
     }
     value_type operator[] (size_type index) const
     {
-        ASSERT(IsValidIndex(index));
-        return GetVal().GetPtr()[index];
+        ASSERT(is_valid_index(index));
+        return get_val().get_ptr()[index];
     }
 
     String operator+ (value_type ch) const
     {
-        return Concat(view_type(&ch, 1));
+        return concat(view_type(&ch, 1));
     }
 
     String operator+ (const_pointer ptr) const
     {
-        return Concat(ptr);
+        return concat(ptr);
     }
 
     template<std::ranges::contiguous_range Range>
     String operator+ (const Range& range) const
     {
-        return Concat(range);
+        return concat(range);
     }
 
     String& operator+= (value_type ch)
     {
-        return Append(view_type(&ch, 1));
+        return append(view_type(&ch, 1));
     }
 
     String& operator+= (const_pointer ptr)
     {
-        return Append(ptr);
+        return append(ptr);
     }
 
     template<std::ranges::contiguous_range Range>
     String& operator+= (const Range& range)
     {
-        return Append(range);
+        return append(range);
     }
 
-    NODISCARD inline pointer Data()                    { return GetVal().GetPtr(); }
-    NODISCARD inline const_pointer Data() const         { return GetVal().GetPtr(); }
-    NODISCARD DO_NOT_USE_DIRECTLY inline pointer data()                    { return GetVal().GetPtr(); }
-    NODISCARD DO_NOT_USE_DIRECTLY inline const_pointer data() const         { return GetVal().GetPtr(); }
+    NODISCARD pointer data()                            { return get_val().get_ptr(); }
+    NODISCARD const_pointer data() const                { return get_val().get_ptr(); }
 
-    NODISCARD iterator begin()                          { return iterator(Data()); }
-    NODISCARD const_iterator begin() const              { return const_iterator(Data()); }
-    NODISCARD iterator end()                            { return iterator(Data() + Length()); }
-    NODISCARD const_iterator end() const                { return const_iterator(Data() + Length()); }
+    NODISCARD iterator begin()                          { return iterator(data()); }
+    NODISCARD const_iterator begin() const              { return const_iterator(data()); }
+    NODISCARD iterator end()                            { return iterator(data() + length()); }
+    NODISCARD const_iterator end() const                { return const_iterator(data() + length()); }
 
     NODISCARD reverse_iterator rbegin()                 { return reverse_iterator(end()); }
     NODISCARD const_reverse_iterator rbegin() const     { return const_reverse_iterator(end()); }
@@ -289,46 +327,41 @@ public:
      * @brief Gets the number of characters in the current string.
      * @return
      */
-    size_type Length() const { return GetVal().size_; }
+    size_type length() const { return get_val().size_; }
     /**
      * @brief Gets the number of characters in the current string.
      * @return
      */
-    size_type Size() const { return GetVal().size_; }
-    /**
-     * @brief To implement std::sized_range, avoid direct usage.
-     * @return
-     */
-    DO_NOT_USE_DIRECTLY size_type size() const { return Size(); }
+    size_type size() const { return get_val().size_; }
 
-    DO_NOT_USE_DIRECTLY constexpr size_type max_size() { return MaxSize(); }
+    constexpr static size_t max_size() { return std::numeric_limits<size_t>::max() - 1; }
     /**
      * @brief Check if the string is empty.
      * @return
      */
-    NODISCARD bool IsEmpty() const
+    NODISCARD bool is_empty() const
     {
-        auto&& my_val = GetVal();
+        auto&& my_val = get_val();
         return my_val.size_ <= 0;
     }
     /**
      * @brief Get the number of code points contained in the string.
      * @return
      */
-    NODISCARD size_type Count() const;
+    NODISCARD size_type count() const;
 
     /**
      * @brief Get the capacity of the current string.
      * @return
      */
-    size_type Capacity() const { return GetVal().capacity_; }
+    size_type capacity() const { return get_val().capacity_; }
 
     /**
      * @brief Get code point by offset.
      * @param offset
      * @return
      */
-    NODISCARD CodePoint CodePointAt(std::make_unsigned_t<size_type> offset) const;
+    NODISCARD CodePoint code_point_at(std::make_unsigned_t<size_type> offset) const;
 
     /**
      * @brief Determines whether this instance and another specified string have the same value.
@@ -336,9 +369,9 @@ public:
      * @param case_sensitive
      * @return
      */
-    NODISCARD bool Equals(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    NODISCARD bool equals(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return Compare(right, case_sensitive) == 0;
+        return compare(right, case_sensitive) == 0;
     }
 
     /**
@@ -347,113 +380,166 @@ public:
      * @param case_sensitive
      * @return Positive number if larger than another string.
      */
-    NODISCARD int32 Compare(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    NODISCARD int32 compare(const String& right, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
 
     /**
      * @brief If new capacity is greater than the current capacity, new storage is allocated, and capacity is made equal or greater than new capacity.
      * @param capacity
      */
-    void Reserve(size_type capacity)
+    void reserve(size_type capacity)
     {
-        if (capacity > GetVal().capacity_)
+        if (capacity > get_val().capacity_)
         {
-            Reallocate(capacity);
+            reallocate(capacity);
         }
     }
 
-    NODISCARD bool IsValidIndex(size_type index) const { return index < Length(); }
+    NODISCARD bool is_valid_index(size_type index) const
+    {
+        return index < length();
+    }
 
     /**
      * @brief Fold the current string.
-     * @param locale
      * @return A new string.
      */
-    NODISCARD String FoldCase() const;
+    NODISCARD String fold_case() const;
 
     /**
      * @brief Check if the string is uppercase in specified locale.
      * @param locale
      * @return
      */
-    NODISCARD bool IsUpper(const std::locale& locale = locale::DefaultLocale()) const;
+    NODISCARD bool is_upper(const std::locale& locale = locale::default_locale()) const
+    {
+        return to_upper(locale) == *this;
+    }
     /**
      * @brief Translate the current string to uppercase.
      * @param locale
      * @return A new uppercase string.
      */
-    NODISCARD String ToUpper(const std::locale& locale = locale::DefaultLocale()) const;
+    NODISCARD String to_upper(const std::locale& locale = locale::default_locale()) const;
     /**
      * @brief Check if the string is lowercase in specified locale.
      * @param locale
      * @return
      */
-    NODISCARD bool IsLower(const std::locale& locale = locale::DefaultLocale()) const;
+    NODISCARD bool is_lower(const std::locale& locale = locale::default_locale()) const
+    {
+        return to_lower(locale) == *this;
+    }
     /**
      * @brief Translate the current string to lowercase.
      * @param locale
      * @return A new lowercase string.
      */
-    NODISCARD String ToLower(const std::locale& locale = locale::DefaultLocale()) const;
+    NODISCARD String to_lower(const std::locale& locale = locale::default_locale()) const;
     NODISCARD std::string ToStdString() const
     {
-        return { Data(), Length() };
+        return { data(), length() };
     }
-    NODISCARD std::wstring ToWide() const;
-    NODISCARD std::u16string ToUtf16() const;
-    NODISCARD std::u32string ToUtf32() const;
+    /**
+     * @brief Converts to wide string.
+     * @return
+     */
+    NODISCARD std::wstring to_wide() const;
+    /**
+     * @brief Converts utf-16.
+     * @return
+     */
+    NODISCARD std::u16string to_utf16() const;
+    /**
+     * @brief Converts utf-32.
+     * @return
+     */
+    NODISCARD std::u32string to_utf32() const;
+    /**
+     * @brief Appends the specified characters to the current string.
+     * @param ch
+     * @return
+     */
+    String& append(value_type ch)  { return append(view_type(&ch, 1)); }
+    /**
+     * @brief Appends the specified string to the current string.
+     * @param str
+     * @return Current string
+     */
+    String& append(const_pointer str)  { return append(view_type(str)); }
+    /**
+     * @brief Appends the specified range to the current string.
+     * @tparam RangeType
+     * @param range
+     * @return Current string
+     */
+    template<std::ranges::contiguous_range RangeType>
+    String& append(const RangeType& range)
+    {
+        size_type len = length();
+        size_type increase_size = convert_size(range.size());
+        auto&& my_val = get_val();
+        if (increase_size > my_val.capacity_ - my_val.size_)
+        {
+            reallocate_growth(increase_size);
+        }
+        else
+        {
+            eos(len + increase_size);
+        }
 
+        char_traits::copy(my_val.get_ptr() + len, reinterpret_cast<const_pointer>(range.data()), increase_size);
+        return *this;
+    }
     /**
-     * @brief Append the specified characters to the current string.
+     * @brief Prepends the specified characters to the current string.
      * @param ch
      * @return
      */
-    String& Append(value_type ch)  { return Append(view_type(&ch, 1)); }
+    String& prepend(value_type ch) { return prepend(view_type(&ch, 1)); }
     /**
-     * @brief Append the specified string to the current string.
+     * @brief Prepends the specified string to the current string.
      * @param str
      * @return Current string
      */
-    String& Append(const_pointer str)  { return Append(view_type(str)); }
+    String& prepend(const_pointer str) { return prepend(view_type(str)); }
     /**
-     * @brief Append the specified range to the current string.
+     * @brief Prepends the specified range to the current string.
      * @tparam RangeType
      * @param range
      * @return Current string
      */
     template<std::ranges::contiguous_range RangeType>
-    String& Append(const RangeType& range);
-    /**
-     * @brief Prepend the specified characters to the current string.
-     * @param ch
-     * @return
-     */
-    String& Prepend(value_type ch) { return Prepend(view_type(&ch, 1)); }
-    /**
-     * @brief Prepend the specified string to the current string.
-     * @param str
-     * @return Current string
-     */
-    String& Prepend(const_pointer str) { return Prepend(view_type(str)); }
-    /**
-     * @brief Prepend the specified range to the current string.
-     * @tparam RangeType
-     * @param range
-     * @return Current string
-     */
-    template<std::ranges::contiguous_range RangeType>
-    String& Prepend(const RangeType& range);
+    String& prepend(const RangeType& range)
+    {
+        size_type len = length();
+        size_type increase_size = convert_size(range.size());
+        auto&& my_val = get_val();
+        if (increase_size > my_val.capacity_ - my_val.size_)
+        {
+            reallocate_growth(increase_size);
+        }
+        else
+        {
+            eos(len + increase_size);
+        }
+
+        pointer ptr = my_val.get_ptr();
+        char_traits::move(ptr + increase_size, ptr, len);
+        char_traits::copy(ptr, reinterpret_cast<const_pointer>(range.data()), increase_size);
+        return *this;
+    }
     /**
      * @brief Concatenates specified const string and characters.
      * @param ch
      * @return
      */
-    NODISCARD String Concat(value_type ch) const { return Concat(view_type(&ch, 1)); }
+    NODISCARD String concat(value_type ch) const { return concat(view_type(&ch, 1)); }
     /**
      * @brief Concatenates two specified const string.
      * @param str
      * @return A new string
      */
-    NODISCARD String Concat(const_pointer str) const { return Concat(view_type(str)); }
+    NODISCARD String concat(const_pointer str) const { return concat(view_type(str)); }
     /**
      * @brief Concatenate the current string with the specified range.
      * @tparam RangeType
@@ -461,63 +547,117 @@ public:
      * @return A new string
      */
     template<std::ranges::contiguous_range RangeType>
-    NODISCARD String Concat(const RangeType& range) const;
+    NODISCARD String concat(const RangeType& range) const
+    {
+        size_type len = length();
+        size_type increase_size = convert_size(range.size());
+        if (increase_size > max_size() - len)
+        {
+            ASSERT(0);
+            increase_size = max_size() - len;
+        }
+
+        size_type new_length = len + increase_size;
+
+        String result;
+        result.reserve(new_length);
+
+        pointer ptr = result.data();
+        char_traits::copy(ptr, data(), len);
+        char_traits::copy(ptr + len, reinterpret_cast<const_pointer>(range.data()), increase_size);
+        result.eos(new_length);
+
+        return result;
+    }
     /**
-     * @brief Insert the specified string into the current string.
+     * @brief Inserts the specified string into the current string.
      * @param offset
      * @param str
      * @return Current string
      */
-    String& Insert(size_type offset, const_pointer str) { return Insert(cbegin() + offset, view_type(str)); }
+    String& insert(size_type offset, const_pointer str) { return insert(cbegin() + offset, view_type(str)); }
     /**
-     * @brief Insert the specified range into the current string.
+     * @brief Inserts the specified range into the current string.
      * @tparam RangeType
      * @param where
      * @param range
      * @return Current string
      */
     template<std::ranges::contiguous_range RangeType>
-    String& Insert(const const_iterator& where, const RangeType& range);
+    String& insert(const const_iterator& where, const RangeType& range)
+    {
+        ASSERT(where >= cbegin() && where <= cend());
+        auto&& my_val = get_val();
+        size_type increase_size = convert_size(range.size());
+        size_type offset = convert_size(std::distance(cbegin(), where));
+        size_type length = my_val.size_;
 
+        if (increase_size > my_val.capacity_ - my_val.size_)
+        {
+            reallocate_growth(increase_size);
+        }
+
+        pointer ptr = my_val.get_ptr() + offset;
+        char_traits::move(ptr + increase_size, ptr, length - offset);
+        char_traits::copy(ptr, reinterpret_cast<const_pointer>(range.data()), increase_size);
+
+        return *this;
+    }
     /**
-     * @brief Remove a specified number of characters from the specified position.
+     * @brief Removes a specified number of characters from the specified position.
      * @param from
      * @param count
      * @return Current string
      */
-    String& Remove(size_type from, size_type count);
+    String& remove(size_type from, size_type count);
     /**
-     * @brief Remove all specified strings from the current string.
+     * @brief Removes all specified strings from the current string.
      * @param str
      * @param case_sensitive
      * @return
      */
-    String& Remove(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive)
+    String& remove(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive)
     {
-        return Remove(view_type(str), case_sensitive);
+        return remove(view_type(str), case_sensitive);
     }
     /**
-     * @brief Remove all specified ranges from the current string.
+     * @brief Removes all specified ranges from the current string.
      * @tparam RangeType
      * @param range
      * @param case_sensitive
      * @return
      */
     template<std::ranges::sized_range RangeType>
-    String& Remove(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive);
+    String& remove(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive)
+    {
+        size_type index = 0;
+        size_type size = convert_size(range.size());
+        do
+        {
+            index = find(range, index, case_sensitive);
+            if (index == INDEX_NONE)
+            {
+                break;
+            }
+
+            remove(index, size);
+
+        } while (true);
+        return *this;
+    }
     /**
-     * @brief Replace specified number of characters in the current instance with another specified string.
+     * @brief Replaces specified number of characters in the current instance with another specified string.
      * @param from
      * @param count
      * @param new_value
      * @return
      */
-    String& Replace(size_type from, size_type count, const_pointer new_value)
+    String& replace(size_type from, size_type count, const_pointer new_value)
     {
-        return Replace(from, count, view_type(new_value));
+        return replace(from, count, view_type(new_value));
     }
     /**
-     * @brief Replace specified number of characters in the current instance with another specified string.
+     * @brief Replaces specified number of characters in the current instance with another specified string.
      * @tparam RangeType
      * @param from
      * @param count
@@ -525,29 +665,54 @@ public:
      * @return
      */
     template<std::ranges::contiguous_range RangeType>
-    String& Replace(size_type from, size_type count, const RangeType& new_value);
+    String& replace(size_type from, size_type count, const RangeType& new_value)
+    {
+        ASSERT(count > 0 && from < length() && from <= length() - count);
+
+        size_type len = length();
+        size_type insert_size = convert_size(new_value.size());
+        if (insert_size > count)
+        {
+            size_type increase_size = insert_size - count;
+            if (increase_size > max_size() - len)
+            {
+                ASSERT(0);
+                insert_size = max_size() - len + count;
+            }
+        }
+        size_type new_length = len - count + insert_size;
+        reserve(new_length);
+
+        pointer start = data() + from;
+        char_traits::move(start + insert_size, start + count, len - from - count);
+        char_traits::copy(start, reinterpret_cast<const_pointer>(new_value.data()), insert_size);
+
+        eos(new_length);
+
+        return *this;
+    }
     /**
-     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
+     * @brief Replaces all occurrences of a specified string in the current instance with another specified string.
      * @param old_value
      * @param new_value
      * @return
      */
-    String& Replace(value_type old_value, value_type new_value)
+    String& replace(value_type old_value, value_type new_value)
     {
-        return Replace(view_type(&old_value, 1), view_type(&new_value, 1));
+        return replace(view_type(&old_value, 1), view_type(&new_value, 1));
     }
     /**
-     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
+     * @brief Replaces all occurrences of a specified string in the current instance with another specified string.
      * @param old_value
      * @param new_value
      * @return
      */
-    String& Replace(const_pointer old_value, const_pointer new_value)
+    String& replace(const_pointer old_value, const_pointer new_value)
     {
-        return Replace(view_type(old_value), view_type(new_value));
+        return replace(view_type(old_value), view_type(new_value));
     }
     /**
-     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
+     * @brief Replaces all occurrences of a specified string in the current instance with another specified string.
      * @tparam RangeType1
      * @tparam RangeType2
      * @param old_value
@@ -556,16 +721,32 @@ public:
      * @return
      */
     template<std::ranges::sized_range RangeType1, std::ranges::contiguous_range RangeType2>
-    String& Replace(const RangeType1& old_value, const RangeType2& new_value, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive);
+    String& replace(const RangeType1& old_value, const RangeType2& new_value, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive)
+    {
+        size_type index = 0;
+        size_type size = old_value.size();
+        do
+        {
+            index = find(old_value, index, case_sensitive);
+            if (index == INDEX_NONE)
+            {
+                break;
+            }
+
+            replace(index, size, new_value);
+
+        } while (true);
+        return *this;
+    }
     /**
      * @brief Determines whether the beginning of this string instance matches the specified string.
      * @param str
      * @param case_sensitive
      * @return
      */
-    bool StartsWith(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    bool starts_with(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return StartsWith(view_type(str), case_sensitive);
+        return starts_with(view_type(str), case_sensitive);
     }
     /**
      * @brief Determines whether the beginning of this string instance matches the specified range.
@@ -575,16 +756,37 @@ public:
      * @return
      */
     template<std::ranges::sized_range RangeType>
-    bool StartsWith(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    bool starts_with(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        if (length() < range.size())
+        {
+            return false;
+        }
+
+        const_iterator p = cbegin();
+        const std::locale& loc = locale::default_locale();
+        auto&& my_fold_case = details::FoldCaseUnsafe<value_type>();
+        auto&& range_fold_case = details::FoldCaseUnsafe<typename RangeType::value_type>();
+        for (auto&& it = range.begin(); it < range.end(); ++it, ++p)
+        {
+            if (case_sensitive == ECaseSensitive::Sensitive
+                ? *it != *p
+                : range_fold_case(*it, loc) != my_fold_case(*p, loc))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     /**
      * @brief Determines whether the end of this string instance matches the specified string.
      * @param str
      * @param case_sensitive
      * @return
      */
-    bool EndsWith(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    bool ends_with(const_pointer str, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return EndsWith(view_type(str), case_sensitive);
+        return ends_with(view_type(str), case_sensitive);
     }
     /**
      * @brief Determines whether the end of this string instance matches the specified range.
@@ -594,22 +796,77 @@ public:
      * @return
      */
     template<std::ranges::sized_range RangeType>
-    bool EndsWith(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    bool ends_with(const RangeType& range, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        if (length() < range.size())
+        {
+            return false;
+        }
 
+        const_reverse_iterator p = crbegin();
+        const std::locale& loc = locale::default_locale();
+        auto&& my_fold_case = details::FoldCaseUnsafe<value_type>();
+        auto&& range_fold_case = details::FoldCaseUnsafe<typename RangeType::value_type>();
+        for (auto&& it = std::make_reverse_iterator(range.end()); it < std::make_reverse_iterator(range.begin()); ++it, ++p)
+        {
+            if (case_sensitive == ECaseSensitive::Sensitive
+                ? *it != *p
+                : range_fold_case(*it, loc) != my_fold_case(*p, loc))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    /**
+     * @brief Looks for the first match of `pattern` in the string.
+     * If it finds a match, then `find` returns the indices of where this occurrence starts.
+     * Otherwise, it returns INDEX_NONE.
+     * @tparam RangeType
+     * @param search Search pattern
+     * @param offset Starts search index
+     * @param case_sensitive
+     * @return
+     */
     template<std::ranges::range RangeType>
-    size_type Find(const RangeType& search, size_type offset, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    NODISCARD size_type find(const RangeType& search, size_type offset, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        auto&& source = boost::make_iterator_range(begin() + offset, end());
+        auto&& range = case_sensitive == ECaseSensitive::Sensitive
+                       ? boost::algorithm::find_first(source, search)
+                       : boost::algorithm::find(source, ::boost::algorithm::first_finder(search, details::EqualsInsensitive(locale::default_locale())));
 
+        return range.empty() ? size_type(INDEX_NONE) : std::distance(cbegin(), range.begin());
+    }
+    /**
+     * @brief Looks for the first match of `pattern` in the string.
+     * If it finds a match, then `find` returns the indices of where this occurrence starts.
+     * Otherwise, it returns INDEX_NONE.
+     * @tparam RangeType
+     * @param search Search pattern
+     * @param offset_to_tail Starts search index
+     * @param case_sensitive
+     * @return
+     */
     template<std::ranges::range RangeType>
-    size_type FindLast(const RangeType& search, size_type offset_to_tail, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const;
+    NODISCARD size_type find_last(const RangeType& search, size_type offset_to_tail, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        auto&& source = boost::make_iterator_range(begin(), end() - offset_to_tail);
+        auto&& range = case_sensitive == ECaseSensitive::Sensitive
+                       ? boost::algorithm::find_last(source, search)
+                       : boost::algorithm::find(source, ::boost::algorithm::last_finder(search, details::EqualsInsensitive(locale::default_locale())));
+
+        return range.empty() ? size_type(INDEX_NONE) : std::distance(cbegin(), range.begin());
+    }
     /**
      * @brief Reports the zero-based index of the first occurrence of the specified string in this instance.
      * @param search
      * @param case_sensitive
      * @return
      */
-    size_type IndexOf(const_pointer search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    size_type index_of(const_pointer search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return IndexOf(view_type(search), case_sensitive);
+        return index_of(view_type(search), case_sensitive);
     }
     /**
      * @brief Reports the zero-based index of the first occurrence of the specified string in this instance.
@@ -619,9 +876,9 @@ public:
      * @return
      */
     template<std::ranges::range RangeType>
-    size_type IndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    size_type index_of(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return Find(search, 0, case_sensitive);
+        return find(search, 0, case_sensitive);
     }
     /**
      * @brief Reports the zero-based index position of the last occurrence of a specified string within this instance.
@@ -629,9 +886,9 @@ public:
      * @param case_sensitive
      * @return
      */
-    size_type LastIndexOf(const_pointer search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    size_type last_index_of(const_pointer search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return LastIndexOf(view_type(search), case_sensitive);
+        return last_index_of(view_type(search), case_sensitive);
     }
     /**
      * @brief Reports the zero-based index position of the last occurrence of a specified string within this instance.
@@ -641,90 +898,141 @@ public:
      * @return
      */
     template<std::ranges::range RangeType>
-    size_type LastIndexOf(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    size_type last_index_of(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
-        return FindLast(search, 0, case_sensitive);
+        return find_last(search, 0, case_sensitive);
     }
-
-    constexpr static size_t MaxSize() { return std::numeric_limits<size_t>::max() - 1; }
-
     /**
      * @brief Construct a new UTF-8 string from a UTF-16 string.
      * @param str
      * @return
      */
-    NODISCARD static String FromUtf16(const char16_t* str);
+    NODISCARD static String from_utf16(const char16_t* str)
+    {
+        return from_utf16(str, std::char_traits<char16_t>::length(str));
+    }
     /**
      * @brief Construct a new UTF-8 string from a UTF-16 string.
      * @param str
      * @param length
      * @return
      */
-    NODISCARD static String FromUtf16(const char16_t* str, size_type length);
+    NODISCARD static String from_utf16(const char16_t* str, size_type length)
+    {
+        if (length <= 0)
+        {
+            return {};
+        }
+
+        std::string u8 = boost::locale::conv::utf_to_utf<char, char16_t>(str, str + length);
+        return {u8.data(), convert_size(u8.length())};
+    }
     /**
      * @brief Construct a new UTF-8 string from a UTF-32 string.
      * @param str
      * @return
      */
-    NODISCARD static String FromUtf32(const char32_t* str);
+    NODISCARD static String from_utf32(const char32_t* str)
+    {
+        return from_utf32(str, std::char_traits<char32_t>::length(str));
+    }
     /**
      * @brief Construct a new UTF-8 string from a UTF-32 string.
      * @param str
      * @param length
      * @return
      */
-    NODISCARD static String FromUtf32(const char32_t* str, size_type length);
+    NODISCARD static String from_utf32(const char32_t* str, size_type length)
+    {
+        if (length <= 0)
+        {
+            return {};
+        }
+
+        std::string u8 = boost::locale::conv::utf_to_utf<char, char32_t>(str, str + length);
+        return {u8.data(), convert_size(u8.length())};
+    }
     /**
      * @brief Construct a new UTF-8 string from a std string.
      * @param str
      * @return
      */
-    NODISCARD static String From(const std::string& str);
+    NODISCARD static String from(const std::string& str)
+    {
+        return {str.data(), convert_size(str.length())};
+    }
     /**
      * @brief Construct a new UTF-8 string from a std wstring.
      * @param str
      * @return
      */
-    NODISCARD static String From(const std::wstring& str);
+    NODISCARD static String from(const std::wstring& str)
+    {
+        if constexpr (sizeof(std::wstring::value_type) == sizeof(char16_t))
+        {
+            return String::from_utf16(reinterpret_cast<const char16_t*>(str.data()), convert_size(str.length()));
+        }
+        else if constexpr (sizeof(std::wstring::value_type) == sizeof(char32_t))
+        {
+            return String::from_utf32(reinterpret_cast<const char32_t*>(str.data()), convert_size(str.length()));
+        }
+        ASSERT(0);
+    }
 
+    /**
+     * @brief Construct a new UTF-8 string from string format.
+     * @tparam CharType
+     * @tparam Args
+     * @param fmt
+     * @param args
+     * @return
+     */
     template <typename CharType, typename... Args>
-    static String Format(const CharType* fmt, Args&&... args)
+    static String format(const CharType* fmt, Args&&... args)
     {
         static_assert(std::is_same_v<CharType, char> || std::is_same_v<CharType, char8_t>);
         fmt::basic_memory_buffer<CharType, 250> buffer;
         fmt::detail::vformat_to(buffer, fmt::basic_string_view<CharType>(fmt), fmt::make_format_args<fmt::buffer_context<CharType>>(args...));
-        return {buffer.data(), ConvertSize(buffer.size())};
+        return {buffer.data(), convert_size(buffer.size())};
     }
 protected:
-    allocator_type& GetAlloc()              { return pair_.First(); }
-    const allocator_type& GetAlloc() const  { return pair_.First(); }
+    allocator_type& get_alloc()              { return pair_.first(); }
+    const allocator_type& get_alloc() const  { return pair_.first(); }
 
-    val_type& GetVal()                      { return pair_.Second(); }
-    const val_type& GetVal() const          { return pair_.Second(); }
+    val_type& get_val()                      { return pair_.second(); }
+    const val_type& get_val() const          { return pair_.second(); }
 
-    void Construct(const_pointer str, size_type len);
-    void Construct(value_type ch, size_type count);
-    void Construct(const String& right, size_type offset, size_type size);
+    void construct(const_pointer str, size_type len);
 
-    void MoveConstruct(String& right, size_type offset, size_type size);
+    void construct(value_type ch, size_type count);
 
-    void Assign(const_pointer right, size_type length);
+    void construct(const String& right, size_type offset, size_type size);
 
-    void MoveAssign(String& right);
+    void move_construct(String& right, size_type offset, size_type size);
 
-    void Eos(size_type size);
+    void assign(const_pointer right, size_type length);
 
-    bool IsValidAddress(const_pointer start, const_pointer end) const;
+    void move_assign(String& right);
 
-    size_type CalculateGrowth(size_type requested) const;
+    void eos(size_type size)
+    {
+        auto&& my_val = get_val();
+        my_val.size_ = size;
+        char_traits::assign(my_val.get_ptr()[size], value_type());
+    }
 
-    void Reallocate(size_type new_capacity);
-    void ReallocateGrowth(size_type& increase_size);
+    bool is_valid_address(const_pointer start, const_pointer end) const;
+
+    size_type calculate_growth(size_type requested) const;
+
+    void reallocate(size_type new_capacity);
+
+    void reallocate_growth(size_type& increase_size);
 
     template<std::integral T>
-    constexpr static size_type ConvertSize(T size)
+    constexpr static size_type convert_size(T size)
     {
-        ASSERT(size <= MaxSize());
+        ASSERT(size <= max_size());
         if constexpr (!std::is_same_v<T, size_type>)
         {
             return static_cast<size_type>(size);
@@ -735,308 +1043,16 @@ protected:
     CompressionPair<allocator_type, val_type> pair_;
 };
 
-inline String::~String() noexcept
-{
-    auto&& my_val = GetVal();
-    if (my_val.LargeStringEngaged())
-    {
-        allocator_traits::deallocate(GetAlloc(), my_val.GetPtr(), my_val.capacity_ + 1);
-    }
-    my_val.size_ = 0;
-    my_val.capacity_ = val_type::INLINE_SIZE - 1;
-}
-
-inline String String::FromUtf16(const char16_t* str)
-{
-    return FromUtf16(str, std::char_traits<char16_t>::length(str));
-}
-
-inline String String::FromUtf32(const char32_t* str)
-{
-    return FromUtf32(str, std::char_traits<char32_t>::length(str));
-}
-
-inline String String::From(const std::string& str)
-{
-    return {str.data(), ConvertSize(str.length())};
-}
-
-inline String String::From(const std::wstring& str)
-{
-    if constexpr (sizeof(std::wstring::value_type) == sizeof(char16_t))
-    {
-        return String::FromUtf16(reinterpret_cast<const char16_t*>(str.data()), ConvertSize(str.length()));
-    }
-    else if constexpr (sizeof(std::wstring::value_type) == sizeof(char32_t))
-    {
-        return String::FromUtf32(reinterpret_cast<const char32_t*>(str.data()), ConvertSize(str.length()));
-    }
-    ASSERT(0);
-}
-
-template<std::ranges::contiguous_range RangeType>
-String& String::Append(const RangeType& range)
-{
-    size_type length = Length();
-    size_type increase_size = ConvertSize(range.size());
-    auto&& my_val = GetVal();
-    if (increase_size > my_val.capacity_ - my_val.size_)
-    {
-        ReallocateGrowth(increase_size);
-    }
-    else
-    {
-        Eos(length + increase_size);
-    }
-
-    char_traits::copy(my_val.GetPtr() + length, reinterpret_cast<const_pointer>(range.data()), increase_size);
-    return *this;
-}
-
-template<std::ranges::contiguous_range RangeType>
-String& String::Prepend(const RangeType& range)
-{
-    size_type length = Length();
-    size_type increase_size = ConvertSize(range.size());
-    auto&& my_val = GetVal();
-    if (increase_size > my_val.capacity_ - my_val.size_)
-    {
-        ReallocateGrowth(increase_size);
-    }
-    else
-    {
-        Eos(length + increase_size);
-    }
-
-    pointer ptr = my_val.GetPtr();
-    char_traits::move(ptr + increase_size, ptr, length);
-    char_traits::copy(ptr, reinterpret_cast<const_pointer>(range.data()), increase_size);
-    return *this;
-}
-
-template<std::ranges::contiguous_range RangeType>
-String String::Concat(const RangeType& range) const
-{
-    size_type length = Length();
-    size_type increase_size = ConvertSize(range.size());
-    if (increase_size > MaxSize() - length)
-    {
-        ASSERT(0);
-        increase_size = MaxSize() - length;
-    }
-
-    size_type new_length = length + increase_size;
-
-    String result;
-    result.Reserve(new_length);
-
-    pointer ptr = result.Data();
-    char_traits::copy(ptr, Data(), length);
-    char_traits::copy(ptr + length, reinterpret_cast<const_pointer>(range.data()), increase_size);
-    result.Eos(new_length);
-
-    return result;
-}
-
-template<std::ranges::contiguous_range RangeType>
-String& String::Insert(const const_iterator& where, const RangeType& range)
-{
-    ASSERT(where >= cbegin() && where <= cend());
-    auto&& my_val = GetVal();
-    size_type increase_size = ConvertSize(range.size());
-    size_type offset = ConvertSize(std::distance(cbegin(), where));
-    size_type length = my_val.size_;
-
-    if (increase_size > my_val.capacity_ - my_val.size_)
-    {
-        ReallocateGrowth(increase_size);
-    }
-
-    pointer ptr = my_val.GetPtr() + offset;
-    char_traits::move(ptr + increase_size, ptr, length - offset);
-    char_traits::copy(ptr, reinterpret_cast<const_pointer>(range.data()), increase_size);
-
-    return *this;
-}
-
-template<std::ranges::sized_range RangeType>
-String& String::Remove(const RangeType& range, ECaseSensitive case_sensitive)
-{
-    size_type index = 0;
-    size_type size = ConvertSize(range.size());
-    do
-    {
-        index = Find(range, index, case_sensitive);
-        if (index == INDEX_NONE)
-        {
-            break;
-        }
-
-        Remove(index, size);
-
-    } while (true);
-    return *this;
-}
-
-template<std::ranges::contiguous_range RangeType>
-String& String::Replace(size_type from, size_type count, const RangeType& new_value)
-{
-    ASSERT(count > 0 && from < Length() && from <= Length() - count);
-
-    size_type length = Length();
-    size_type insert_size = ConvertSize(new_value.size());
-    if (insert_size > count)
-    {
-        size_type increase_size = insert_size - count;
-        if (increase_size > MaxSize() - length)
-        {
-            ASSERT(0);
-            insert_size = MaxSize() - length + count;
-        }
-    }
-    size_type new_length = length - count + insert_size;
-    Reserve(new_length);
-
-    pointer start = Data() + from;
-    char_traits::move(start + insert_size, start + count, length - from - count);
-    char_traits::copy(start, reinterpret_cast<const_pointer>(new_value.data()), insert_size);
-
-    Eos(new_length);
-
-    return *this;
-}
-
-template<std::ranges::sized_range RangeType1, std::ranges::contiguous_range RangeType2>
-String& String::Replace(const RangeType1& old_value, const RangeType2& new_value, ECaseSensitive case_sensitive)
-{
-    size_type index = 0;
-    size_type size = old_value.size();
-    do
-    {
-        index = Find(old_value, index, case_sensitive);
-        if (index == INDEX_NONE)
-        {
-            break;
-        }
-
-        Replace(index, size, new_value);
-
-    } while (true);
-    return *this;
-}
-
-template<std::ranges::sized_range RangeType>
-bool String::StartsWith(const RangeType& range, ECaseSensitive case_sensitive) const
-{
-    if (Length() < range.size())
-    {
-        return false;
-    }
-
-    const_iterator p = cbegin();
-    const std::locale& loc = locale::DefaultLocale();
-    auto&& my_fold_case = details::FoldCaseUnsafe<value_type>();
-    auto&& range_fold_case = details::FoldCaseUnsafe<typename RangeType::value_type>();
-    for (auto&& it = range.begin(); it < range.end(); ++it, ++p)
-    {
-        if (case_sensitive == ECaseSensitive::Sensitive
-            ? *it != *p
-            : range_fold_case(*it, loc) != my_fold_case(*p, loc))
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-template<std::ranges::sized_range RangeType>
-bool String::EndsWith(const RangeType& range, ECaseSensitive case_sensitive) const
-{
-    if (Length() < range.size())
-    {
-        return false;
-    }
-
-    const_reverse_iterator p = crbegin();
-    const std::locale& loc = locale::DefaultLocale();
-    auto&& my_fold_case = details::FoldCaseUnsafe<value_type>();
-    auto&& range_fold_case = details::FoldCaseUnsafe<typename RangeType::value_type>();
-    for (auto&& it = std::make_reverse_iterator(range.end()); it < std::make_reverse_iterator(range.begin()); ++it, ++p)
-    {
-        if (case_sensitive == ECaseSensitive::Sensitive
-            ? *it != *p
-            : range_fold_case(*it, loc) != my_fold_case(*p, loc))
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-template<std::ranges::range RangeType>
-String::size_type String::Find(const RangeType& search, size_type offset, ECaseSensitive case_sensitive) const
-{
-    auto&& source = boost::make_iterator_range(begin() + offset, end());
-    auto&& range = case_sensitive == ECaseSensitive::Sensitive
-                   ? boost::algorithm::find_first(source, search)
-                   : boost::algorithm::find(source, ::boost::algorithm::first_finder(search, details::EqualsInsensitive(locale::DefaultLocale())));
-
-    return range.empty() ? size_type(INDEX_NONE) : std::distance(cbegin(), range.begin());
-}
-
-template<std::ranges::range RangeType>
-String::size_type String::FindLast(const RangeType& search, size_type offset_to_tail, ECaseSensitive case_sensitive) const
-{
-    auto&& source = boost::make_iterator_range(begin(), end() - offset_to_tail);
-    auto&& range = case_sensitive == ECaseSensitive::Sensitive
-                   ? boost::algorithm::find_last(source, search)
-                   : boost::algorithm::find(source, ::boost::algorithm::last_finder(search, details::EqualsInsensitive(locale::DefaultLocale())));
-
-    return range.empty() ? size_type(INDEX_NONE) : std::distance(cbegin(), range.begin());
-}
-
-inline void String::Eos(String::size_type size)
-{
-    auto&& my_val = GetVal();
-    my_val.size_ = size;
-    char_traits::assign(my_val.GetPtr()[size], value_type());
-}
-
-inline String::size_type String::CalculateGrowth(size_type requested) const
-{
-    if (requested > MaxSize())
-    {
-        return MaxSize();
-    }
-
-    size_type old = GetVal().capacity_;
-    if (old > MaxSize() - old / 2)
-    {
-        return MaxSize();
-    }
-
-    return math::Max(requested, old + old / 2);
-}
-
 using StringView = BasicStringView<String::value_type>;
 
 }
 
 template<>
-struct CORE_API fmt::formatter<atlas::String>
+struct CORE_API fmt::formatter<atlas::String> : formatter<fmt::string_view>
 {
-    template<typename ParseContext>
-    constexpr auto parse(ParseContext& ctx)
-    {
-        return ctx.begin();
-    }
-
     template <typename FormatContext>
     auto format(const atlas::String& str, FormatContext& ctx)
     {
-        auto&& out = ctx.out();
-        auto&& buf = fmt::detail::get_buffer<atlas::String::value_type>(out);
-        fmt::detail::vformat_to<atlas::String::value_type>(buf, str.Data(), {}, {});
-        return fmt::detail::get_iterator(buf, out);
+        return formatter<fmt::string_view>::format({str.data(), str.length()}, ctx);
     }
 };

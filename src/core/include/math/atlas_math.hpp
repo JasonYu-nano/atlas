@@ -4,6 +4,7 @@
 #pragma once
 
 #include <type_traits>
+
 #include "core_def.hpp"
 
 namespace atlas
@@ -12,7 +13,7 @@ namespace math
 {
 
 template<typename T>
-T Align(T value, uint64 alignment)
+T align(T value, uint64 alignment)
 {
     static_assert(std::is_integral_v<T> || std::is_pointer_v<T>, "align expects an integer or pointer type");
 
@@ -20,21 +21,21 @@ T Align(T value, uint64 alignment)
 }
 
 template<typename T>
-constexpr T Max(const T a, const T b)
+constexpr T max(const T a, const T b)
 {
     static_assert(std::is_arithmetic_v<T>, "max expects an arithmetic type");
     return (a >= b) ? a : b;
 }
 
 template<typename T>
-constexpr T Min(const T a, const T b)
+constexpr T min(const T a, const T b)
 {
     static_assert(std::is_arithmetic_v<T>, "max expects an arithmetic type");
     return (a <= b) ? a : b;
 }
 
 template<typename T>
-NODISCARD static constexpr T Clamp(const T x, const T min, const T max)
+NODISCARD static constexpr T clamp(const T x, const T min, const T max)
 {
     return (x < min) ? min : (x < max) ? x : max;
 }

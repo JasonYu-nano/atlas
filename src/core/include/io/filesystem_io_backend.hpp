@@ -37,14 +37,21 @@ public:
     {
         for (uint32 i = 0; i < get_io_worker_count(); ++i)
         {
-            running_threads_.Emplace(IOTaskWorker(running_threads_.Size(), this));
+            running_threads_.emplace(IOTaskWorker(running_threads_.size(), this));
         }
     }
 
     ~FilesystemIOBackend() override
     {
         request_stop_ = true;
-        running_threads_.Clear();
+        for (auto&& thread : running_threads_)
+        {
+            if (thread.joinable())
+            {
+                thread.join();
+            }
+        }
+        running_threads_.clear();
     }
 
     void schedule(std::coroutine_handle<> handle, EIOPriority priority);
@@ -57,7 +64,7 @@ public:
 private:
 
     std::atomic<bool> request_stop_{ false };
-    Array<std::jthread> running_threads_;
+    Array<std::thread> running_threads_;
     PriorityQueue<void, g_io_priority_count> request_queue_;
 };
 
