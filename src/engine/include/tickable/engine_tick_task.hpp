@@ -31,7 +31,7 @@ public:
 
     void Execute(float delta_time) override
     {
-        tick_delegate_.ExecuteSafe(delta_time);
+        tick_delegate_.execute_safe(delta_time);
     }
 
 protected:

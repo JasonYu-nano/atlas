@@ -38,69 +38,69 @@ DECLARE_DELEGATE_ONE_PARAM_RET(OneParamDelegate, int, int, integer);
 TEST(MiscTest, DelegateTest)
 {
     {
-        auto delegate = OneParamDelegate::CreateStatic(&ForwardInteger);
-        EXPECT_TRUE(delegate.IsSafeToExecute());
-        EXPECT_TRUE(delegate.IsBound());
-        EXPECT_TRUE(delegate.Execute(32) == 32);
+        auto delegate = OneParamDelegate::create_static(&ForwardInteger);
+        EXPECT_TRUE(delegate.is_safe_to_execute());
+        EXPECT_TRUE(delegate.is_bound());
+        EXPECT_TRUE(delegate.execute(32) == 32);
 
-        delegate.Unbind();
-        EXPECT_FALSE(delegate.IsBound());
+        delegate.unbind();
+        EXPECT_FALSE(delegate.is_bound());
     }
     {
         OneParamDelegate delegate;
-        EXPECT_FALSE(delegate.IsSafeToExecute());
-        EXPECT_FALSE(delegate.IsBound());
+        EXPECT_FALSE(delegate.is_safe_to_execute());
+        EXPECT_FALSE(delegate.is_bound());
 
-        delegate.BindStatic(&AddInteger, 10);
-        EXPECT_TRUE(delegate.IsSafeToExecute());
-        EXPECT_TRUE(delegate.IsBound());
-        EXPECT_TRUE(delegate.Execute(20) == 30);
+        delegate.bind_static(&AddInteger, 10);
+        EXPECT_TRUE(delegate.is_safe_to_execute());
+        EXPECT_TRUE(delegate.is_bound());
+        EXPECT_TRUE(delegate.execute(20) == 30);
     }
     {
         DelegateListener listener;
 
         {
-            auto delegate = OneParamDelegate::CreateRaw(&listener, &DelegateListener::ForwardInteger);
-            EXPECT_TRUE(delegate.Execute(20) == 20);
+            auto delegate = OneParamDelegate::create_raw(&listener, &DelegateListener::ForwardInteger);
+            EXPECT_TRUE(delegate.execute(20) == 20);
         }
         {
-            auto delegate = OneParamDelegate::CreateRaw(&listener, &DelegateListener::AddInteger, 10);
-            EXPECT_TRUE(delegate.Execute(20) == 30);
+            auto delegate = OneParamDelegate::create_raw(&listener, &DelegateListener::AddInteger, 10);
+            EXPECT_TRUE(delegate.execute(20) == 30);
         }
     }
     {
         OneParamDelegate delegate;
 
         DelegateListener listener;
-        delegate.BindRaw(&listener, &DelegateListener::ForwardInteger);
-        EXPECT_TRUE(delegate.Execute(20) == 20);
+        delegate.bind_raw(&listener, &DelegateListener::ForwardInteger);
+        EXPECT_TRUE(delegate.execute(20) == 20);
 
-        delegate.Unbind();
-        delegate.BindRaw(&listener, &DelegateListener::AddInteger, 10);
-        EXPECT_TRUE(delegate.Execute(20) == 30);
+        delegate.unbind();
+        delegate.bind_raw(&listener, &DelegateListener::AddInteger, 10);
+        EXPECT_TRUE(delegate.execute(20) == 30);
     }
     {
         auto listener = std::make_shared<DelegateListener>();
 
         {
-            auto delegate = OneParamDelegate::CreateSP(listener, &DelegateListener::ForwardInteger);
-            EXPECT_TRUE(delegate.Execute(20) == 20);
+            auto delegate = OneParamDelegate::create_sp(listener, &DelegateListener::ForwardInteger);
+            EXPECT_TRUE(delegate.execute(20) == 20);
         }
         {
-            auto delegate = OneParamDelegate::CreateSP(listener, &DelegateListener::AddInteger, 10);
-            EXPECT_TRUE(delegate.Execute(20) == 30);
+            auto delegate = OneParamDelegate::create_sp(listener, &DelegateListener::AddInteger, 10);
+            EXPECT_TRUE(delegate.execute(20) == 30);
         }
     }
     {
         OneParamDelegate delegate;
 
         auto listener = std::make_shared<DelegateListener>();
-        delegate.BindSP(listener, &DelegateListener::ForwardInteger);
-        EXPECT_TRUE(delegate.Execute(20) == 20);
+        delegate.bind_sp(listener, &DelegateListener::ForwardInteger);
+        EXPECT_TRUE(delegate.execute(20) == 20);
 
-        delegate.Unbind();
-        delegate.BindSP(listener, &DelegateListener::AddInteger, 10);
-        EXPECT_TRUE(delegate.Execute(20) == 30);
+        delegate.unbind();
+        delegate.bind_sp(listener, &DelegateListener::AddInteger, 10);
+        EXPECT_TRUE(delegate.execute(20) == 30);
     }
 }
 
@@ -120,7 +120,7 @@ struct DelegateListener2
     void ResetCount(int32 number, MulticastDelegate<int>& delegate)
     {
         count = 0;
-        delegate.RemoveAll();
+        delegate.remove_all();
     }
 };
 
@@ -130,19 +130,19 @@ TEST(MiscTest, MulticastDelegateTest)
 {
     {
         OneParamMulticastDelegate delegate;
-        auto handle_0 = delegate.AddStatic(&IncreaseCount);
+        auto handle_0 = delegate.add_static(&IncreaseCount);
 
         DelegateListener2 listener;
-        auto handle_1 = delegate.AddRaw(&listener, &DelegateListener2::IncreaseCount, 1);
+        auto handle_1 = delegate.add_raw(&listener, &DelegateListener2::IncreaseCount, 1);
 
-        delegate.Broadcast(2);
+        delegate.broadcast(2);
         EXPECT_TRUE(count == 5);
 
-        delegate.Remove(handle_0);
-        delegate.Broadcast(2);
+        delegate.remove(handle_0);
+        delegate.broadcast(2);
         EXPECT_TRUE(count == 8);
 
-        delegate.RemoveAll();
+        delegate.remove_all();
         EXPECT_TRUE(count == 8);
     }
 
@@ -150,13 +150,13 @@ TEST(MiscTest, MulticastDelegateTest)
         OneParamMulticastDelegate delegate;
 
         auto listener = std::make_shared<DelegateListener2>();
-        delegate.AddSP(listener, &DelegateListener2::ResetCount, delegate);
-        delegate.AddStatic(&IncreaseCount);
-        delegate.AddSP(listener, &DelegateListener2::IncreaseCount, 1);
+        delegate.add_sp(listener, &DelegateListener2::ResetCount, delegate);
+        delegate.add_static(&IncreaseCount);
+        delegate.add_sp(listener, &DelegateListener2::IncreaseCount, 1);
 
-        delegate.Broadcast(2);
+        delegate.broadcast(2);
         EXPECT_TRUE(count == 5);
-        EXPECT_FALSE(delegate.IsBound());
+        EXPECT_FALSE(delegate.is_bound());
     }
 }
 
@@ -172,35 +172,35 @@ TEST(MiscTest, CmdOptTest)
         "placeholder", "-b", "true", "--string=atlas", "-int=12", "--float=1.5"
     };
 
-    CommandParser::ParseCommandLineOptions(6, const_cast<char**>(cmd_line));
+    CommandParser::parse_command_line_options(6, const_cast<char**>(cmd_line));
 
     {
-        auto v = CommandParser::ValueOf<bool>("b");
+        auto v = CommandParser::value_of<bool>("b");
         EXPECT_TRUE(*v);
     }
 
     {
-        auto v = CommandParser::ValueOf<String>("s");
+        auto v = CommandParser::value_of<String>("s");
         EXPECT_TRUE(*v == "atlas");
     }
 
     {
-        auto v = CommandParser::ValueOf<int32>("int");
+        auto v = CommandParser::value_of<int32>("int");
         EXPECT_TRUE(*v == 12);
     }
 
     {
-        auto v = CommandParser::ValueOf<float>("float");
+        auto v = CommandParser::value_of<float>("float");
         EXPECT_TRUE(*v == 1.5);
     }
 
     {
-        auto v = CommandParser::ValueOf<double>("");
+        auto v = CommandParser::value_of<double>("");
         EXPECT_FALSE(v.has_value());
     }
 
     {
-        auto v = CommandParser::ValueOf<int8>("uint");
+        auto v = CommandParser::value_of<int8>("uint");
         EXPECT_TRUE(*v == 99);
     }
 }

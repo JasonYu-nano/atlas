@@ -76,27 +76,27 @@ struct CommandOptTraits<int8> : IntegralOptTraits {};
 
 
 template<typename T>
-bool CommandOptSetter(T&)
+bool command_opt_setter(T&)
 {
     return false;
 };
 
 template<typename T>
-bool CommandOptSetter(T&, StringView)
+bool command_opt_setter(T&, StringView)
 {
     return false;
 };
 
 // boolean type
 template<>
-inline bool CommandOptSetter<bool>(bool& src)
+inline bool command_opt_setter<bool>(bool& src)
 {
     src = true;
     return true;
 };
 
 template<>
-inline bool CommandOptSetter<bool>(bool& src, StringView value)
+inline bool command_opt_setter<bool>(bool& src, StringView value)
 {
     bool is_set = false;
     if (value == "true")
@@ -114,7 +114,7 @@ inline bool CommandOptSetter<bool>(bool& src, StringView value)
 
 // integral type
 template<>
-inline bool CommandOptSetter<int64>(int64& src, StringView value)
+inline bool command_opt_setter<int64>(int64& src, StringView value)
 {
     src = std::strtoll(value.data(), nullptr, 10);
     return true;
@@ -122,7 +122,7 @@ inline bool CommandOptSetter<int64>(int64& src, StringView value)
 
 // float point type
 template<>
-inline bool CommandOptSetter<double>(double& src, StringView value)
+inline bool command_opt_setter<double>(double& src, StringView value)
 {
     src = std::strtod(value.data(), nullptr);
     return true;
@@ -130,7 +130,7 @@ inline bool CommandOptSetter<double>(double& src, StringView value)
 
 // string type
 template<>
-inline bool CommandOptSetter<String>(String& src, StringView value)
+inline bool command_opt_setter<String>(String& src, StringView value)
 {
     src = value;
     return true;
@@ -140,7 +140,7 @@ inline bool CommandOptSetter<String>(String& src, StringView value)
 
 using details::ECommandOptType;
 using details::CommandOptTraits;
-using details::CommandOptSetter;
+using details::command_opt_setter;
 
 template<typename T>
 class CommandOptionImpl;
@@ -159,11 +159,11 @@ public:
     virtual ~CommandOption() = default;
 
     template<typename T>
-    std::optional<T> Value() const
+    std::optional<T> value() const
     {
-        if (CommandOptTraits<T>::type == type_ && HasValue())
+        if (CommandOptTraits<T>::type == type_ && has_value())
         {
-            if (const void* pointer = GetRawValue())
+            if (const void* pointer = get_raw_value())
             {
                 auto val = reinterpret_cast<const typename CommandOptTraits<T>::backend_type*>(pointer);
                 return std::optional<T>(static_cast<const T>(*val));
@@ -173,10 +173,10 @@ public:
     }
 
 protected:
-    virtual void Set() {};
-    virtual void Set(StringView view) = 0;
-    virtual const void* GetRawValue() const = 0;
-    virtual bool HasValue() const = 0;
+    virtual void set() {};
+    virtual void set(StringView view) = 0;
+    virtual const void* get_raw_value() const = 0;
+    virtual bool has_value() const = 0;
 
     ECommandOptType type_{ ECommandOptType::None };
     String name_;
@@ -196,22 +196,22 @@ public:
         : base(CommandOptTraits<T>::type, name, short_name, description), value_(default_value), has_value_(true) {}
 
 protected:
-    void Set() override
+    void set() override
     {
-        has_value_ |= CommandOptSetter<T>(value_);
+        has_value_ |= command_opt_setter<T>(value_);
     };
 
-    void Set(StringView view) override
+    void set(StringView view) override
     {
-        has_value_ |= CommandOptSetter<T>(value_, view);
+        has_value_ |= command_opt_setter<T>(value_, view);
     }
 
-    bool HasValue() const override
+    bool has_value() const override
     {
         return has_value_;
     }
 
-    const void* GetRawValue() const override
+    const void* get_raw_value() const override
     {
         return &value_;
     }
@@ -244,9 +244,9 @@ public:
      * @param argc
      * @param argv
      */
-    static void ParseCommandLineOptions(int32 argc, char** argv)
+    static void parse_command_line_options(int32 argc, char** argv)
     {
-        ParseCommandLineInternal(argc, argv);
+        parse_command_line_internal(argc, argv);
     }
     /**
      * @brief Add a command option.
@@ -258,7 +258,7 @@ public:
      * @return
      */
     template<typename Type>
-    static CommandOption* AddOption(StringView name, StringView short_name, StringView description)
+    static CommandOption* add_option(StringView name, StringView short_name, StringView description)
     {
         static_assert(CommandOptTraits<Type>::type != ECommandOptType::None);
 
@@ -270,7 +270,7 @@ public:
         }
         else
         {
-            if (!ContainsOptionName(name, short_name))
+            if (!contains_option_name(name, short_name))
             {
                 opt = new CommandOptionImpl<typename CommandOptTraits<Type>::backend_type>(name, short_name, description);
                 options_.list.add(opt);
@@ -294,7 +294,7 @@ public:
      * @return 
      */
     template<typename Type>
-    static CommandOption* AddOption(StringView name, StringView short_name, StringView description, typename CallTraits<Type>::param_type default_value)
+    static CommandOption* add_option(StringView name, StringView short_name, StringView description, typename CallTraits<Type>::param_type default_value)
     {
         static_assert(CommandOptTraits<Type>::type != ECommandOptType::None);
 
@@ -306,7 +306,7 @@ public:
         }
         else
         {
-            if (!ContainsOptionName(name, short_name))
+            if (!contains_option_name(name, short_name))
             {
                 opt = new CommandOptionImpl<typename CommandOptTraits<Type>::backend_type>(name, short_name, description, default_value);
                 options_.list.add(opt);
@@ -326,11 +326,11 @@ public:
      * @return Optional value of given option.
      */
     template<typename Type>
-    static std::optional<Type> ValueOf(StringView name)
+    static std::optional<Type> value_of(StringView name)
     {
-        if (const CommandOption* opt = GetOption(name))
+        if (const CommandOption* opt = get_option(name))
         {
-            return opt->Value<Type>();
+            return opt->value<Type>();
         }
 
         return {};
@@ -341,7 +341,7 @@ public:
      * @param short_name
      * @return
      */
-    static bool ContainsOptionName(StringView name, StringView short_name)
+    static bool contains_option_name(StringView name, StringView short_name)
     {
         const size_t index = options_.list.find([&](auto&& opt) {
             return opt->name_ == name || (short_name != "" && opt->short_name_ == short_name);
@@ -353,10 +353,10 @@ public:
      * @param name
      * @return
      */
-    static CommandOption* GetOption(StringView name);
+    static CommandOption* get_option(StringView name);
 
 private:
-    static void ParseCommandLineInternal(int32 argc, char** argv);
+    static void parse_command_line_internal(int32 argc, char** argv);
 
     static inline OptionList options_;
 };
@@ -370,12 +370,12 @@ struct CommandOptionRegister
 {
     CommandOptionRegister(StringView name, StringView short_name, StringView description)
     {
-        CommandParser::AddOption<T>(name, short_name, description);
+        CommandParser::add_option<T>(name, short_name, description);
     }
 
     CommandOptionRegister(StringView name, StringView short_name, StringView description, typename CallTraits<T>::param_type default_value)
     {
-        CommandParser::AddOption<T>(name, short_name, description, default_value);
+        CommandParser::add_option<T>(name, short_name, description, default_value);
     }
 };
 

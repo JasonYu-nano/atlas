@@ -18,7 +18,7 @@ DEFINE_COMMAND_OPTION(String, project, "p", "The path of the project to start")
 
 void Engine::Startup(int argc, char** argv)
 {
-    CommandParser::ParseCommandLineOptions(argc, argv);
+    CommandParser::parse_command_line_options(argc, argv);
 
     current_time_ = duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
 
@@ -55,7 +55,7 @@ void Engine::UpdateTickTime()
 
 void Engine::LoadProject()
 {
-    std::optional<String> project_path = CommandParser::ValueOf<String>("project");
+    std::optional<String> project_path = CommandParser::value_of<String>("project");
     if (!project_path.has_value())
     {
         return;

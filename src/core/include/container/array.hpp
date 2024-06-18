@@ -323,7 +323,7 @@ public:
         size_type index = add_uninitialized(increase_size);
         if constexpr (std::is_trivially_copyable_v<value_type>)
         {
-            std::memmove(data() + index, IteratorToPointer(std::ranges::begin(others)), increase_size * sizeof(value_type));
+            std::memmove(data() + index, iterator_to_pointer(std::ranges::begin(others)), increase_size * sizeof(value_type));
         }
         else
         {
@@ -602,7 +602,7 @@ public:
     {
         if (count <= 0)
         {
-            return iterator(const_cast<value_type*>(IteratorToPointer(where)));
+            return iterator(const_cast<value_type*>(iterator_to_pointer(where)));
         }
         ASSERT(cbegin() <= where && where < cend() && where + count <= cend());
         auto&& my_val = get_val();
@@ -872,7 +872,7 @@ private:
     {
         if constexpr (std::is_trivially_copyable_v<value_type>)
         {
-            std::memmove(static_cast<void*>(IteratorToPointer(dest)), static_cast<const void*>(IteratorToPointer(first)), std::distance(first, last) * sizeof(value_type));
+            std::memmove(static_cast<void*>(iterator_to_pointer(dest)), static_cast<const void*>(iterator_to_pointer(first)), std::distance(first, last) * sizeof(value_type));
         }
         else
         {
@@ -880,7 +880,7 @@ private:
             InputIter it = first;
             while (it != last)
             {
-                allocator_traits::construct(alloc, IteratorToPointer(dest), std::move(*it));
+                allocator_traits::construct(alloc, iterator_to_pointer(dest), std::move(*it));
                 std::advance(it, 1);
                 std::advance(dest, 1);
             }
@@ -892,7 +892,7 @@ private:
     {
         if constexpr (std::is_trivially_copyable_v<value_type>)
         {
-            std::memmove(static_cast<void*>(IteratorToPointer(dest)), static_cast<const void*>(IteratorToPointer(first)), std::distance(first, last) * sizeof(value_type));
+            std::memmove(static_cast<void*>(iterator_to_pointer(dest)), static_cast<const void*>(iterator_to_pointer(first)), std::distance(first, last) * sizeof(value_type));
         }
         else
         {
@@ -900,7 +900,7 @@ private:
             InputIter it = first;
             while (it != last)
             {
-                allocator_traits::construct(alloc, IteratorToPointer(dest), *it);
+                allocator_traits::construct(alloc, iterator_to_pointer(dest), *it);
                 std::advance(it, 1);
                 std::advance(dest, 1);
             }
