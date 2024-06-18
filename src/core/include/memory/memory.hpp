@@ -19,41 +19,41 @@ namespace atlas
 class CORE_API Memory
 {
 public:
-    static void* Malloc(size_t size)
+    static void* malloc(size_t size)
     {
-        return GetMallocInstance()->Malloc(size);
+        return get_malloc_instance()->malloc(size);
     }
 
-    static void* AlignedMalloc(size_t size, size_t alignment)
+    static void* aligned_malloc(size_t size, size_t alignment)
     {
-        return GetMallocInstance()->AlignedMalloc(size, alignment);
+        return get_malloc_instance()->aligned_malloc(size, alignment);
     }
 
-    static void* Realloc(void* ptr, size_t new_size)
+    static void* realloc(void* ptr, size_t new_size)
     {
-        return GetMallocInstance()->Realloc(ptr, new_size);
+        return get_malloc_instance()->realloc(ptr, new_size);
     }
 
-    static void* AlignedRealloc(void* ptr, size_t new_size, size_t alignment)
+    static void* aligned_realloc(void* ptr, size_t new_size, size_t alignment)
     {
-        return GetMallocInstance()->AlignedRealloc(ptr, new_size, alignment);
+        return get_malloc_instance()->aligned_realloc(ptr, new_size, alignment);
     }
 
-    static void Free(void* ptr)
+    static void free(void* ptr)
     {
-        GetMallocInstance()->Free(ptr);
+        get_malloc_instance()->free(ptr);
     }
 
-    static void AlignedFree(void* ptr)
+    static void aligned_free(void* ptr)
     {
-        GetMallocInstance()->AlignedFree(ptr);
+        get_malloc_instance()->aligned_free(ptr);
     }
 
     Memory() = delete;
     ~Memory() = delete;
 
 private:
-    static MallocBase* GetMallocInstance()
+    static MallocBase* get_malloc_instance()
     {
         if (!malloc_instance_)
         {

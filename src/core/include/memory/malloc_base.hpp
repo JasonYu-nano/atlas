@@ -14,16 +14,16 @@ class MallocBase : public SystemNewDeleteObject
 public:
     virtual ~MallocBase() = default;
 
-    virtual void* Malloc(size_t size) = 0;
+    virtual void* malloc(size_t size) = 0;
 
-    virtual void* AlignedMalloc(size_t size, size_t alignment) = 0;
+    virtual void* aligned_malloc(size_t size, size_t alignment) = 0;
 
-    virtual void* Realloc(void* ptr, size_t new_size) = 0;
+    virtual void* realloc(void* ptr, size_t new_size) = 0;
 
-    virtual void* AlignedRealloc(void* ptr, size_t new_size, size_t alignment) = 0;
+    virtual void* aligned_realloc(void* ptr, size_t new_size, size_t alignment) = 0;
 
-    virtual void Free(void* ptr) = 0;
+    virtual void free(void* ptr) = 0;
 
-    virtual void AlignedFree(void* ptr) = 0;
+    virtual void aligned_free(void* ptr) = 0;
 };
 }

@@ -19,12 +19,12 @@ void lock_free_links_exhausted(uint32 total_num)
 
 void* lock_free_alloc_links(size_t alloc_size)
 {
-    return Memory::Malloc(alloc_size);
+    return Memory::malloc(alloc_size);
 }
 
 void lock_free_free_links(size_t alloc_size, void* ptr)
 {
-    Memory::Free(ptr);
+    Memory::free(ptr);
 }
 
 void* atomic_compare_exchange_pointer(void* volatile* dest, void* exchange, void* comparand)

@@ -18,22 +18,22 @@ TEST(MemoryTest, StandardMallocTest)
 {
     StandardMalloc standard_malloc;
 
-    void* ptr = standard_malloc.Malloc(100);
+    void* ptr = standard_malloc.malloc(100);
     EXPECT_TRUE(ptr != nullptr);
 
-    ptr = standard_malloc.Realloc(ptr, 50);
+    ptr = standard_malloc.realloc(ptr, 50);
     EXPECT_TRUE(ptr != nullptr);
 
-    standard_malloc.Free(ptr);
+    standard_malloc.free(ptr);
     ptr = nullptr;
 
-    ptr = standard_malloc.AlignedMalloc(64, 32);
+    ptr = standard_malloc.aligned_malloc(64, 32);
     EXPECT_TRUE(ptr != nullptr && reinterpret_cast<uintptr_t>(ptr) % 32 == 0);
 
-    ptr = standard_malloc.AlignedRealloc(ptr, 128, 32);
+    ptr = standard_malloc.aligned_realloc(ptr, 128, 32);
     EXPECT_TRUE(ptr != nullptr && reinterpret_cast<uintptr_t>(ptr) % 32 == 0);
 
-    standard_malloc.AlignedFree(ptr);
+    standard_malloc.aligned_free(ptr);
 }
 
 TEST(MemoryTest, OperatorNewDeleteTest)
