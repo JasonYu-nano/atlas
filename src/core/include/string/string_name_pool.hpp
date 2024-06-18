@@ -163,7 +163,7 @@ private:
             {
                 lower_case[i] = ToLower(view.at(i));
             }
-            return city_hash::CityHash32(reinterpret_cast<const char*>(lower_case), sizeof(char_type) / sizeof(char) * view.length());
+            return city_hash::city_hash32(reinterpret_cast<const char*>(lower_case), sizeof(char_type) / sizeof(char) * view.length());
         }
         return 0;
     }
@@ -173,7 +173,7 @@ private:
     {
         if (view.length() <= MAX_ENTRY_LENGTH)
         {
-            return city_hash::CityHash32(reinterpret_cast<const char*>(view.data()), sizeof(typename ViewType::value_type) / sizeof(char) * view.length());
+            return city_hash::city_hash32(reinterpret_cast<const char*>(view.data()), sizeof(typename ViewType::value_type) / sizeof(char) * view.length());
         }
         return 0;
     }

@@ -67,7 +67,7 @@ public:
      */
     explicit Array(size_type capacity, const allocator_type& alloc = allocator_type()) : pair_(alloc)
     {
-        reserve(math::Max(capacity, get_initialize_capacity()));
+        reserve(math::max(capacity, get_initialize_capacity()));
     }
     /**
      * @brief Constructor from an initializer
@@ -986,14 +986,14 @@ private:
     void construct(const RangeType& range)
     {
         size_type size = std::ranges::distance(range);
-        reserve(math::Max(size, get_initialize_capacity()));
+        reserve(math::max(size, get_initialize_capacity()));
         copy_to_uninitialized(std::ranges::begin(range), std::ranges::end(range), end());
         get_val().size = size;
     }
 
     void construct(const_param_type value, size_type count)
     {
-        reserve(math::Max(count, get_initialize_capacity()));
+        reserve(math::max(count, get_initialize_capacity()));
         if (count > 0)
         {
             auto&& my_val = get_val();
@@ -1131,7 +1131,7 @@ private:
 
     constexpr size_type get_initialize_capacity() const
     {
-        return math::Min(math::Max(size_type(4), allocator_traits::get_initialize_size(pair_.First())), max_size());
+        return math::min(math::max(size_type(4), allocator_traits::get_initialize_size(pair_.First())), max_size());
     }
 
     size_type calculate_growth(size_type requested) const
@@ -1147,7 +1147,7 @@ private:
             return max_size();
         }
 
-        return math::Max(requested, 2 * old);
+        return math::max(requested, 2 * old);
     }
 
     void reallocate(val_type& val, size_type new_capacity)

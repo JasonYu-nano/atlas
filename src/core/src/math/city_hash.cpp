@@ -162,7 +162,7 @@ static uint32 Hash32Len5to12(const char *s, size_t len) {
     return fmix(Mur(c, Mur(b, Mur(a, d))));
 }
 
-uint32 CityHash32(const char *s, size_t len) {
+uint32 city_hash32(const char *s, size_t len) {
     if (len <= 24) {
         return len <= 12 ?
                (len <= 4 ? Hash32Len0to4(s, len) : Hash32Len5to12(s, len)) :
@@ -243,7 +243,7 @@ static uint64 ShiftMix(uint64 val) {
 }
 
 static uint64 HashLen16(uint64 u, uint64 v) {
-    return Hash128to64(uint128(u, v));
+    return hash128_to64(uint128(u, v));
 }
 
 static uint64 HashLen16(uint64 u, uint64 v, uint64 mul) {
@@ -339,7 +339,7 @@ static uint64 HashLen33to64(const char *s, size_t len) {
     return b + x;
 }
 
-uint64 CityHash64(const char *s, size_t len) {
+uint64 city_hash64(const char *s, size_t len) {
     if (len <= 32) {
         if (len <= 16) {
             return HashLen0to16(s, len);
@@ -377,20 +377,20 @@ uint64 CityHash64(const char *s, size_t len) {
                      HashLen16(v.second, w.second) + x);
 }
 
-uint64 CityHash64WithSeed(const char *s, size_t len, uint64 seed) {
-    return CityHash64WithSeeds(s, len, k2, seed);
+uint64 city_hash64_with_seed(const char *s, size_t len, uint64 seed) {
+    return city_hash64_with_seeds(s, len, k2, seed);
 }
 
-uint64 CityHash64WithSeeds(const char *s, size_t len,
+uint64 city_hash64_with_seeds(const char *s, size_t len,
                            uint64 seed0, uint64 seed1) {
-    return HashLen16(CityHash64(s, len) - seed0, seed1);
+    return HashLen16(city_hash64(s, len) - seed0, seed1);
 }
 
 // A subroutine for CityHash128().  Returns a decent 128-bit hash for strings
 // of any length representable in signed long.  Based on City and Murmur.
 static uint128 CityMurmur(const char *s, size_t len, uint128 seed) {
-    uint64 a = Uint128Low64(seed);
-    uint64 b = Uint128High64(seed);
+    uint64 a = uint128_low64(seed);
+    uint64 b = uint128_high64(seed);
     uint64 c = 0;
     uint64 d = 0;
     if (len <= 16) {
@@ -418,7 +418,7 @@ static uint128 CityMurmur(const char *s, size_t len, uint128 seed) {
     return uint128(a ^ b, HashLen16(b, a));
 }
 
-uint128 CityHash128WithSeed(const char *s, size_t len, uint128 seed) {
+uint128 city_hash128_with_seed(const char *s, size_t len, uint128 seed) {
     if (len < 128) {
         return CityMurmur(s, len, seed);
     }
@@ -426,8 +426,8 @@ uint128 CityHash128WithSeed(const char *s, size_t len, uint128 seed) {
     // We expect len >= 128 to be the common case.  Keep 56 bytes of state:
     // v, w, x, y, and z.
     pair<uint64, uint64> v, w;
-    uint64 x = Uint128Low64(seed);
-    uint64 y = Uint128High64(seed);
+    uint64 x = uint128_low64(seed);
+    uint64 y = uint128_high64(seed);
     uint64 z = len * k1;
     v.first = Rotate(y ^ k1, 49) * k1 + Fetch64(s);
     v.second = Rotate(v.first, 42) * k1 + Fetch64(s + 8);
@@ -481,11 +481,11 @@ uint128 CityHash128WithSeed(const char *s, size_t len, uint128 seed) {
                    HashLen16(x + w.second, y + v.second));
 }
 
-uint128 CityHash128(const char *s, size_t len) {
+uint128 city_hash128(const char *s, size_t len) {
     return len >= 16 ?
-           CityHash128WithSeed(s + 16, len - 16,
+           city_hash128_with_seed(s + 16, len - 16,
                                uint128(Fetch64(s), Fetch64(s + 8) + k0)) :
-           CityHash128WithSeed(s, len, uint128(k0, k1));
+           city_hash128_with_seed(s, len, uint128(k0, k1));
 }
 
 #ifdef __SSE4_2__

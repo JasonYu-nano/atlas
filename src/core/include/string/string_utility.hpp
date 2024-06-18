@@ -66,7 +66,7 @@ public:
         auto first_length = this->length();
         auto second_length = rhs.length();
 
-        typename base::size_type count = math::Min(first_length, second_length);
+        typename base::size_type count = math::min(first_length, second_length);
         for (; 0 < count; --count, ++first, ++second)
         {
             auto lower_first = ToLower(*first);

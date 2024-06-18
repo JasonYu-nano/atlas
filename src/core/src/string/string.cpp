@@ -215,7 +215,7 @@ void String::Construct(const String::value_type ch, String::size_type count)
 void String::Construct(const String& right, size_type offset, size_type size)
 {
     ASSERT(right.IsValidIndex(offset));
-    size_type actual_size = math::Clamp<size_type>(size, 0, right.Length() - offset);
+    size_type actual_size = math::clamp<size_type>(size, 0, right.Length() - offset);
     if (actual_size > 0)
     {
         auto right_ptr = right.Data() + offset;
@@ -228,7 +228,7 @@ void String::Construct(const String& right, size_type offset, size_type size)
 void String::MoveConstruct(String& right, String::size_type offset, String::size_type size)
 {
     ASSERT(right.IsValidIndex(offset));
-    size_type actual_size = math::Clamp<size_type>(size, 0, right.Length() - offset);
+    size_type actual_size = math::clamp<size_type>(size, 0, right.Length() - offset);
     if (actual_size > 0)
     {
         auto right_ptr = right.Data();

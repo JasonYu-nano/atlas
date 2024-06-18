@@ -66,7 +66,7 @@ public:
         else
         {
             typename base::pointer new_ptr = base::allocate(allocator, new_count);
-            std::memmove(new_ptr, ptr, details::GetByteSize<sizeof(base::value_type)>(math::Min(old_count, new_count)));
+            std::memmove(new_ptr, ptr, details::GetByteSize<sizeof(base::value_type)>(math::min(old_count, new_count)));
             base::deallocate(allocator, ptr, old_count);
             return new_ptr;
         }

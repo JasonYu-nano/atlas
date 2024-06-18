@@ -62,7 +62,7 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
         co_return read;
     }
 
-    size_t actual_read_size = read_size == INDEX_NONE ? size : std::min(read_size, size - offset);
+    size_t actual_read_size = read_size == INDEX_NONE ? size : math::min(read_size, size - offset);
     if (actual_read_size <= 0)
     {
         co_return read;

@@ -1015,7 +1015,7 @@ inline String::size_type String::CalculateGrowth(size_type requested) const
         return MaxSize();
     }
 
-    return math::Max(requested, old + old / 2);
+    return math::max(requested, old + old / 2);
 }
 
 using StringView = BasicStringView<String::value_type>;
