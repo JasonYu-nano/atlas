@@ -115,7 +115,7 @@ public:
     String GetEntry(const NameEntryID& entry_id) const
     {
         std::shared_lock lock(mutex_);
-        if (const String* val = entry_map_.FindValue(entry_id.GetDisplayID()))
+        if (const String* val = entry_map_.find_value(entry_id.GetDisplayID()))
         {
             return *val;
         }
@@ -125,7 +125,7 @@ public:
     StringView GetEntryView(const NameEntryID& entry_id) const
     {
         std::shared_lock lock(mutex_);
-        if (const String* val = entry_map_.FindValue(entry_id.GetDisplayID()))
+        if (const String* val = entry_map_.find_value(entry_id.GetDisplayID()))
         {
             return StringView(*val);
         }
@@ -135,7 +135,7 @@ public:
     bool ContainsEntry(const NameEntryID& entry_id) const
     {
         std::shared_lock lock(mutex_);
-        return entry_map_.Contains(entry_id.GetDisplayID());
+        return entry_map_.contains(entry_id.GetDisplayID());
     }
 
 private:
@@ -145,9 +145,9 @@ private:
     void StoreEntry(const NameEntryID& entry_id, const ViewType& view)
     {
         std::unique_lock lock(mutex_);
-        if (!entry_map_.Contains(entry_id.GetDisplayID()))
+        if (!entry_map_.contains(entry_id.GetDisplayID()))
         {
-            entry_map_.Insert(entry_id.GetDisplayID(), String(view.data(), view.length()));
+            entry_map_.insert(entry_id.GetDisplayID(), String(view.data(), view.length()));
         }
     }
 

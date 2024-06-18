@@ -93,15 +93,7 @@ public:
      * @brief Get number of elements in set.
      * @return
      */
-    NODISCARD size_type Size() const
-    {
-        return tree_.size();
-    }
-    /**
-     * @brief Get number of elements in set.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
+    NODISCARD size_type size() const
     {
         return tree_.size();
     }
@@ -109,15 +101,7 @@ public:
      * @brief Get maximum number of elements in set.
      * @return
      */
-    NODISCARD size_type MaxSize() const
-    {
-        return tree_.max_size();
-    }
-    /**
-     * @brief Get maximum number of elements in set.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY size_type max_size() const
+    NODISCARD size_type max_size() const
     {
         return tree_.max_size();
     }
@@ -125,7 +109,7 @@ public:
      * @brief Get capacity of set.
      * @return
      */
-    NODISCARD size_type Capacity() const
+    NODISCARD size_type capacity() const
     {
         return tree_.capacity();
     }
@@ -133,7 +117,7 @@ public:
      * @brief Reserves memory such that the set can contain at least number elements.
      * @param new_capacity
      */
-    void Reserve(size_type new_capacity)
+    void reserve(size_type new_capacity)
     {
         tree_.reserve(new_capacity);
     }
@@ -141,14 +125,14 @@ public:
      * @brief Clear all elements.
      * @param reset_capacity Deallocate the remain capacity. Default is false.
      */
-    void Clear(bool reset_capacity = false)
+    void clear(bool reset_capacity = false)
     {
         tree_.clear(reset_capacity);
     }
     /**
      * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
      */
-    void ShrinkToFit()
+    void shrink_to_fit()
     {
         tree_.shrink_to_fit();
     }
@@ -158,7 +142,7 @@ public:
      * @param already_in_set Optional pointer to bool that will be set depending on whether element is already in set.
      * @return Iterator to insert element.
      */
-    iterator Insert(const param_type value, bool* already_in_set = nullptr)
+    iterator insert(const param_type value, bool* already_in_set = nullptr)
     {
         return tree_.insert_unique(value, already_in_set);
     }
@@ -168,7 +152,7 @@ public:
      * @param already_in_set Optional pointer to bool that will be set depending on whether element is already in set.
      * @return Iterator to insert element.
      */
-    iterator Insert(value_type&& value, bool* already_in_set = nullptr)
+    iterator insert(value_type&& value, bool* already_in_set = nullptr)
     {
         return tree_.insert_unique(std::forward<value_type>(value), already_in_set);
     }
@@ -178,7 +162,7 @@ public:
      * @param range
      */
     template<std::ranges::forward_range RangeType>
-    void Insert(const RangeType& range)
+    void insert(const RangeType& range)
     {
         tree_.insert_unique(range);
     }
@@ -187,7 +171,7 @@ public:
      * @param value
      * @return
      */
-    NODISCARD bool Contains(const param_type value) const
+    NODISCARD bool contains(const param_type value) const
     {
         return tree_.find(value) != end();
     }
@@ -196,7 +180,7 @@ public:
      * @param value
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    NODISCARD iterator Find(const param_type value)
+    NODISCARD iterator find(const param_type value)
     {
         return tree_.find(value);
     }
@@ -205,7 +189,7 @@ public:
      * @param value
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    NODISCARD const_iterator Find(const param_type value) const
+    NODISCARD const_iterator find(const param_type value) const
     {
         return tree_.find(value);
     }
@@ -214,7 +198,7 @@ public:
      * @param value
      * @return Whether the element has been removed.
      */
-    bool Remove(const param_type value)
+    bool remove(const param_type value)
     {
         return tree_.remove_unique(value) > 0;
     }
@@ -223,7 +207,7 @@ public:
      * @param where
      * @return Iterator to removed element.
      */
-    iterator Remove(const_iterator where)
+    iterator remove(const_iterator where)
     {
         return tree_.remove(where);
     }
@@ -311,15 +295,7 @@ public:
      * @brief Get number of elements in set.
      * @return
      */
-    NODISCARD size_type Size() const
-    {
-        return tree_.size();
-    }
-    /**
-     * @brief Get number of elements in set.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
+    NODISCARD size_type size() const
     {
         return tree_.size();
     }
@@ -327,15 +303,7 @@ public:
      * @brief Get maximum number of elements in set.
      * @return
      */
-    NODISCARD size_type MaxSize() const
-    {
-        return tree_.max_size();
-    }
-    /**
-     * @brief Get maximum number of elements in set.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY size_type max_size() const
+    NODISCARD size_type max_size() const
     {
         return tree_.max_size();
     }
@@ -343,7 +311,7 @@ public:
      * @brief Get capacity of set.
      * @return
      */
-    NODISCARD size_type Capacity() const
+    NODISCARD size_type capacity() const
     {
         return tree_.capacity();
     }
@@ -351,7 +319,7 @@ public:
      * @brief Reserves memory such that the set can contain at least number elements.
      * @param new_capacity
      */
-    void Reserve(size_type new_capacity)
+    void reserve(size_type new_capacity)
     {
         tree_.reserve(new_capacity);
     }
@@ -359,14 +327,14 @@ public:
      * @brief Clear all elements.
      * @param reset_capacity Deallocate the remain capacity. Default is false.
      */
-    void Clear(bool reset_capacity = false)
+    void clear(bool reset_capacity = false)
     {
         tree_.clear(reset_capacity);
     }
     /**
      * @brief Shrinks the container's used memory to smallest possible to store elements currently in it.
      */
-    void ShrinkToFit()
+    void shrink_to_fit()
     {
         tree_.shrink_to_fit();
     }
@@ -375,7 +343,7 @@ public:
      * @param value
      * @return Iterator to insert element.
      */
-    iterator Insert(const param_type value)
+    iterator insert(const param_type value)
     {
         return tree_.insert_equal(value);
     }
@@ -384,7 +352,7 @@ public:
      * @param value
      * @return Iterator to insert element.
      */
-    iterator Insert(value_type&& value)
+    iterator insert(value_type&& value)
     {
         return tree_.insert_equal(std::forward<value_type>(value));
     }
@@ -394,7 +362,7 @@ public:
      * @param range
      */
     template<std::ranges::forward_range RangeType>
-    void Insert(const RangeType& range)
+    void insert(const RangeType& range)
     {
         tree_.insert_equal(range);
     }
@@ -403,7 +371,7 @@ public:
      * @param value
      * @return
      */
-    NODISCARD bool Contains(const param_type value) const
+    NODISCARD bool contains(const param_type value) const
     {
         return tree_.find(value) != end();
     }
@@ -412,7 +380,7 @@ public:
      * @param value
      * @return
      */
-    size_type Count(const param_type value) const
+    size_type count(const param_type value) const
     {
         return tree_.count(value);
     }
@@ -421,7 +389,7 @@ public:
      * @param value
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    NODISCARD iterator Find(const param_type value)
+    NODISCARD iterator find(const param_type value)
     {
         return tree_.find(value);
     }
@@ -430,7 +398,7 @@ public:
      * @param value
      * @return Iterator to found element. Iterator to the end otherwise.
      */
-    NODISCARD const_iterator Find(const param_type value) const
+    NODISCARD const_iterator find(const param_type value) const
     {
         return tree_.find(value);
     }
@@ -439,7 +407,7 @@ public:
      * @param value
      * @return Number of removed element.
      */
-    size_type Remove(const param_type value)
+    size_type remove(const param_type value)
     {
         return tree_.remove(value);
     }
@@ -448,7 +416,7 @@ public:
      * @param value
      * @return Iterator to removed element.
      */
-    iterator Remove(const_iterator value)
+    iterator remove(const_iterator value)
     {
         return tree_.remove(value);
     }

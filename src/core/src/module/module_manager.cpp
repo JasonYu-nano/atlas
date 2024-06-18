@@ -14,14 +14,14 @@ DEFINE_LOGGER(module_manager);
 bool ModuleManager::IsModuleLoaded(StringName name)
 {
     std::shared_lock lock(mutex_);
-    return module_info_map_.Contains(name);
+    return module_info_map_.contains(name);
 }
 
 IModule* ModuleManager::Load(StringName name)
 {
     {
         std::shared_lock lock(mutex_);
-        auto module_it = module_info_map_.Find(name);
+        auto module_it = module_info_map_.find(name);
         if (module_it != module_info_map_.end())
         {
             return module_it->second.module.get();
@@ -36,14 +36,14 @@ void ModuleManager::Unload(StringName name)
     ModuleInfo pending_unload_module;
     {
         std::unique_lock lock(mutex_);
-        auto it = module_info_map_.Find(name);
+        auto it = module_info_map_.find(name);
         if (it == module_info_map_.end())
         {
             return;
         }
 
         pending_unload_module = std::move(it->second);
-        module_info_map_.Remove(it);
+        module_info_map_.remove(it);
     }
 
     if (pending_unload_module.module)
@@ -72,7 +72,7 @@ void ModuleManager::Shutdown()
     };
 
     Array<ShutdownModuleInfo> pending_shutdown_modules;
-    pending_shutdown_modules.reserve(module_info_map_.Size());
+    pending_shutdown_modules.reserve(module_info_map_.size());
 
     for (auto&& it : module_info_map_)
     {
@@ -88,7 +88,7 @@ void ModuleManager::Shutdown()
         }
     }
     pending_shutdown_modules.clear();
-    module_info_map_.Clear();
+    module_info_map_.clear();
 }
 
 IModule* ModuleManager::AddModule(StringName name)
@@ -97,13 +97,13 @@ IModule* ModuleManager::AddModule(StringName name)
     {
         std::unique_lock lock(mutex_);
         // double check to avoid construct duplicate module info.
-        auto module_it = module_info_map_.Find(name);
+        auto module_it = module_info_map_.find(name);
         if (module_it != module_info_map_.end())
         {
             return module_it->second.module.get();
         }
 
-        it = module_info_map_.Insert(name, ModuleInfo());
+        it = module_info_map_.insert(name, ModuleInfo());
         // ensure can always get correct instance.
         it->second.name = name;
 
@@ -122,14 +122,14 @@ IModule* ModuleManager::AddModule(StringName name)
 void ModuleManager::CreateModuleImp(ModuleInfo& module_info)
 {
     Path search_path;
-    if (Path* p = module_search_path_map_.FindValue(module_info.name))
+    if (Path* p = module_search_path_map_.find_value(module_info.name))
     {
         search_path = *p;
     }
     else
     {
         search_path = Directory::GetEngineDirectory();
-        module_search_path_map_.Insert(module_info.name, search_path);
+        module_search_path_map_.insert(module_info.name, search_path);
     }
 
     const Path lib_path = PlatformTraits::GetDynamicLibraryPath(Directory::GetModuleDirectory(search_path), module_info.name);

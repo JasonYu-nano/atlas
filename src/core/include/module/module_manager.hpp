@@ -69,7 +69,7 @@ public:
 
     static void AddModuleSearchPath(StringName module_name, const Path& path)
     {
-        module_search_path_map_.Insert(module_name, path);
+        module_search_path_map_.insert(module_name, path);
     }
 
 private:

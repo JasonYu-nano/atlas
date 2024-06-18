@@ -25,16 +25,16 @@ TEST(SetTest, SetCtor)
     }
     {
         Set<SetElement> set(10);
-        EXPECT_TRUE(set.Capacity() == 10);
+        EXPECT_TRUE(set.capacity() == 10);
     }
     {
         Set<SetElement> set = {{4}, {1}, {3}, {3}};
-        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.Size() == 3);
+        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.size() == 3);
     }
     {
         Array<SetElement> array = {{4}, {1}, {3}, {3}};
         Set<SetElement> set(array);
-        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.Size() == 3);
+        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.size() == 3);
     }
 };
 
@@ -43,15 +43,15 @@ TEST(SetTest, SetInsert)
     {
         Set<SetElement> set;
         bool already_in_set = false;
-        set.Insert({1}, &already_in_set);
+        set.insert({1}, &already_in_set);
         EXPECT_TRUE(!already_in_set);
     }
     {
         Array<SetElement> pending_insert = {{4}, {1}, {3}, {3}};
         Set<SetElement> set;
-        set.Insert({1});
-        set.Insert(pending_insert);
-        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.Size() == 3);
+        set.insert({1});
+        set.insert(pending_insert);
+        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.size() == 3);
     }
 };
 
@@ -59,9 +59,9 @@ TEST(SetTest, SetFind)
 {
     {
         Set<SetElement> set;
-        set.Insert({1});
-        EXPECT_TRUE(set.Contains({1}));
-        auto it = set.Find({1});
+        set.insert({1});
+        EXPECT_TRUE(set.contains({1}));
+        auto it = set.find({1});
         EXPECT_TRUE(*it == 1);
     }
 };
@@ -70,8 +70,8 @@ TEST(SetTest, SetRemove)
 {
     {
         Set<SetElement> set;
-        set.Insert({1});
-        EXPECT_TRUE(set.Remove({1}) && set.Size() == 0);
+        set.insert({1});
+        EXPECT_TRUE(set.remove({1}) && set.size() == 0);
     }
 };
 
@@ -82,16 +82,16 @@ TEST(MultiSetTest, MultiSetCtor)
     }
     {
         MultiSet<SetElement> set(10);
-        EXPECT_TRUE(set.Capacity() == 10);
+        EXPECT_TRUE(set.capacity() == 10);
     }
     {
         MultiSet<SetElement> set = {{4}, {1}, {3}, {3}};
-        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.Size() == 4);
+        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.size() == 4);
     }
     {
         Array<SetElement> array = {{4}, {1}, {3}, {3}};
         MultiSet<SetElement> set(array);
-        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.Size() == 4);
+        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.size() == 4);
     }
 };
 
@@ -99,17 +99,17 @@ TEST(MultiSetTest, MultiSetInsert)
 {
     {
         MultiSet<SetElement> set;
-        set.Insert({1});
-        EXPECT_TRUE(set.Size() == 1);
-        set.Insert({1});
-        EXPECT_TRUE(set.Size() == 2);
+        set.insert({1});
+        EXPECT_TRUE(set.size() == 1);
+        set.insert({1});
+        EXPECT_TRUE(set.size() == 2);
     }
     {
         Array<SetElement> pending_insert = {{4}, {1}, {3}, {3}};
         MultiSet<SetElement> set;
-        set.Insert({1});
-        set.Insert(pending_insert);
-        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.Size() == 5);
+        set.insert({1});
+        set.insert(pending_insert);
+        EXPECT_TRUE(std::is_sorted(set.begin(), set.end()) && set.size() == 5);
     }
 };
 
@@ -117,8 +117,8 @@ TEST(MultiSetTest, MultiSetFind)
 {
     {
         MultiSet<SetElement> set = {{4}, {1}, {3}, {3}};
-        EXPECT_TRUE(set.Count({3}) == 2);
-        EXPECT_TRUE(set.Count({5}) == 0);
+        EXPECT_TRUE(set.count({3}) == 2);
+        EXPECT_TRUE(set.count({5}) == 0);
     }
 };
 
@@ -126,7 +126,7 @@ TEST(MultiSetTest, MultiSetRemove)
 {
     {
         MultiSet<SetElement> set = {{4}, {1}, {3}, {3}};
-        EXPECT_TRUE(set.Remove({3}) == 2 && set.Size() == 2);
+        EXPECT_TRUE(set.remove({3}) == 2 && set.size() == 2);
     }
 };
 
@@ -241,15 +241,15 @@ TEST(MultiMapTest, MultiMapRemove)
 TEST(UnorderedSetTest, UnorderedSetCtor)
 {
     UnorderedSet<int32> set;
-    set.Insert(5);
-    EXPECT_TRUE(set.Contains(5));
+    set.insert(5);
+    EXPECT_TRUE(set.contains(5));
 }
 
 TEST(UnorderedMapTest, UnorderedMapCtor)
 {
     UnorderedMap<std::string, int32> map;
-    map.Insert("atlas", 5);
-    EXPECT_TRUE(map.Contains("atlas"));
+    map.insert("atlas", 5);
+    EXPECT_TRUE(map.contains("atlas"));
 }
 
 }

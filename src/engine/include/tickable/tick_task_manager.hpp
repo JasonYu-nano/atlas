@@ -16,7 +16,7 @@ public:
     {
         if (task)
         {
-            task_set_.Insert(task);
+            task_set_.insert(task);
         }
     }
 
@@ -24,7 +24,7 @@ public:
     {
         if (task)
         {
-            task_set_.Remove(task);
+            task_set_.remove(task);
         }
     }
 

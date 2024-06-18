@@ -57,7 +57,7 @@ public:
     explicit UnorderedSet(const std::initializer_list<value_type>& initializer, size_type bucket_size = 0, const allocator_type& alloc = allocator_type())
         : UnorderedSet(bucket_size, alloc)
     {
-        Insert(initializer);
+        insert(initializer);
     }
     /**
      * @brief Constructor from a range
@@ -70,7 +70,7 @@ public:
     explicit UnorderedSet(RangeType range, size_type n = 0, const allocator_type& alloc = allocator_type())
         : UnorderedSet(n, alloc)
     {
-        Insert(range);
+        insert(range);
     }
 
     UnorderedSet(const UnorderedSet& right) : table_(right.table_) {};
@@ -92,15 +92,7 @@ public:
      * @brief Get number of elements in set.
      * @return
      */
-    NODISCARD size_type Size() const
-    {
-        return table_.size();
-    }
-    /**
-     * @brief Get number of elements in set.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY size_type size() const
+    NODISCARD size_type size() const
     {
         return table_.size();
     }
@@ -108,17 +100,15 @@ public:
      * @brief Get maximum number of elements in set.
      * @return
      */
-    NODISCARD constexpr size_type MaxSize() const { return table_.max_size(); }
-    /**
-     * @brief Get maximum number of elements in set.
-     * @return
-     */
-    NODISCARD DO_NOT_USE_DIRECTLY constexpr size_type max_size() const { return table_.max_size(); }
+    NODISCARD constexpr size_type max_size() const
+    {
+        return table_.max_size();
+    }
     /**
      * @brief Get capacity of set.
      * @return
      */
-    NODISCARD size_type Capacity() const
+    NODISCARD size_type capacity() const
     {
         return table_.capacity();
     }
@@ -126,11 +116,11 @@ public:
      * @brief Reserves memory such that the set can contain at least number elements.
      * @param new_capacity
      */
-    void Reserve(size_type new_capacity)
+    void reserve(size_type new_capacity)
     {
         table_.reserve(new_capacity);
     }
-    void Clear()
+    void clear()
     {
         table_.clear();
     }
@@ -140,7 +130,7 @@ public:
      * @param already_in_set Optional pointer to bool that will be set depending on whether element is already in set.
      * @return
      */
-    iterator Insert(const value_type& value, bool* already_in_set = nullptr)
+    iterator insert(const value_type& value, bool* already_in_set = nullptr)
     {
         auto ret = table_.insert(value);
         if (already_in_set)
@@ -155,7 +145,7 @@ public:
      * @param already_in_set Optional pointer to bool that will be set depending on whether element is already in set.
      * @return
      */
-    iterator Insert(value_type&& value, bool* already_in_set = nullptr)
+    iterator insert(value_type&& value, bool* already_in_set = nullptr)
     {
         auto ret = table_.insert(std::forward<value_type>(value));
         if (already_in_set)
@@ -170,7 +160,7 @@ public:
      * @param range
      */
     template<std::ranges::input_range RangeType>
-    void Insert(const RangeType& range)
+    void insert(const RangeType& range)
     {
         table_.insert(std::ranges::begin(range), std::ranges::end(range));
     }
@@ -179,7 +169,7 @@ public:
      * @param value
      * @return
      */
-    NODISCARD bool Contains(const param_type value) const
+    NODISCARD bool contains(const param_type value) const
     {
         return table_.find(value) != end();
     }
@@ -188,7 +178,7 @@ public:
      * @param value
      * @return
      */
-    NODISCARD iterator Find(const param_type value)
+    NODISCARD iterator find(const param_type value)
     {
         return table_.find(value);
     }
@@ -197,7 +187,7 @@ public:
      * @param value
      * @return
      */
-    NODISCARD const_iterator Find(const param_type value) const
+    NODISCARD const_iterator find(const param_type value) const
     {
         return table_.find(value);
     }
@@ -206,7 +196,7 @@ public:
      * @param value
      * @return
      */
-    bool Remove(const param_type value)
+    bool remove(const param_type value)
     {
         return table_.erase(value);
     }
@@ -215,7 +205,7 @@ public:
      * @param where
      * @return
      */
-    iterator Remove(const_iterator where)
+    iterator remove(const_iterator where)
     {
         return table_.erase(where);
     }

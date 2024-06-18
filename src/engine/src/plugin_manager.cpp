@@ -99,7 +99,7 @@ void ParsePluginDependency(PluginDesc& desc, const toml::table& config)
         {
             if (auto name_view = plugin_node.value<std::string_view>())
             {
-                desc.dependency_plugins.Insert(*name_view);
+                desc.dependency_plugins.insert(*name_view);
             }
         }
     }
