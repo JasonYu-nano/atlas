@@ -132,13 +132,13 @@ void ModuleManager::create_module_impl(ModuleInfo& module_info)
         module_search_path_map_.insert(module_info.name, search_path);
     }
 
-    const Path lib_path = PlatformTraits::GetDynamicLibraryPath(Directory::get_module_directory(search_path), module_info.name);
+    const Path lib_path = PlatformTraits::get_library_path(Directory::get_module_directory(search_path), module_info.name);
 
-    void* handle = PlatformTraits::LoadDynamicLibrary(lib_path);
+    void* handle = PlatformTraits::load_library(lib_path);
     if (handle)
     {
         module_info.module_handle = std::unique_ptr<void, ReleaseModuleHandle>(handle);
-        fn_create_module fn_address = (fn_create_module)PlatformTraits::GetExportedSymbol(handle, "CreateModule");
+        fn_create_module fn_address = (fn_create_module)PlatformTraits::get_exported_symbol(handle, "CreateModule");
         if (fn_address)
         {
             module_info.module = std::unique_ptr<IModule>(fn_address());

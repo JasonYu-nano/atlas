@@ -3,21 +3,21 @@
 
 #pragma once
 
-#include "file_system/path.hpp"
+#include "platform/generic_platform_traits.hpp"
 
 namespace atlas
 {
 
-class CORE_API MacPlatformTraits
+class CORE_API MacPlatformTraits : public GenericPlatformTraits
 {
 public:
     MacPlatformTraits() = delete;
 
-    static void* LoadDynamicLibrary(const Path& path);
-    static void FreeDynamicLibrary(void* module_handle);
-    static void* GetExportedSymbol(void* handle, const String& symbol_name);
-    static Path GetEngineDirectory();
-    static Path GetDynamicLibraryPath(const Path& module_dir, const class StringName& lib_name);
+    static void* load_library(const Path& path);
+
+    static void free_library(void* module_handle);
+
+    static void* get_exported_symbol(void* handle, const String& symbol_name);
 };
 
 using PlatformTraits = MacPlatformTraits;

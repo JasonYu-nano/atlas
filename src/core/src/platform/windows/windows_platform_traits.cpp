@@ -9,7 +9,7 @@
 namespace atlas
 {
 
-void* WindowsPlatformTraits::LoadDynamicLibrary(const Path& path)
+void* WindowsPlatformTraits::load_library(const Path& path)
 {
     auto&& sys_path = path.to_os_path();
     void* handle = ::LoadLibrary(sys_path.data());
@@ -22,53 +22,15 @@ void* WindowsPlatformTraits::LoadDynamicLibrary(const Path& path)
     return handle;
 }
 
-void WindowsPlatformTraits::FreeDynamicLibrary(void* module_handle)
+void WindowsPlatformTraits::free_library(void* module_handle)
 {
     ASSERT(module_handle);
     ::FreeLibrary((HMODULE)module_handle);
 }
 
-void* WindowsPlatformTraits::GetExportedSymbol(void* handle, const String& symbol_name)
+void* WindowsPlatformTraits::get_exported_symbol(void* handle, const String& symbol_name)
 {
     return ::GetProcAddress((HMODULE)handle, symbol_name.Data());
-}
-
-const Path& WindowsPlatformTraits::GetEngineDirectory()
-{
-    static Path dir = GetEngineDirectoryImpl();
-    return dir;
-}
-
-const Path& WindowsPlatformTraits::GetRelativeBuildDirectory()
-{
-#if DEBUG
-    static Path reltive_path("build\\debug\\out\\bin");
-#elif DEBUG_OPTIMIZE
-    static Path reltive_path("build\\debug_optimize\\out\\bin");
-#elif RELEASE
-    static Path reltive_path("build\\release\\out\\bin");
-#else
-#   error "Invalid build type"
-#endif
-    return reltive_path;
-}
-
-Path WindowsPlatformTraits::GetDynamicLibraryPath(const Path& module_dir, const StringName& lib_name)
-{
-#if DEBUG
-    return module_dir / String::Format("{0}d.dll", lib_name.ToLexical());
-#else
-    return module_dir / lib_name.ToLexical();
-#endif
-}
-
-Path WindowsPlatformTraits::GetEngineDirectoryImpl()
-{
-    std::error_code error;
-    std::filesystem::path working_directory = std::filesystem::current_path(error);
-    String working_directory_string = String::From(working_directory);
-    working_directory_string.Remove(GetRelativeBuildDirectory().to_string());
-    return { working_directory_string };
 }
 
 } // namespace atlas

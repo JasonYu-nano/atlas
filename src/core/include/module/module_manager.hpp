@@ -18,7 +18,7 @@ struct ReleaseModuleHandle
     {
         if (handle)
         {
-            PlatformTraits::FreeDynamicLibrary(handle);
+            PlatformTraits::free_library(handle);
             handle = nullptr;
         }
     }

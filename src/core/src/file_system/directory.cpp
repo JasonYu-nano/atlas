@@ -9,7 +9,7 @@ namespace atlas
 
 Path Directory::get_engine_directory()
 {
-    static Path directory = PlatformTraits::GetEngineDirectory().normalize();
+    static Path directory = PlatformTraits::get_engine_directory().normalize();
     return directory;
 }
 
@@ -20,7 +20,7 @@ Path Directory::get_engine_module_directory()
 
 Path Directory::get_module_directory(const Path& search_path)
 {
-    return search_path / PlatformTraits::GetRelativeBuildDirectory();
+    return search_path / PlatformTraits::get_relative_build_directory();
 }
 
 Path Directory::get_engine_plugins_directory()
