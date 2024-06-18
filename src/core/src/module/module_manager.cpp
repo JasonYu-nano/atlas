@@ -11,13 +11,13 @@ namespace atlas
 
 DEFINE_LOGGER(module_manager);
 
-bool ModuleManager::IsModuleLoaded(StringName name)
+bool ModuleManager::is_module_loaded(StringName name)
 {
     std::shared_lock lock(mutex_);
     return module_info_map_.contains(name);
 }
 
-IModule* ModuleManager::Load(StringName name)
+IModule* ModuleManager::load(StringName name)
 {
     {
         std::shared_lock lock(mutex_);
@@ -28,10 +28,10 @@ IModule* ModuleManager::Load(StringName name)
         }
     }
 
-    return AddModule(name);
+    return add_module(name);
 }
 
-void ModuleManager::Unload(StringName name)
+void ModuleManager::unload(StringName name)
 {
     ModuleInfo pending_unload_module;
     {
@@ -48,11 +48,11 @@ void ModuleManager::Unload(StringName name)
 
     if (pending_unload_module.module)
     {
-        pending_unload_module.module->Shutdown();
+        pending_unload_module.module->shutdown();
     }
 }
 
-void ModuleManager::Shutdown()
+void ModuleManager::shutdown()
 {
     struct ShutdownModuleInfo
     {
@@ -84,14 +84,14 @@ void ModuleManager::Shutdown()
     {
         if (it->module)
         {
-            it->module->Shutdown();
+            it->module->shutdown();
         }
     }
     pending_shutdown_modules.clear();
     module_info_map_.clear();
 }
 
-IModule* ModuleManager::AddModule(StringName name)
+IModule* ModuleManager::add_module(StringName name)
 {
     auto&& it = module_info_map_.end();
     {
@@ -107,19 +107,19 @@ IModule* ModuleManager::AddModule(StringName name)
         // ensure can always get correct instance.
         it->second.name = name;
 
-        CreateModuleImp(it->second);
+        create_module_impl(it->second);
     }
     // to avoid deadlock in Startup(), don't put in lock scope.
     if (it->second.module)
     {
-        it->second.module->Startup();
+        it->second.module->startup();
     }
     // start up may load other dependency modules. current load order should after dependency modules.
     it->second.load_order = ++ModuleInfo::current_load_order;
     return it->second.module.get();
 }
 
-void ModuleManager::CreateModuleImp(ModuleInfo& module_info)
+void ModuleManager::create_module_impl(ModuleInfo& module_info)
 {
     Path search_path;
     if (Path* p = module_search_path_map_.find_value(module_info.name))

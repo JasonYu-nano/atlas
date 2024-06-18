@@ -38,7 +38,7 @@ void Engine::Startup(int argc, char** argv)
 void Engine::Shutdown()
 {
     plugin_manager_->DeInitialize();
-    ModuleManager::Shutdown();
+    ModuleManager::shutdown();
 }
 
 void Engine::Loop()

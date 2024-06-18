@@ -26,8 +26,8 @@ Project Project::Parse(const Path& project_file)
 
     proj.name_ = StringName(StringView(name));
 
-    ModuleManager::AddModuleSearchPath(proj.name_, project_file.parent_path());
-    proj.module_ = ModuleManager::Load(proj.name_);
+    ModuleManager::add_module_search_path(proj.name_, project_file.parent_path());
+    proj.module_ = ModuleManager::load(proj.name_);
 
     return proj;
 }

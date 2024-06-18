@@ -13,11 +13,11 @@ DEFINE_LOGGER(project);
 
 class EMPTY_PROJECT_API EmptyProjectModule : public IModule
 {
-    void Startup() override
+    void startup() override
     {
         LOG_INFO(project, "project module startup")
     }
-    void Shutdown() override
+    void shutdown() override
     {
         LOG_INFO(project, "project module Shutdown")
     }

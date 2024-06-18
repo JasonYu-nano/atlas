@@ -12,12 +12,12 @@ namespace atlas
 class RENDERER_API RendererModule : public IModule
 {
 public:
-    void Startup() final
+    void startup() final
     {
         LOG_INFO(temp, "renderer module startup.")
     }
 
-    void Shutdown() final
+    void shutdown() final
     {
         LOG_INFO(temp, "renderer module shutdown.")
     }

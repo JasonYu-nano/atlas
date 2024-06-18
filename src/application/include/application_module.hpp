@@ -14,11 +14,11 @@ namespace atlas
 class APPLICATION_API ApplicationModule : public IManualTickableModule
 {
 public:
-    void Startup() override;
+    void startup() override;
 
-    void Shutdown() override;
+    void shutdown() override;
 
-    void Tick(float delta_time) override;
+    void tick(float delta_time) override;
 
 private:
     std::unique_ptr<PlatformApplication> application_{ nullptr };
