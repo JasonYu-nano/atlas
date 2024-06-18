@@ -1023,20 +1023,11 @@ using StringView = BasicStringView<String::value_type>;
 }
 
 template<>
-struct CORE_API fmt::formatter<atlas::String>
+struct CORE_API fmt::formatter<atlas::String> : formatter<fmt::string_view>
 {
-    template<typename ParseContext>
-    constexpr auto parse(ParseContext& ctx)
-    {
-        return ctx.begin();
-    }
-
     template <typename FormatContext>
     auto format(const atlas::String& str, FormatContext& ctx)
     {
-        auto&& out = ctx.out();
-        auto&& buf = fmt::detail::get_buffer<atlas::String::value_type>(out);
-        fmt::detail::vformat_to<atlas::String::value_type>(buf, str.Data(), {}, {});
-        return fmt::detail::get_iterator(buf, out);
+        return formatter<fmt::string_view>::format({str.data(), str.Length()}, ctx);
     }
 };

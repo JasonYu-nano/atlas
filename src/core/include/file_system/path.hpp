@@ -413,7 +413,7 @@ public:
      * @brief Converts path into a string.
      * @return
      */
-    NODISCARD String to_string() const
+    NODISCARD const String& to_string() const
     {
         return text_;
     }
@@ -620,3 +620,13 @@ private:
 };
 
 } // namespace atlas
+
+template<>
+struct CORE_API fmt::formatter<atlas::Path> : formatter<atlas::String>
+{
+    template <typename FormatContext>
+    auto format(const atlas::Path& path, FormatContext& ctx)
+    {
+        return formatter<atlas::String>::format(path.to_string(), ctx);
+    }
+};

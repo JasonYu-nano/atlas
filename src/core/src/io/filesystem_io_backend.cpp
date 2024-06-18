@@ -45,7 +45,7 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
     FILE* stream;
     if (fopen_s(&stream, file.to_string().data(), "r") != 0)
     {
-        LOG_WARN(core, "Failed to open file {0}", file.to_string());
+        LOG_WARN(core, "Failed to open file {0}", file);
         co_return read;
     }
 
@@ -86,7 +86,7 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
     {
         if (!feof(stream))
         {
-            LOG_WARN(core, "Read file {} failed", file.to_string());
+            LOG_WARN(core, "Read file {} failed", file);
             buffer.resize(old_size);
         }
         else
@@ -109,7 +109,7 @@ Task<size_t> FilesystemIOBackend::async_write(Path file, IOBufferView buffer, bo
     FILE* stream;
     if (fopen_s(&stream, file.to_string().data(), append ? "a" : "w") != 0)
     {
-        LOG_WARN(core, "Failed to open file {0}", file.to_string());
+        LOG_WARN(core, "Failed to open file {0}", file);
         co_return write;
     }
 
