@@ -25,7 +25,7 @@ void PluginManager::ScanPlugins(const Path& directory)
             auto plugin_path = dir_entry.path() / "plugin.toml";
             if (std::filesystem::exists(plugin_path))
             {
-                ParsePluginDescription(String::From(plugin_path));
+                ParsePluginDescription(String::from(plugin_path));
             }
         }
     }

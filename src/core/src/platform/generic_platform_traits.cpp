@@ -10,8 +10,8 @@ static Path get_engine_directory_impl()
 {
     std::error_code error;
     std::filesystem::path working_directory = std::filesystem::current_path(error);
-    String working_directory_string = String::From(working_directory);
-    working_directory_string.Remove(GenericPlatformTraits::get_relative_build_directory().to_string());
+    String working_directory_string = String::from(working_directory);
+    working_directory_string.remove(GenericPlatformTraits::get_relative_build_directory().to_string());
     return { working_directory_string };
 }
 
@@ -38,7 +38,7 @@ const Path& GenericPlatformTraits::get_relative_build_directory()
 Path GenericPlatformTraits::get_library_path(const Path& module_dir, StringName lib_name)
 {
 #if DEBUG
-    return module_dir / String::Format("{0}d.dll", lib_name.ToLexical());
+    return module_dir / String::format("{0}d.dll", lib_name.ToLexical());
 #else
     return module_dir / lib_name.ToLexical();
 #endif

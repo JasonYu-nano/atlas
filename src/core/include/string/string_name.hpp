@@ -86,7 +86,7 @@ public:
         }
 
         String prefix_name = details::NameEntryPool::Get().GetEntry(name_entry_id_);
-        return String::Format("{0}_{1}", prefix_name, SUFFIX_TO_ACTUAL(number_));
+        return String::format("{0}_{1}", prefix_name, SUFFIX_TO_ACTUAL(number_));
     }
     /**
      * @brief Convert StringName to String, excludes number part.

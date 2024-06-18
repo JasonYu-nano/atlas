@@ -91,9 +91,9 @@ public:
         }
 
         const_pointer my_first = text_.Data();
-        const_pointer my_last = my_first + text_.Size();
+        const_pointer my_last = my_first + text_.size();
         const_pointer other_first = other.text_.Data();
-        const_pointer other_last = other_first + other.text_.Size();
+        const_pointer other_last = other_first + other.text_.size();
         const_pointer my_root_end = find_root_name_end(my_first, my_last);
         const_pointer other_root_end = find_root_name_end(other_first, other_last);
 
@@ -107,26 +107,26 @@ public:
 
         if (other_root_end != other_last && is_separator_(*other_root_end))
         {
-            text_.Remove(0, static_cast<size_t>(my_root_end - my_first));
+            text_.remove(0, static_cast<size_t>(my_root_end - my_first));
         }
         else
         {
             if (my_root_end == my_last) {
                 if (my_root_end - my_first >= 3)
                 {
-                    text_.Append(preferred_separator_);
+                    text_.append(preferred_separator_);
                 }
             }
             else
             {
                 if (!is_separator_(my_last[-1]))
                 {
-                    text_.Append(preferred_separator_);
+                    text_.append(preferred_separator_);
                 }
             }
         }
 
-        text_.Append(StringView(other_root_end, other_last - other_root_end));
+        text_.append(StringView(other_root_end, other_last - other_root_end));
         return *this;
     }
     /**
@@ -161,7 +161,7 @@ public:
      */
     Path& operator+= (const Path& other)
     {
-        text_.Append(other.text_);
+        text_.append(other.text_);
         return *this;
     }
     /**
@@ -172,7 +172,7 @@ public:
      */
     Path& operator+= (const String& other)
     {
-        text_.Append(other);
+        text_.append(other);
         return *this;
     }
     /**
@@ -214,7 +214,7 @@ public:
      */
     NODISCARD bool is_empty() const
     {
-        return text_.IsEmpty();
+        return text_.is_empty();
     }
     /**
      * @brief Checks if the path is an absolute path.
@@ -227,7 +227,7 @@ public:
         // paths with no root-name but a root-directory are root relative, such as \example
         // all other paths are absolute
         const auto first = text_.Data();
-        const auto last  = first + text_.Size();
+        const auto last  = first + text_.size();
         if (has_drive_letter_prefix(first, last)) // test for X:\ but not X:cat
         {
             return last - first >= 3 && is_separator_(first[2]);
@@ -252,7 +252,7 @@ public:
     {
         Path ret = *this;
 #if PLATFORM_WINDOWS
-        ret.text_.Replace('/', preferred_separator_);
+        ret.text_.replace('/', preferred_separator_);
 #else
         ret.text_.Replace('\\', preferred_separator_);
 #endif
@@ -274,10 +274,10 @@ public:
         }
 
         const_pointer first = text_.Data();
-        const_pointer last = text_.Data() + text_.Size();
+        const_pointer last = text_.Data() + text_.size();
         const_pointer root_end = find_root_name_end(first, last);
         String normalized(first, root_end - first);
-        normalized.Reserve(text_.Length());
+        normalized.reserve(text_.length());
 
         // 2. replace each slash character in the root-name with path::preferred_separator.
 #if PLATFORM_WINDOWS
@@ -386,7 +386,7 @@ public:
         }
 
         // "8. If the path is empty, add a dot."
-        if (normalized.IsEmpty())
+        if (normalized.is_empty())
         {
             normalized = dot;
         }
@@ -429,15 +429,15 @@ public:
         }
         else if constexpr (std::is_same_v<std_path::value_type, wchar_t>)
         {
-            return {text_.ToWide() };
+            return {text_.to_wide() };
         }
         else if constexpr (std::is_same_v<std_path::value_type, char16_t>)
         {
-            return {text_.ToUtf16() };
+            return {text_.to_utf16() };
         }
         else if constexpr (std::is_same_v<std_path::value_type, char32_t>)
         {
-            return {text_.ToUtf32() };
+            return {text_.to_utf32() };
         }
 
         return {};
@@ -450,7 +450,7 @@ public:
      */
     NODISCARD std::wstring to_os_path() const
     {
-        return text_.ToWide();
+        return text_.to_wide();
     }
 #else
     /**

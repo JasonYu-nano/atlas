@@ -11,6 +11,6 @@
 namespace atlas::locale
 {
 
-CORE_API const std::locale& DefaultLocale();
+CORE_API const std::locale& default_locale();
 
 }
