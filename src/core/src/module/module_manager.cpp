@@ -128,11 +128,11 @@ void ModuleManager::CreateModuleImp(ModuleInfo& module_info)
     }
     else
     {
-        search_path = Directory::GetEngineDirectory();
+        search_path = Directory::get_engine_directory();
         module_search_path_map_.insert(module_info.name, search_path);
     }
 
-    const Path lib_path = PlatformTraits::GetDynamicLibraryPath(Directory::GetModuleDirectory(search_path), module_info.name);
+    const Path lib_path = PlatformTraits::GetDynamicLibraryPath(Directory::get_module_directory(search_path), module_info.name);
 
     void* handle = PlatformTraits::LoadDynamicLibrary(lib_path);
     if (handle)
@@ -156,7 +156,7 @@ void ModuleManager::CreateModuleImp(ModuleInfo& module_info)
     }
     else
     {
-        LOG_ERROR(module_manager, "Failed to load module library from path {0}", search_path.ToString());
+        LOG_ERROR(module_manager, "Failed to load module library from path {0}", search_path.to_string());
     }
 }
 

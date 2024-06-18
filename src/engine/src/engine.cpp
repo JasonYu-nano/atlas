@@ -62,17 +62,17 @@ void Engine::LoadProject()
     }
 
     Path path = *project_path;
-    path = path.Normalize();
+    path = path.normalize();
 
-    if (path.Extension().ToString() != ".aproj")
+    if (path.extension().to_string() != ".aproj")
     {
         return;
     }
 
-    if (path.IsRelative())
+    if (path.is_relative())
     {
         // try convert to absolute path
-        const Path root = Directory::GetEngineDirectory();
+        const Path root = Directory::get_engine_directory();
         path = root / path;
     }
 

@@ -12,7 +12,7 @@ namespace atlas
 void PluginManager::Initialize()
 {
 #if WITH_EDITOR
-    ScanPlugins(Directory::GetEnginePluginsDirectory());
+    ScanPlugins(Directory::get_engine_plugins_directory());
 #endif
 }
 

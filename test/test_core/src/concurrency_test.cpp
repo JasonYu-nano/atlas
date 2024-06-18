@@ -32,7 +32,7 @@ TEST(ConcurrencyTest, PriorityQueueTest)
 TEST(ConcurrencyTest, IOTest)
 {
     static LowLevelIO llio;
-    auto file = Path("C:\\Code\\atlas\\test\\test_core\\test.txt").Normalize();
+    auto file = Path("C:\\Code\\atlas\\test\\test_core\\test.txt").normalize();
 
     {
         IOBuffer buffer = {'a','b','c','d','e'};

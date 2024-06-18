@@ -11,12 +11,12 @@ namespace atlas
 
 void* WindowsPlatformTraits::LoadDynamicLibrary(const Path& path)
 {
-    auto&& sys_path = path.ToOSPath();
+    auto&& sys_path = path.to_os_path();
     void* handle = ::LoadLibrary(sys_path.data());
     if (handle == nullptr)
     {
         DWORD err_code = ::GetLastError();
-        LOG_ERROR(core, "Load library {0} failed. error code: {1}", path.ToString(), err_code);
+        LOG_ERROR(core, "Load library {0} failed. error code: {1}", path.to_string(), err_code);
     }
 
     return handle;
@@ -67,7 +67,7 @@ Path WindowsPlatformTraits::GetEngineDirectoryImpl()
     std::error_code error;
     std::filesystem::path working_directory = std::filesystem::current_path(error);
     String working_directory_string = String::From(working_directory);
-    working_directory_string.Remove(GetRelativeBuildDirectory().ToString());
+    working_directory_string.Remove(GetRelativeBuildDirectory().to_string());
     return { working_directory_string };
 }
 
