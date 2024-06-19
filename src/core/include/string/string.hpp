@@ -145,41 +145,75 @@ private:
 
 public:
     String() noexcept { eos(0); }
+    /** Constructor from a character.
+     * @brief
+     * @param ch
+     */
     explicit String(value_type ch)
     {
         construct(ch, 1);
     }
-
+    /** Constructor from given count characters.
+     * @brief 
+     * @param ch
+     * @param count 
+     */
     String(value_type ch, size_type count)
     {
         construct(ch, count);
     }
-
+    /**
+     * @brief Constructor from character pointer.
+     * @param str
+     */
     String(const_pointer str)
     {
         construct(str, convert_size(char_traits::length(str)));
     }
+    /**
+     * @brief Constructor from character pointer.
+     * @param str
+     * @param length
+     */
     String(const_pointer str, size_type length)
     {
         construct(str, length);
     }
+    /**
+     * @brief Constructor from string view.
+     * @param view
+     */
     explicit String(BasicStringView<value_type> view)
     {
         construct(view.data(), view.length());
     }
-
+    /**
+     * @brief Copy constructor.
+     * @param right
+     */
     String(const String& right)
     {
         construct(right, 0, max_size());
     }
+
+    /**
+     * @brief Copy constructor.
+     * @param right
+     * @param offset
+     * @param size
+     */
     String(const String& right, size_type offset, size_type size = max_size())
     {
         construct(right, offset, size);
     }
+    /**
+     * @brief Move constructor.
+     * @param right
+     */
     String(String&& right) noexcept : pair_(OneThenVariadicArgs(), std::move(right.get_alloc())
-        , std::exchange(right.get_val().size_, 0)
-        , std::exchange(right.get_val().capacity_, 0)
-        , std::exchange(right.get_val().u_, val_type::UnionBuffer()))
+                                            , std::exchange(right.get_val().size_, 0)
+                                            , std::exchange(right.get_val().capacity_, 0)
+                                            , std::exchange(right.get_val().u_, val_type::UnionBuffer()))
     {}
     String(String&& right, size_type offset, size_type size = max_size()) noexcept
     {
@@ -199,7 +233,7 @@ public:
 
     String& operator= (const String& right)
     {
-        assign(right.Data(), right.length());
+        assign(right.data(), right.length());
         return *this;
     }
     String& operator= (String&& right) noexcept
@@ -220,7 +254,7 @@ public:
 
     operator view_type() const
     {
-        return {Data(), length()};
+        return {data(), length()};
     }
 
     bool operator== (const String& right) const { return equals(right, ECaseSensitive::Sensitive); }
@@ -271,15 +305,13 @@ public:
         return append(range);
     }
 
-    NODISCARD inline pointer Data()                    { return get_val().get_ptr(); }
-    NODISCARD inline const_pointer Data() const         { return get_val().get_ptr(); }
-    NODISCARD DO_NOT_USE_DIRECTLY inline pointer data()                    { return get_val().get_ptr(); }
-    NODISCARD DO_NOT_USE_DIRECTLY inline const_pointer data() const         { return get_val().get_ptr(); }
+    NODISCARD pointer data()                            { return get_val().get_ptr(); }
+    NODISCARD const_pointer data() const                { return get_val().get_ptr(); }
 
-    NODISCARD iterator begin()                          { return iterator(Data()); }
-    NODISCARD const_iterator begin() const              { return const_iterator(Data()); }
-    NODISCARD iterator end()                            { return iterator(Data() + length()); }
-    NODISCARD const_iterator end() const                { return const_iterator(Data() + length()); }
+    NODISCARD iterator begin()                          { return iterator(data()); }
+    NODISCARD const_iterator begin() const              { return const_iterator(data()); }
+    NODISCARD iterator end()                            { return iterator(data() + length()); }
+    NODISCARD const_iterator end() const                { return const_iterator(data() + length()); }
 
     NODISCARD reverse_iterator rbegin()                 { return reverse_iterator(end()); }
     NODISCARD const_reverse_iterator rbegin() const     { return const_reverse_iterator(end()); }
@@ -362,7 +394,10 @@ public:
         }
     }
 
-    NODISCARD bool is_valid_index(size_type index) const { return index < length(); }
+    NODISCARD bool is_valid_index(size_type index) const
+    {
+        return index < length();
+    }
 
     /**
      * @brief Fold the current string.
@@ -375,7 +410,10 @@ public:
      * @param locale
      * @return
      */
-    NODISCARD bool is_upper(const std::locale& locale = locale::default_locale()) const;
+    NODISCARD bool is_upper(const std::locale& locale = locale::default_locale()) const
+    {
+        return to_upper(locale) == *this;
+    }
     /**
      * @brief Translate the current string to uppercase.
      * @param locale
@@ -387,7 +425,10 @@ public:
      * @param locale
      * @return
      */
-    NODISCARD bool is_lower(const std::locale& locale = locale::default_locale()) const;
+    NODISCARD bool is_lower(const std::locale& locale = locale::default_locale()) const
+    {
+        return to_lower(locale) == *this;
+    }
     /**
      * @brief Translate the current string to lowercase.
      * @param locale
@@ -396,26 +437,37 @@ public:
     NODISCARD String to_lower(const std::locale& locale = locale::default_locale()) const;
     NODISCARD std::string ToStdString() const
     {
-        return { Data(), length() };
+        return { data(), length() };
     }
-    NODISCARD std::wstring to_wide() const;
-    NODISCARD std::u16string to_utf16() const;
-    NODISCARD std::u32string to_utf32() const;
-
     /**
-     * @brief Append the specified characters to the current string.
+     * @brief Converts to wide string.
+     * @return
+     */
+    NODISCARD std::wstring to_wide() const;
+    /**
+     * @brief Converts utf-16.
+     * @return
+     */
+    NODISCARD std::u16string to_utf16() const;
+    /**
+     * @brief Converts utf-32.
+     * @return
+     */
+    NODISCARD std::u32string to_utf32() const;
+    /**
+     * @brief Appends the specified characters to the current string.
      * @param ch
      * @return
      */
     String& append(value_type ch)  { return append(view_type(&ch, 1)); }
     /**
-     * @brief Append the specified string to the current string.
+     * @brief Appends the specified string to the current string.
      * @param str
      * @return Current string
      */
     String& append(const_pointer str)  { return append(view_type(str)); }
     /**
-     * @brief Append the specified range to the current string.
+     * @brief Appends the specified range to the current string.
      * @tparam RangeType
      * @param range
      * @return Current string
@@ -439,19 +491,19 @@ public:
         return *this;
     }
     /**
-     * @brief Prepend the specified characters to the current string.
+     * @brief Prepends the specified characters to the current string.
      * @param ch
      * @return
      */
     String& prepend(value_type ch) { return prepend(view_type(&ch, 1)); }
     /**
-     * @brief Prepend the specified string to the current string.
+     * @brief Prepends the specified string to the current string.
      * @param str
      * @return Current string
      */
     String& prepend(const_pointer str) { return prepend(view_type(str)); }
     /**
-     * @brief Prepend the specified range to the current string.
+     * @brief Prepends the specified range to the current string.
      * @tparam RangeType
      * @param range
      * @return Current string
@@ -510,22 +562,22 @@ public:
         String result;
         result.reserve(new_length);
 
-        pointer ptr = result.Data();
-        char_traits::copy(ptr, Data(), len);
+        pointer ptr = result.data();
+        char_traits::copy(ptr, data(), len);
         char_traits::copy(ptr + len, reinterpret_cast<const_pointer>(range.data()), increase_size);
         result.eos(new_length);
 
         return result;
     }
     /**
-     * @brief Insert the specified string into the current string.
+     * @brief Inserts the specified string into the current string.
      * @param offset
      * @param str
      * @return Current string
      */
     String& insert(size_type offset, const_pointer str) { return insert(cbegin() + offset, view_type(str)); }
     /**
-     * @brief Insert the specified range into the current string.
+     * @brief Inserts the specified range into the current string.
      * @tparam RangeType
      * @param where
      * @param range
@@ -551,16 +603,15 @@ public:
 
         return *this;
     }
-
     /**
-     * @brief Remove a specified number of characters from the specified position.
+     * @brief Removes a specified number of characters from the specified position.
      * @param from
      * @param count
      * @return Current string
      */
     String& remove(size_type from, size_type count);
     /**
-     * @brief Remove all specified strings from the current string.
+     * @brief Removes all specified strings from the current string.
      * @param str
      * @param case_sensitive
      * @return
@@ -570,7 +621,7 @@ public:
         return remove(view_type(str), case_sensitive);
     }
     /**
-     * @brief Remove all specified ranges from the current string.
+     * @brief Removes all specified ranges from the current string.
      * @tparam RangeType
      * @param range
      * @param case_sensitive
@@ -595,7 +646,7 @@ public:
         return *this;
     }
     /**
-     * @brief Replace specified number of characters in the current instance with another specified string.
+     * @brief Replaces specified number of characters in the current instance with another specified string.
      * @param from
      * @param count
      * @param new_value
@@ -606,7 +657,7 @@ public:
         return replace(from, count, view_type(new_value));
     }
     /**
-     * @brief Replace specified number of characters in the current instance with another specified string.
+     * @brief Replaces specified number of characters in the current instance with another specified string.
      * @tparam RangeType
      * @param from
      * @param count
@@ -632,7 +683,7 @@ public:
         size_type new_length = len - count + insert_size;
         reserve(new_length);
 
-        pointer start = Data() + from;
+        pointer start = data() + from;
         char_traits::move(start + insert_size, start + count, len - from - count);
         char_traits::copy(start, reinterpret_cast<const_pointer>(new_value.data()), insert_size);
 
@@ -641,7 +692,7 @@ public:
         return *this;
     }
     /**
-     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
+     * @brief Replaces all occurrences of a specified string in the current instance with another specified string.
      * @param old_value
      * @param new_value
      * @return
@@ -651,7 +702,7 @@ public:
         return replace(view_type(&old_value, 1), view_type(&new_value, 1));
     }
     /**
-     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
+     * @brief Replaces all occurrences of a specified string in the current instance with another specified string.
      * @param old_value
      * @param new_value
      * @return
@@ -661,7 +712,7 @@ public:
         return replace(view_type(old_value), view_type(new_value));
     }
     /**
-     * @brief Replace all occurrences of a specified string in the current instance with another specified string.
+     * @brief Replaces all occurrences of a specified string in the current instance with another specified string.
      * @tparam RangeType1
      * @tparam RangeType2
      * @param old_value
@@ -767,9 +818,18 @@ public:
         }
         return true;
     }
-
+    /**
+     * @brief Looks for the first match of `pattern` in the string.
+     * If it finds a match, then `find` returns the indices of where this occurrence starts.
+     * Otherwise, it returns INDEX_NONE.
+     * @tparam RangeType
+     * @param search Search pattern
+     * @param offset Starts search index
+     * @param case_sensitive
+     * @return
+     */
     template<std::ranges::range RangeType>
-    size_type find(const RangeType& search, size_type offset, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    NODISCARD size_type find(const RangeType& search, size_type offset, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         auto&& source = boost::make_iterator_range(begin() + offset, end());
         auto&& range = case_sensitive == ECaseSensitive::Sensitive
@@ -778,9 +838,18 @@ public:
 
         return range.empty() ? size_type(INDEX_NONE) : std::distance(cbegin(), range.begin());
     }
-
+    /**
+     * @brief Looks for the first match of `pattern` in the string.
+     * If it finds a match, then `find` returns the indices of where this occurrence starts.
+     * Otherwise, it returns INDEX_NONE.
+     * @tparam RangeType
+     * @param search Search pattern
+     * @param offset_to_tail Starts search index
+     * @param case_sensitive
+     * @return
+     */
     template<std::ranges::range RangeType>
-    size_type find_last(const RangeType& search, size_type offset_to_tail, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    NODISCARD size_type find_last(const RangeType& search, size_type offset_to_tail, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         auto&& source = boost::make_iterator_range(begin(), end() - offset_to_tail);
         auto&& range = case_sensitive == ECaseSensitive::Sensitive
@@ -833,7 +902,6 @@ public:
     {
         return find_last(search, 0, case_sensitive);
     }
-
     /**
      * @brief Construct a new UTF-8 string from a UTF-16 string.
      * @param str
@@ -911,6 +979,14 @@ public:
         ASSERT(0);
     }
 
+    /**
+     * @brief Construct a new UTF-8 string from string format.
+     * @tparam CharType
+     * @tparam Args
+     * @param fmt
+     * @param args
+     * @return
+     */
     template <typename CharType, typename... Args>
     static String format(const CharType* fmt, Args&&... args)
     {
@@ -920,11 +996,11 @@ public:
         return {buffer.data(), convert_size(buffer.size())};
     }
 protected:
-    allocator_type& get_alloc()              { return pair_.First(); }
-    const allocator_type& get_alloc() const  { return pair_.First(); }
+    allocator_type& get_alloc()              { return pair_.first(); }
+    const allocator_type& get_alloc() const  { return pair_.first(); }
 
-    val_type& get_val()                      { return pair_.Second(); }
-    const val_type& get_val() const          { return pair_.Second(); }
+    val_type& get_val()                      { return pair_.second(); }
+    const val_type& get_val() const          { return pair_.second(); }
 
     void construct(const_pointer str, size_type len);
 

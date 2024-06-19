@@ -12,7 +12,7 @@ namespace atlas
 class ENGINE_API TickTaskManager
 {
 public:
-    void AddTask(TickTask* task)
+    void add_task(TickTask* task)
     {
         if (task)
         {
@@ -20,7 +20,7 @@ public:
         }
     }
 
-    void RemoveTask(TickTask* task)
+    void remove_task(TickTask* task)
     {
         if (task)
         {
@@ -28,11 +28,11 @@ public:
         }
     }
 
-    void Tick(float delta_time)
+    void tick(float delta_time)
     {
         for (auto task : task_set_)
         {
-            task->Execute(delta_time);
+            task->execute(delta_time);
         }
     }
 

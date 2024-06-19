@@ -47,8 +47,8 @@ TEST(UtilityTest, CompressionPairTest)
     EXPECT_TRUE(sizeof(CompressionPair<CPA, CPD>) == 1);
 
     CompressionPair<CPB, CPC> pair_0;
-    EXPECT_TRUE(pair_0.First().value == 0 && sizeof(pair_0.First().value) == 4);
-    EXPECT_TRUE(pair_0.Second().value == 0 && sizeof(pair_0.Second().value) == 8);
+    EXPECT_TRUE(pair_0.first().value == 0 && sizeof(pair_0.first().value) == 4);
+    EXPECT_TRUE(pair_0.second().value == 0 && sizeof(pair_0.second().value) == 8);
 
     CompressionPair<CPA, CPD> pair_1;
     //EXPECT_TRUE(static_cast<void*>(&pair_1.First()) != static_cast<void*>(&pair_1.Second()));
@@ -57,7 +57,7 @@ TEST(UtilityTest, CompressionPairTest)
     //EXPECT_TRUE(static_cast<void*>(&pair_2.First()) == static_cast<void*>(&pair_2.Second()));
 
     CompressionPair<CPB, CPB> pair_3;
-    EXPECT_TRUE(static_cast<void*>(&pair_3.First()) != static_cast<void*>(&pair_3.Second()));
+    EXPECT_TRUE(static_cast<void*>(&pair_3.first()) != static_cast<void*>(&pair_3.second()));
 }
 
 TEST(UtilityTest, UntypedDataTest)

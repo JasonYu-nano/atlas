@@ -30,7 +30,7 @@ void WindowsPlatformTraits::free_library(void* module_handle)
 
 void* WindowsPlatformTraits::get_exported_symbol(void* handle, const String& symbol_name)
 {
-    return ::GetProcAddress((HMODULE)handle, symbol_name.Data());
+    return ::GetProcAddress((HMODULE)handle, symbol_name.data());
 }
 
 } // namespace atlas

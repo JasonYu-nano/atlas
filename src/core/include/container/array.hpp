@@ -70,7 +70,7 @@ public:
         reserve(math::max(capacity, get_initialize_capacity()));
     }
     /**
-     * @brief Constructor from an initializer
+     * @brief Constructor from an initializer.
      * @param initializer
      * @param alloc
      */
@@ -79,7 +79,7 @@ public:
         construct(initializer);
     }
     /**
-     * @brief Constructor from a range
+     * @brief Constructor from a range.
      * @tparam RangeType
      * @param range
      * @param alloc
@@ -861,11 +861,11 @@ public:
     NODISCARD const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
     NODISCARD const_reverse_iterator crend() const { return const_reverse_iterator(begin()); }
 
-    val_type& get_val() { return pair_.Second(); }
-    const val_type& get_val() const { return pair_.Second(); }
+    val_type& get_val() { return pair_.second(); }
+    const val_type& get_val() const { return pair_.second(); }
 private:
-    allocator_type& get_alloc() { return pair_.First(); }
-    const allocator_type& get_alloc() const { return pair_.First(); }
+    allocator_type& get_alloc() { return pair_.first(); }
+    const allocator_type& get_alloc() const { return pair_.first(); }
 
     template<std::forward_iterator InputIter, std::output_iterator<T> OutputIter>
     void move_to_uninitialized(InputIter first, InputIter last, OutputIter dest)
@@ -1131,7 +1131,7 @@ private:
 
     constexpr size_type get_initialize_capacity() const
     {
-        return math::min(math::max(size_type(4), allocator_traits::get_initialize_size(pair_.First())), max_size());
+        return math::min(math::max(size_type(4), allocator_traits::get_initialize_size(pair_.first())), max_size());
     }
 
     size_type calculate_growth(size_type requested) const

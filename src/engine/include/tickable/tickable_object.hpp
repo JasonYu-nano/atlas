@@ -15,9 +15,9 @@ class ENGINE_API TickableObject
 public:
     virtual ~TickableObject() = default;
 protected:
-    TickableObject() : tick_task_(OnEngineTick::CreateRaw(this, &TickableObject::Tick)) {}
+    TickableObject() : tick_task_(OnEngineTick::create_raw(this, &TickableObject::tick)) {}
 
-    virtual void Tick(float delta_time) {};
+    virtual void tick(float delta_time) {};
 
     EngineTickTask tick_task_;
 };

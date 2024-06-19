@@ -207,7 +207,7 @@ public:
         std::sort(it, container.end(), val_cmp);
 
         //Step 3: only left unique values from the back not already present in the original range
-        iterator const e = algorithm::InplaceSetDifference(it, container.end(), container.begin(), it, val_cmp);
+        iterator const e = algorithm::inplace_set_difference(it, container.end(), container.begin(), it, val_cmp);
 
         container.remove_at(e, container.cend() - e);
         //it might be invalidated by erasing [e, seq.end) if e == it
@@ -399,7 +399,7 @@ public:
 private:
     const value_compare& get_value_compare() const
     {
-        return pair_.First();
+        return pair_.first();
     }
 
     const key_compare& get_key_compare() const
@@ -409,12 +409,12 @@ private:
 
     container_type& get_underlying_container()
     {
-        return pair_.Second();
+        return pair_.second();
     }
 
     const container_type& get_underlying_container() const
     {
-        return pair_.Second();
+        return pair_.second();
     }
 
     bool find_position_to_insert(const key_param_type key, const_iterator& position)

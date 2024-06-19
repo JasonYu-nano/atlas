@@ -24,44 +24,37 @@ public:
     explicit StringName(const String& name)
     {
         StringView view(name);
-        Construct(view);
+        construct(view);
     }
     StringName(const char* name)
     {
         StringView view(name);
-        Construct(view);
+        construct(view);
     }
 
     StringName(StringView name)
     {
-        Construct(name);
+        construct(name);
     }
 
-#if CHAR8T_SUPPORT
-    explicit StringName(const char8_t* name)
-    {
-        std::u8string_view view(name);
-        Construct(view);
-    }
-#endif
     StringName(const StringName& rhs) noexcept = default;
-
+    StringName(StringName&& rhs) noexcept = default;
     StringName& operator= (const StringName& rhs) noexcept = default;
     StringName& operator= (StringView rhs)
     {
-        Construct(rhs);
+        construct(rhs);
         return *this;
     };
 
-    NODISCARD uint32 GetCompressID() const
+    NODISCARD uint32 compress_id() const
     {
-        return name_entry_id_.GetCompressID();
+        return name_entry_id_.compress_id();
     }
     /**
      * @brief Get suffix number of name.
      * @return
      */
-    NODISCARD uint32 GetNumber() const
+    NODISCARD uint32 suffix_number() const
     {
         if (number_ != SUFFIX_NUMBER_NONE)
         {
@@ -73,50 +66,50 @@ public:
      * @brief Convert StringName to String.
      * @return
      */
-    NODISCARD String ToString() const
+    NODISCARD String to_string() const
     {
-        if (name_entry_id_.IsNone())
+        if (name_entry_id_.is_none())
         {
             return name_none_;
         }
 
         if (number_ == SUFFIX_NUMBER_NONE)
         {
-            return details::NameEntryPool::Get().GetEntry(name_entry_id_);
+            return details::NameEntryPool::get().get_entry(name_entry_id_);
         }
 
-        String prefix_name = details::NameEntryPool::Get().GetEntry(name_entry_id_);
+        String prefix_name = details::NameEntryPool::get().get_entry(name_entry_id_);
         return String::format("{0}_{1}", prefix_name, SUFFIX_TO_ACTUAL(number_));
     }
     /**
      * @brief Convert StringName to String, excludes number part.
      * @return
      */
-    NODISCARD String ToLexical() const
+    NODISCARD String to_lexical() const
     {
-        if (name_entry_id_.IsNone())
+        if (name_entry_id_.is_none())
         {
             return name_none_;
         }
 
-        return details::NameEntryPool::Get().GetEntry(name_entry_id_);
+        return details::NameEntryPool::get().get_entry(name_entry_id_);
     }
     /**
      * @brief Judges whether StringName is illegal or not.
      * @return
      */
-    NODISCARD bool IsNone() const
+    NODISCARD bool is_none() const
     {
-        return name_entry_id_.IsNone();
+        return name_entry_id_.is_none();
     }
     /**
      * @brief Compares two names by id.
      * @param rhs
      * @return
      */
-    NODISCARD int32 Compare(const StringName& rhs) const
+    NODISCARD int32 compare(const StringName& rhs) const
     {
-        int32 diff = name_entry_id_.Compare(rhs.name_entry_id_);
+        int32 diff = name_entry_id_.compare(rhs.name_entry_id_);
         if (diff != 0)
         {
             diff = static_cast<int32>(number_ - rhs.number_);
@@ -128,14 +121,14 @@ public:
      * @param rhs
      * @return
      */
-    NODISCARD int32 CompareLexical(const StringName& rhs) const
+    NODISCARD int32 compare_lexical(const StringName& rhs) const
     {
         if (name_entry_id_ == rhs.name_entry_id_)
         {
             return static_cast<int32>(number_ - rhs.number_);
         }
-        auto my_view = details::NameEntryPool::Get().GetEntryView(name_entry_id_);
-        auto rhs_view = details::NameEntryPool::Get().GetEntryView(rhs.name_entry_id_);
+        auto my_view = details::NameEntryPool::get().get_entry_view(name_entry_id_);
+        auto rhs_view = details::NameEntryPool::get().get_entry_view(rhs.name_entry_id_);
 #if NAME_PRESERVING_CASE_SENSITIVE
         return my_view.compare_insensitive(rhs_view);
 #else
@@ -153,21 +146,21 @@ public:
     }
     bool operator< (const StringName& rhs) const
     {
-        return Compare(rhs) < 0;
+        return compare(rhs) < 0;
     }
     bool operator> (const StringName& rhs) const
     {
-        return Compare(rhs) > 0;
+        return compare(rhs) > 0;
     }
 
 private:
     template<typename ViewType>
-    void Construct(ViewType& view)
+    void construct(ViewType& view)
     {
-        number_ = SplitNumber(view);
+        number_ = split_number(view);
         if (!view.empty())
         {
-            name_entry_id_ = details::NameEntryPool::Get().GetEntryID(view);
+            name_entry_id_ = details::NameEntryPool::get().get_entry_id(view);
         }
         else
         {
@@ -176,7 +169,7 @@ private:
     }
 
     template<typename ViewType>
-    uint32 SplitNumber(ViewType& view)
+    uint32 split_number(ViewType& view)
     {
         using const_pointer = ViewType::const_pointer;
 
@@ -221,7 +214,7 @@ struct std::hash<atlas::StringName>
 {
     NODISCARD size_t operator()(const atlas::StringName& name) const noexcept
     {
-        size_t hash = (size_t(name.GetCompressID()) << 32) + name.GetNumber();
+        size_t hash = (size_t(name.compress_id()) << 32) + name.suffix_number();
         return hash;
     }
 };

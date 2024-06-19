@@ -185,13 +185,13 @@ public:
     NODISCARD constexpr value_type* allocate(const size_type size)
     {
         ASSERT(size <= MaxSize);
-        return static_cast<value_type*>(buffer_->GetData());
+        return static_cast<value_type*>(buffer_->data());
     }
 
     NODISCARD constexpr value_type* reallocate(value_type* ptr, const size_type old_size, const size_type size)
     {
         ASSERT(size <= MaxSize);
-        return static_cast<value_type*>(buffer_->GetData());
+        return static_cast<value_type*>(buffer_->data());
     }
 
     constexpr void deallocate(value_type* const ptr, const size_type size)
@@ -245,11 +245,11 @@ public:
     {
         if (size <= InlineSize)
         {
-            return static_cast<value_type*>(pair_.Second().buffer_->GetData());
+            return static_cast<value_type*>(pair_.second().buffer_->data());
         }
         else
         {
-            return pair_.First().allocate(size);
+            return pair_.first().allocate(size);
         }
     }
 
@@ -257,30 +257,30 @@ public:
     {
         if (old_size <= InlineSize && size <= InlineSize)
         {
-            return static_cast<value_type*>(pair_.Second().buffer_->GetData());
+            return static_cast<value_type*>(pair_.second().buffer_->data());
         }
         if (old_size <= InlineSize && size > InlineSize)
         {
-            value_type* new_ptr = pair_.First().allocate(size);
+            value_type* new_ptr = pair_.first().allocate(size);
             std::memmove(new_ptr, ptr, details::get_byte_size<sizeof(value_type)>(old_size));
             return new_ptr;
         }
         if (old_size > InlineSize && size <= InlineSize)
         {
-            value_type* new_ptr = static_cast<value_type*>(pair_.Second().buffer_->GetData());
+            value_type* new_ptr = static_cast<value_type*>(pair_.second().buffer_->data());
             std::memmove(new_ptr, ptr, details::get_byte_size<sizeof(value_type)>(size));
-            pair_.First().deallocate(ptr, old_size);
+            pair_.first().deallocate(ptr, old_size);
             return new_ptr;
         }
 
-        return pair_.First().reallocate(ptr, old_size, size);
+        return pair_.first().reallocate(ptr, old_size, size);
     }
 
     constexpr void deallocate(value_type* const ptr, const size_type size)
     {
         if (size > InlineSize)
         {
-            return pair_.First().deallocate(ptr, size);
+            return pair_.first().deallocate(ptr, size);
         }
     }
 

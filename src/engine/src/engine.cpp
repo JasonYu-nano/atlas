@@ -16,7 +16,7 @@ Engine* g_engine = nullptr;
 
 DEFINE_COMMAND_OPTION(String, project, "p", "The path of the project to start")
 
-void Engine::Startup(int argc, char** argv)
+void Engine::startup(int argc, char** argv)
 {
     CommandParser::parse_command_line_options(argc, argv);
 
@@ -25,35 +25,35 @@ void Engine::Startup(int argc, char** argv)
     tick_task_manager_ = std::make_unique<TickTaskManager>();
 
     plugin_manager_ = std::make_unique<PluginManager>();
-    plugin_manager_->Initialize();
+    plugin_manager_->initialize();
 
-    LoadProject();
+    load_project();
 
-    if (!project_.IsValid())
+    if (!project_.is_valid())
     {
 
     }
 }
 
-void Engine::Shutdown()
+void Engine::shutdown()
 {
-    plugin_manager_->DeInitialize();
+    plugin_manager_->deinitialize();
     ModuleManager::shutdown();
 }
 
-void Engine::Loop()
+void Engine::loop()
 {
 
 }
 
-void Engine::UpdateTickTime()
+void Engine::update_tick_time()
 {
     last_time_ = current_time_;
     current_time_ = duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
     delta_time_ = static_cast<double>((current_time_ - last_time_).count()) * std::nano::num / std::nano::den;
 }
 
-void Engine::LoadProject()
+void Engine::load_project()
 {
     std::optional<String> project_path = CommandParser::value_of<String>("project");
     if (!project_path.has_value())
@@ -76,7 +76,7 @@ void Engine::LoadProject()
         path = root / path;
     }
 
-    project_ = Project::Parse(path);
+    project_ = Project::parse(path);
 }
 
 } // namespace atlas

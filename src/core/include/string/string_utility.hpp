@@ -18,7 +18,7 @@ namespace atlas
  * @return
  */
 template<typename CharType, typename CharTraits = std::char_traits<CharType>>
-constexpr CharType ToLower(CharType ch)
+constexpr CharType to_lower(CharType ch)
 {
     return CharTraits::to_char_type(CharTraits::to_int_type(ch) + ((CharTraits::to_int_type(ch) - 'A' < 26u) << 5));
 }
@@ -30,7 +30,7 @@ constexpr CharType ToLower(CharType ch)
  * @return
  */
 template<typename CharType, typename CharTraits = std::char_traits<CharType>>
-constexpr CharType ToUpper(CharType ch)
+constexpr CharType to_upper(CharType ch)
 {
     return CharTraits::to_char_type(CharTraits::to_int_type(ch) - ((CharTraits::to_int_type(ch) - 'a' < 26u) << 5));
 }
@@ -69,8 +69,8 @@ public:
         typename base::size_type count = math::min(first_length, second_length);
         for (; 0 < count; --count, ++first, ++second)
         {
-            auto lower_first = ToLower(*first);
-            auto lower_second = ToLower(*second);
+            auto lower_first = to_lower(*first);
+            auto lower_second = to_lower(*second);
 
             if (lower_first != lower_second)
             {

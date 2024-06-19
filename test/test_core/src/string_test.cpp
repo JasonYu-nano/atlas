@@ -245,22 +245,22 @@ TEST(StringNameTest, StringNameTest)
 {
     {
         StringName name("atlas");
-        EXPECT_TRUE(name.ToString() == "atlas");
+        EXPECT_TRUE(name.to_string() == "atlas");
 
         StringName name2 = name;
         EXPECT_TRUE(name2 == name);
     }
     {
         StringName name("atlas_12");
-        EXPECT_TRUE(name.ToString() == "atlas_12" && name.GetNumber() == 12);
+        EXPECT_TRUE(name.to_string() == "atlas_12" && name.suffix_number() == 12);
     }
     {
         StringName name("atlas_012");
-        EXPECT_TRUE(name.ToString() == "atlas_012" && name.GetNumber() == 0);
+        EXPECT_TRUE(name.to_string() == "atlas_012" && name.suffix_number() == 0);
     }
     {
         StringName name("_12");
-        EXPECT_TRUE(name.IsNone() && name.ToString() == "none" && name.GetNumber() == 0);
+        EXPECT_TRUE(name.is_none() && name.to_string() == "none" && name.suffix_number() == 0);
     }
     {
         EXPECT_TRUE(StringName("") == StringName("_12"));
@@ -271,7 +271,7 @@ TEST(StringNameTest, StringNameTest)
     };
 #endif
     {
-        EXPECT_TRUE(StringName("atlas_12").CompareLexical(StringName("BTLAS_12")) < 0);
+        EXPECT_TRUE(StringName("atlas_12").compare_lexical(StringName("BTLAS_12")) < 0);
     }
 }
 

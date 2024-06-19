@@ -90,9 +90,9 @@ public:
             return *this = other;
         }
 
-        const_pointer my_first = text_.Data();
+        const_pointer my_first = text_.data();
         const_pointer my_last = my_first + text_.size();
-        const_pointer other_first = other.text_.Data();
+        const_pointer other_first = other.text_.data();
         const_pointer other_last = other_first + other.text_.size();
         const_pointer my_root_end = find_root_name_end(my_first, my_last);
         const_pointer other_root_end = find_root_name_end(other_first, other_last);
@@ -226,7 +226,7 @@ public:
         // paths with no root-name or root-directory are relative, such as example
         // paths with no root-name but a root-directory are root relative, such as \example
         // all other paths are absolute
-        const auto first = text_.Data();
+        const auto first = text_.data();
         const auto last  = first + text_.size();
         if (has_drive_letter_prefix(first, last)) // test for X:\ but not X:cat
         {
@@ -273,8 +273,8 @@ public:
             return {};
         }
 
-        const_pointer first = text_.Data();
-        const_pointer last = text_.Data() + text_.size();
+        const_pointer first = text_.data();
+        const_pointer last = text_.data() + text_.size();
         const_pointer root_end = find_root_name_end(first, last);
         String normalized(first, root_end - first);
         normalized.reserve(text_.length());

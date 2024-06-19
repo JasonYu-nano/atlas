@@ -11,7 +11,7 @@
 namespace atlas
 {
 
-Project Project::Parse(const Path& project_file)
+Project Project::parse(const Path& project_file)
 {
     Project proj;
     std::ifstream f(project_file.to_os_path());

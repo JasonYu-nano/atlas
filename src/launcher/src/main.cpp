@@ -9,14 +9,14 @@ int main(int argc, char* argv[])
 {
     g_engine = new GameEngine();
 
-    g_engine->Startup(argc, argv);
+    g_engine->startup(argc, argv);
 
-    while (!g_engine->IsShutdownRequested())
+    while (!g_engine->is_shutdown_requested())
     {
-        g_engine->Loop();
+        g_engine->loop();
     }
 
-    g_engine->Shutdown();
+    g_engine->shutdown();
 
     delete g_engine;
     g_engine = nullptr;

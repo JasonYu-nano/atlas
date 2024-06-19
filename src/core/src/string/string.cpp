@@ -9,7 +9,7 @@ namespace atlas
 
 namespace
 {
-    int32 ICompare(String::const_pointer lhs, String::const_pointer rhs, String::size_type length)
+    int32 icompare(String::const_pointer lhs, String::const_pointer rhs, String::size_type length)
     {
         auto&& fold_case = details::FoldCaseUnsafe<String::value_type>();
         auto&& loc = locale::default_locale();
@@ -27,7 +27,7 @@ namespace
 
 String::size_type String::count() const
 {
-    auto it = Data();
+    auto it = data();
     auto end = it + length();
     size_type count = 0;
 
@@ -43,7 +43,7 @@ String::size_type String::count() const
 
 CodePoint String::code_point_at(std::make_unsigned_t<size_type> offset) const
 {
-    auto it = Data();
+    auto it = data();
     auto end = it + length();
     size_type current_offset = 0;
 
@@ -74,40 +74,27 @@ int32 String::compare(const String& right, ECaseSensitive case_sensitive) const
 
     if (case_sensitive == ECaseSensitive::Sensitive)
     {
-        return char_traits::compare(Data(), right.Data(), left_length);
+        return char_traits::compare(data(), right.data(), left_length);
     }
 
-    return ICompare(Data(), right.Data(), left_length);
+    return icompare(data(), right.data(), left_length);
 }
 
 String String::fold_case() const
 {
-    const char* data = Data();
-    std::string fold_case = boost::locale::fold_case(data, data + length(), locale::default_locale());
+    std::string fold_case = boost::locale::fold_case(data(), data() + length(), locale::default_locale());
     return {fold_case.data(), convert_size(fold_case.length())};
-}
-
-bool String::is_upper(const std::locale& locale) const
-{
-    return to_upper(locale) == *this;
 }
 
 String String::to_upper(const std::locale& locale) const
 {
-    const char* data = Data();
-    std::string upper = boost::locale::to_upper(data, data + length(), locale);
+    std::string upper = boost::locale::to_upper(data(), data() + length(), locale);
     return {upper.data(), convert_size(upper.length())};
-}
-
-bool String::is_lower(const std::locale& locale) const
-{
-    return to_lower(locale) == *this;
 }
 
 String String::to_lower(const std::locale& locale) const
 {
-    const char* data = Data();
-    std::string lower = boost::locale::to_lower(data, data + length(), locale);
+    std::string lower = boost::locale::to_lower(data(), data() + length(), locale);
     return {lower.data(), convert_size(lower.length())};
 }
 
@@ -120,9 +107,7 @@ std::wstring String::to_wide() const
         return {};
     }
 
-    const char* data = Data();
-
-    return boost::locale::conv::utf_to_utf<wchar_t, char>(data, data + length);
+    return boost::locale::conv::utf_to_utf<wchar_t, char>(data(), data() + length);
 }
 
 std::u16string String::to_utf16() const
@@ -134,8 +119,7 @@ std::u16string String::to_utf16() const
         return {};
     }
 
-    const char* data = Data();
-    return boost::locale::conv::utf_to_utf<char16_t, char>(data, data + length);
+    return boost::locale::conv::utf_to_utf<char16_t, char>(data(), data() + length);
 }
 
 std::u32string String::to_utf32() const
@@ -147,15 +131,14 @@ std::u32string String::to_utf32() const
         return {};
     }
 
-    const char* data = Data();
-    return boost::locale::conv::utf_to_utf<char32_t, char>(data, data + length);
+    return boost::locale::conv::utf_to_utf<char32_t, char>(data(), data() + length);
 }
 
 String& String::remove(size_type from, size_type count)
 {
     ASSERT(count > 0 && from < length() && from + count <= length());
 
-    pointer start = Data() + from;
+    pointer start = data() + from;
     size_type len = length();
     size_type new_length = len - count;
     char_traits::move(start, start + count, len - from - count);
@@ -196,9 +179,9 @@ void String::construct(const String& right, size_type offset, size_type size)
     size_type actual_size = math::clamp<size_type>(size, 0, right.length() - offset);
     if (actual_size > 0)
     {
-        auto right_ptr = right.Data() + offset;
+        auto right_ptr = right.data() + offset;
         reserve(actual_size);
-        char_traits::copy(Data(), right_ptr, actual_size);
+        char_traits::copy(data(), right_ptr, actual_size);
     }
     eos(actual_size);
 }
@@ -209,7 +192,7 @@ void String::move_construct(String& right, String::size_type offset, String::siz
     size_type actual_size = math::clamp<size_type>(size, 0, right.length() - offset);
     if (actual_size > 0)
     {
-        auto right_ptr = right.Data();
+        auto right_ptr = right.data();
         if (offset > 0)
         {
             char_traits::move(right_ptr, right_ptr + offset, actual_size);
@@ -217,7 +200,7 @@ void String::move_construct(String& right, String::size_type offset, String::siz
         }
 
         reserve(actual_size);
-        char_traits::move(Data(), right_ptr, actual_size);
+        char_traits::move(data(), right_ptr, actual_size);
     }
     eos(actual_size);
 }
@@ -226,22 +209,22 @@ void String::assign(const_pointer right, size_type length)
 {
     ASSERT(is_valid_address(right, right + length));
     reserve(length);
-    char_traits::copy(Data(), right, length);
+    char_traits::copy(data(), right, length);
     eos(length);
 }
 
 void String::move_assign(String& right)
 {
-    ASSERT(is_valid_address(right.Data(), right.Data() + right.length()));
+    ASSERT(is_valid_address(right.data(), right.data() + right.length()));
     size_type length = right.length();
     reserve(length);
-    char_traits::move(Data(), right.Data(), length);
+    char_traits::move(data(), right.data(), length);
     eos(length);
 }
 
 bool String::is_valid_address(const_pointer start, const_pointer end) const
 {
-    auto my_start = Data();
+    auto my_start = data();
     auto my_end = my_start + length();
     return (start < my_start || start > my_end) && (end < my_start || end > my_end);
 }

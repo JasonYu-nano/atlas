@@ -12,9 +12,9 @@ namespace atlas
 class Project
 {
 public:
-    static Project Parse(const Path& project_file);
+    static Project parse(const Path& project_file);
 
-    bool IsValid() const
+    bool is_valid() const
     {
         return !!module_;
     }

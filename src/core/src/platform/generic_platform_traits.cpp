@@ -38,7 +38,7 @@ const Path& GenericPlatformTraits::get_relative_build_directory()
 Path GenericPlatformTraits::get_library_path(const Path& module_dir, StringName lib_name)
 {
 #if DEBUG
-    return module_dir / String::format("{0}d.dll", lib_name.ToLexical());
+    return module_dir / String::format("{0}d.dll", lib_name.to_lexical());
 #else
     return module_dir / lib_name.ToLexical();
 #endif

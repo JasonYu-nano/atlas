@@ -9,14 +9,14 @@
 namespace atlas
 {
 
-void PluginManager::Initialize()
+void PluginManager::initialize()
 {
 #if WITH_EDITOR
-    ScanPlugins(Directory::get_engine_plugins_directory());
+    scan_plugins(Directory::get_engine_plugins_directory());
 #endif
 }
 
-void PluginManager::ScanPlugins(const Path& directory)
+void PluginManager::scan_plugins(const Path& directory)
 {
     for (auto const& dir_entry : std::filesystem::directory_iterator(directory))
     {
@@ -25,7 +25,7 @@ void PluginManager::ScanPlugins(const Path& directory)
             auto plugin_path = dir_entry.path() / "plugin.toml";
             if (std::filesystem::exists(plugin_path))
             {
-                ParsePluginDescription(String::from(plugin_path));
+                parse_plugin_description(String::from(plugin_path));
             }
         }
     }
@@ -76,7 +76,7 @@ void ParsePluginModule(PluginDesc& desc, const toml::table& config)
                         module_desc.module_name = *module_name;
                     }
 
-                    if (module_desc.module_name.IsNone())
+                    if (module_desc.module_name.is_none())
                     {
                         continue;
                     }
@@ -105,13 +105,13 @@ void ParsePluginDependency(PluginDesc& desc, const toml::table& config)
     }
 }
 
-void PluginManager::ParsePluginDescription(StringView file_path)
+void PluginManager::parse_plugin_description(StringView file_path)
 {
     auto config = toml::parse_file(file_path);
     PluginDesc plugin_desc;
 
     ParsePluginBaseInfo(plugin_desc, config);
-    if (plugin_desc.name.IsNone())
+    if (plugin_desc.name.is_none())
     {
         // plugin name is necessary
         return;
