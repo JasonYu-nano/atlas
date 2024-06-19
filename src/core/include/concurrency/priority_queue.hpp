@@ -139,7 +139,7 @@ private:
 		return !!(std::uintptr_t(ptr) & (std::uintptr_t(1) << bit_to_test));
 	}
 
-	FLockFreePointerFIFOBase<T, PaddingForCacheContention> queues_[PrioritySize];
+	LockFreePointerFIFOBase<T, PaddingForCacheContention> queues_[PrioritySize];
 	// not a pointer to anything, rather tracks the stall state of all threads servicing this queue.
 	alignas(PaddingForCacheContention) index_pointer master_state_;
 };

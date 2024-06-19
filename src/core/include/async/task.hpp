@@ -276,7 +276,11 @@ public:
     TaskPromise() : shared_handle_(std::coroutine_handle<TaskPromise>::from_promise(*this)) {}
 
     std::suspend_never initial_suspend() { return {}; }
-    std::suspend_always final_suspend() noexcept { return {}; }
+    std::suspend_always final_suspend() noexcept
+    {
+        shared_handle_.release();
+        return {};
+    }
 
     Task<> get_return_object();
 
@@ -298,7 +302,6 @@ public:
                 fn();
             }
         }
-        shared_handle_.release();
     }
 
     template<typename RetType>

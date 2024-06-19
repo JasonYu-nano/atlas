@@ -16,7 +16,7 @@ void* MacPlatformTraits::load_library(const Path& path)
     void* handle = ::dlopen(sys_path.data(), RTLD_LAZY);
     if (handle == nullptr)
     {
-        LOG_ERROR(core, "Load library {0} failed.", path.ToString());
+        LOG_ERROR(core, "Load library {0} failed.", path);
     }
     return handle;
 }
@@ -29,7 +29,7 @@ void MacPlatformTraits::free_library(void* module_handle)
 
 void* MacPlatformTraits::get_exported_symbol(void* handle, const String& symbol_name)
 {
-    return dlsym(handle, symbol_name.Data());
+    return dlsym(handle, symbol_name.data());
 }
 
 } // namespace atlas

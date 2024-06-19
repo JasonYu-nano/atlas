@@ -254,7 +254,7 @@ public:
 #if PLATFORM_WINDOWS
         ret.text_.replace('/', preferred_separator_);
 #else
-        ret.text_.Replace('\\', preferred_separator_);
+        ret.text_.replace('\\', preferred_separator_);
 #endif
         return ret;
     }

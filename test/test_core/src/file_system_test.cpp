@@ -33,11 +33,12 @@ TEST(FileSystemTest, PathTest)
     }
     {
         Path path("\\user\\atlas");
-        EXPECT_TRUE(path.MakePreferred() == Path("/user/atlas"));
+        EXPECT_TRUE(path.make_preferred() == Path("/user/atlas"));
     }
     {
         Path path("\\user/atlas/..////game/./");
-        Path npath = path.Normalize();
+        Path npath = path.make_preferred();
+        printf("%s", npath.to_string().data());
         EXPECT_TRUE(npath == Path("/user/game/"));
     }
 #endif

@@ -53,19 +53,19 @@ public:
         if (ptr == nullptr)
         {
             // if ptr is nullptr, treat it as malloc
-            return AlignedMalloc(new_size, alignment);
+            return aligned_malloc(new_size, alignment);
         }
 
         if (new_size == 0)
         {
             // if new size is 0, treat it as free
-            AlignedFree(ptr);
+            aligned_free(ptr);
             return nullptr;
         }
 
         // allocate a new block with the desired alignment
         void* new_ptr;
-        new_ptr = AlignedMalloc(new_size, alignment);
+        new_ptr = aligned_malloc(new_size, alignment);
         if (new_ptr == nullptr)
         {
             // allocation failed
@@ -77,7 +77,7 @@ public:
         std::memcpy(new_ptr, ptr, copy_size);
 
         // free the old block
-        AlignedFree(ptr);
+        aligned_free(ptr);
 
         return new_ptr;
 #endif

@@ -12,7 +12,7 @@ namespace atlas
 
 TEST(ConcurrencyTest, LockFreeListTest)
 {
-    FLockFreePointerFIFOBase<int32, 8> queue;
+    LockFreePointerFIFOBase<int32, 8> queue;
     queue.push(new int32(1));
     int32* t = queue.pop();
     EXPECT_EQ(*t, 1);

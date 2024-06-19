@@ -191,7 +191,7 @@ private:
 	uint64 ptrs_;
 };
 
-struct FIndexedLockFreeLink
+struct IndexedLockFreeLink
 {
     IndexedPointer double_next;
     void* payload;
@@ -203,15 +203,15 @@ struct LockFreeLinkPolicy
 {
     static constexpr int32 max_bits_in_link_ptr = MAX_LOCK_FREE_LINKS_AS_BITS;
     using index_pointer     = IndexedPointer;
-    using link_type         = FIndexedLockFreeLink;
+    using link_type         = IndexedLockFreeLink;
     using link_ptr_type     = uint32;
-    using allocator_type    = LockFreeAllocOnceIndexedAllocator<FIndexedLockFreeLink, MAX_LOCK_FREE_LINKS, 16384>;
+    using allocator_type    = LockFreeAllocOnceIndexedAllocator<IndexedLockFreeLink, MAX_LOCK_FREE_LINKS, 16384>;
 
-    static FIndexedLockFreeLink* deref_link(uint32 ptr)
+    static IndexedLockFreeLink* deref_link(uint32 ptr)
     {
         return link_allocator.get_item(ptr);
     }
-    static FIndexedLockFreeLink* index_to_link(uint32 index)
+    static IndexedLockFreeLink* index_to_link(uint32 index)
     {
         return link_allocator.get_item(index);
     }
@@ -382,7 +382,7 @@ private:
 };
 
 template<typename T, int32 PaddingForCacheContention, uint64 ABAInc = 1>
-class FLockFreePointerFIFOBase
+class LockFreePointerFIFOBase
 {
     using pointer_type  = T*;
     using index_pointer = LockFreeLinkPolicy::index_pointer;
@@ -390,7 +390,7 @@ class FLockFreePointerFIFOBase
     using link_ptr_type = LockFreeLinkPolicy::link_ptr_type;
 public:
 
-	FLockFreePointerFIFOBase()
+	LockFreePointerFIFOBase()
 	{
 		// We want to make sure we have quite a lot of extra counter values to avoid the ABA problem. This could probably be relaxed, but eventually it will be dangerous.
 		// The question is "how many queue operations can a thread starve for".
@@ -404,12 +404,12 @@ public:
 		tail_.set_ptr(stub);
 	}
 
-    FLockFreePointerFIFOBase(const FLockFreePointerFIFOBase&) = delete;
-    FLockFreePointerFIFOBase(FLockFreePointerFIFOBase&&) = delete;
-    FLockFreePointerFIFOBase& operator= (const FLockFreePointerFIFOBase&) = delete;
-    FLockFreePointerFIFOBase& operator= (FLockFreePointerFIFOBase&&) = delete;
+    LockFreePointerFIFOBase(const LockFreePointerFIFOBase&) = delete;
+    LockFreePointerFIFOBase(LockFreePointerFIFOBase&&) = delete;
+    LockFreePointerFIFOBase& operator= (const LockFreePointerFIFOBase&) = delete;
+    LockFreePointerFIFOBase& operator= (LockFreePointerFIFOBase&&) = delete;
 
-	~FLockFreePointerFIFOBase()
+	~LockFreePointerFIFOBase()
 	{
 		while (pop()) {};
 		LockFreeLinkPolicy::free_lock_free_link(head_.get_ptr());

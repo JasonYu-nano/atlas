@@ -1,8 +1,12 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
+#include <thread>
+
 #include "concurrency/lock_free_list.hpp"
+#if PLATFORM_WINDOWS
 #include "platform/windows/windows_minimal_api.hpp"
+#endif
 
 namespace atlas
 {
@@ -31,6 +35,9 @@ void* atomic_compare_exchange_pointer(void* volatile* dest, void* exchange, void
 {
 #if PLATFORM_WINDOWS
     return ::_InterlockedCompareExchangePointer(dest, exchange, comparand);
+#elif PLATFORM_APPLE
+    __atomic_compare_exchange_n(dest, &comparand, exchange, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+    return comparand;
 #endif
 }
 
@@ -38,12 +45,19 @@ int64 atomic_compare_exchange(volatile int64* dest, int64 exchange, int64 compar
 {
 #if PLATFORM_WINDOWS
     return ::_InterlockedCompareExchange64(dest, exchange, comparand);
+#elif PLATFORM_APPLE
+    __atomic_compare_exchange_n(dest, &comparand, exchange, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+    return exchange;
 #endif
 }
 
 int64 atomic_read(volatile const int64* src)
 {
+#if PLATFORM_WINDOWS
     return atomic_compare_exchange(const_cast<int64*>(src), 0, 0);
+#elif PLATFORM_APPLE
+    return __atomic_load_n(src, __ATOMIC_SEQ_CST);
+#endif
 }
 
 static uint32 alloc_tls_slot()
@@ -113,7 +127,7 @@ public:
 	*/
 	link_ptr_type pop()
 	{
-		FThreadLocalCache& tls = get_tls();
+		ThreadLocalCache& tls = get_tls();
 
 		if (!tls.partial_bundle)
 		{
@@ -158,7 +172,7 @@ public:
 	*/
 	void push(link_ptr_type item)
 	{
-		FThreadLocalCache& tls = get_tls();
+		ThreadLocalCache& tls = get_tls();
 		if (tls.num_partial >= per_bundle_size_)
 		{
 			if (tls.full_bundle)
@@ -181,13 +195,13 @@ public:
 private:
 
 	/** struct for the TLS cache. */
-	struct FThreadLocalCache
+	struct ThreadLocalCache
 	{
 		link_ptr_type full_bundle;
 		link_ptr_type partial_bundle;
 		int32 num_partial;
 
-		FThreadLocalCache()
+		ThreadLocalCache()
 			: full_bundle(0)
 			, partial_bundle(0)
 			, num_partial(0)
@@ -195,13 +209,13 @@ private:
 		}
 	};
 
-	FThreadLocalCache& get_tls()
+	ThreadLocalCache& get_tls()
 	{
 		// checkSlow(FPlatformTLS::IsValidTlsSlot(TlsSlot));
-		FThreadLocalCache* tls = (FThreadLocalCache*)get_tls_value(tls_slot_);
+		ThreadLocalCache* tls = (ThreadLocalCache*)get_tls_value(tls_slot_);
 		if (!tls)
 		{
-			tls = new FThreadLocalCache();
+			tls = new ThreadLocalCache();
 			set_tls_value(tls_slot_, tls);
 		}
 		return *tls;

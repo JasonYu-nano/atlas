@@ -40,3 +40,5 @@ typedef MacPlatformTypes PlatformTypes;
 
 #undef NODISCARD
 #define NODISCARD [[nodiscard]]
+
+#define PLATFORM_CACHE_LINE_SIZE	64
