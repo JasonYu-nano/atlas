@@ -24,15 +24,15 @@ const Path& GenericPlatformTraits::get_engine_directory()
 const Path& GenericPlatformTraits::get_relative_build_directory()
 {
 #if DEBUG
-    static Path reltive_path("build\\debug\\out\\bin");
+    static Path relative_path = Path(R"(build\debug\out\bin)").normalize();
 #elif DEBUG_OPTIMIZE
-    static Path reltive_path("build\\debug_optimize\\out\\bin");
+    static Path relative_path = Path(R"(build\debug_optimize\out\bin)").normalize();
 #elif RELEASE
-    static Path reltive_path("build\\release\\out\\bin");
+    static Path relative_path = Path(R"(build\release\out\bin)").normalize();
 #else
 #   error "Invalid build type"
 #endif
-    return reltive_path;
+    return relative_path;
 }
 
 Path GenericPlatformTraits::get_library_path(const Path& module_dir, StringName lib_name)
@@ -40,7 +40,7 @@ Path GenericPlatformTraits::get_library_path(const Path& module_dir, StringName 
 #if DEBUG
     return module_dir / String::format("{0}d.dll", lib_name.to_lexical());
 #else
-    return module_dir / lib_name.ToLexical();
+    return module_dir / lib_name.to_lexical();
 #endif
 }
 

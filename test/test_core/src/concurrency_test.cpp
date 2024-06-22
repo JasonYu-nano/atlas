@@ -5,6 +5,7 @@
 
 #include "concurrency/lock_free_list.hpp"
 #include "concurrency/priority_queue.hpp"
+#include "file_system/directory.hpp"
 #include "io/llio.hpp"
 
 namespace atlas
@@ -32,7 +33,7 @@ TEST(ConcurrencyTest, PriorityQueueTest)
 TEST(ConcurrencyTest, IOTest)
 {
     static LowLevelIO llio;
-    auto file = Path("C:\\Code\\atlas\\test\\test_core\\test.txt").normalize();
+    auto file = Directory::get_engine_directory() / Path("test/test_core/test.txt").normalize();
 
     {
         IOBuffer buffer = {'a','b','c','d','e'};

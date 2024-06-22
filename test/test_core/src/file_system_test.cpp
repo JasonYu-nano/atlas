@@ -37,8 +37,7 @@ TEST(FileSystemTest, PathTest)
     }
     {
         Path path("\\user/atlas/..////game/./");
-        Path npath = path.make_preferred();
-        printf("%s", npath.to_string().data());
+        Path npath = path.normalize();
         EXPECT_TRUE(npath == Path("/user/game/"));
     }
 #endif

@@ -22,17 +22,17 @@ namespace atlas
 
 CORE_API void lock_free_tag_counter_has_overflowed();
 
-CORE_API inline void lock_free_links_exhausted(uint32 total_num);
+CORE_API void lock_free_links_exhausted(uint32 total_num);
 
-CORE_API inline void* lock_free_alloc_links(size_t alloc_size);
+CORE_API void* lock_free_alloc_links(size_t alloc_size);
 
-CORE_API inline void lock_free_free_links(size_t alloc_size, void* ptr);
+CORE_API void lock_free_free_links(size_t alloc_size, void* ptr);
 
-CORE_API inline void* atomic_compare_exchange_pointer(void* volatile* dest, void* exchange, void* comparand);
+CORE_API void* atomic_compare_exchange_pointer(void* volatile* dest, void* exchange, void* comparand);
 
-CORE_API inline int64 atomic_compare_exchange(volatile int64* dest, int64 exchange, int64 comparand);
+CORE_API int64 atomic_compare_exchange(volatile int64* dest, int64 exchange, int64 comparand);
 
-CORE_API inline int64 atomic_read(volatile const int64* src);
+CORE_API int64 atomic_read(volatile const int64* src);
 
 template<typename T, uint32 MaxTotalItems, uint32 ItemsPerPage>
 class LockFreeAllocOnceIndexedAllocator

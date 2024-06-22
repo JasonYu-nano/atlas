@@ -44,7 +44,7 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
     }
 
     FILE* stream = fopen(file.to_string().data(), "r");
-    if (stream)
+    if (!stream)
     {
         LOG_WARN(core, "Failed to open file {0}", file);
         co_return read;
@@ -108,7 +108,7 @@ Task<size_t> FilesystemIOBackend::async_write(Path file, IOBufferView buffer, bo
     }
 
     FILE* stream = fopen(file.to_string().data(), append ? "a" : "w");
-    if (stream)
+    if (!stream)
     {
         LOG_WARN(core, "Failed to open file {0}", file);
         co_return write;

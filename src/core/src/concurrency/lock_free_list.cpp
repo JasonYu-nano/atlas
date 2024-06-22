@@ -47,7 +47,7 @@ int64 atomic_compare_exchange(volatile int64* dest, int64 exchange, int64 compar
     return ::_InterlockedCompareExchange64(dest, exchange, comparand);
 #elif PLATFORM_APPLE
     __atomic_compare_exchange_n(dest, &comparand, exchange, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
-    return exchange;
+    return comparand;
 #endif
 }
 
