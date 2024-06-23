@@ -52,22 +52,22 @@ public:
 
     /**
      * @brief Manually destroy the window. Can be called repeatedly.
-     * If the window is a primary window, Destroy() may cause engine shutdown.
+     * If the window is a primary window, destroy() may cause engine shutdown.
      */
-    virtual void Destroy() {}
+    virtual void destroy() {}
 
     /**
      * @brief Display window.
      */
-    virtual void Show()
+    virtual void show()
     {
 
     }
 
     /**
-     * @brief Hide window.
+     * @brief hide window.
      */
-    virtual void Hide()
+    virtual void hide()
     {
 
     }
@@ -75,7 +75,7 @@ public:
      * @brief Determines whether the window can become the main window.
      * @return
      */
-    NODISCARD virtual bool CanBecomePrimary() const
+    NODISCARD virtual bool can_become_primary() const
     {
         return true;
     }
@@ -84,7 +84,7 @@ public:
      * eg: NSWindow, HWND...
      * @return
      */
-    NODISCARD virtual void* GetNativeHandle() const
+    NODISCARD virtual void* get_native_handle() const
     {
         return nullptr;
     }

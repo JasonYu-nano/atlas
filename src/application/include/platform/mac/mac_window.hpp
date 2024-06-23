@@ -18,7 +18,7 @@ class MacApplication;
 
 /**
  * @brief Wrapper class for cocoa window.
- * Use MacWindow::Create to create instance.
+ * Use MacWindow::create to create instance.
  */
 class MacWindow : public ApplicationWindow, public std::enable_shared_from_this<MacWindow>
 {
@@ -26,11 +26,11 @@ class MacWindow : public ApplicationWindow, public std::enable_shared_from_this<
     struct Private {};
 public:
     /**
-     * @brief Create a native window.
+     * @brief create a native window.
      * @param application
      * @return
      */
-    static std::shared_ptr<MacWindow> Create(const MacApplication& application, const WindowDescription& description,
+    static std::shared_ptr<MacWindow> create(const MacApplication& application, const WindowDescription& description,
                                              const MacWindow* parent = nullptr);
 
     // make sure MacWindow can only be construct by MacWindow::Create()
@@ -38,24 +38,24 @@ public:
 
     ~MacWindow() override
     {
-        MacWindow::Destroy();
+        MacWindow::destroy();
     }
 
-    void Destroy() override;
+    void destroy() override;
 
-    NODISCARD bool CanBecomePrimary() const override
+    NODISCARD bool can_become_primary() const override
     {
         return can_be_primary_;
     }
 
-    NODISCARD void* GetNativeHandle() const override
+    NODISCARD void* get_native_handle() const override
     {
         return native_window_;
     }
 
 protected:
-    void Initialize(const MacApplication& application, const WindowDescription& description, const MacWindow* parent);
-    void Deinitialize();
+    void initialize(const MacApplication& application, const WindowDescription& description, const MacWindow* parent);
+    void deinitialize();
 
     bool can_be_primary_{ true };
     NSWindow* native_window_{ nullptr };

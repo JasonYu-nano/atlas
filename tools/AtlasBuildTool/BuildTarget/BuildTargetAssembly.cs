@@ -9,7 +9,7 @@ public class BuildTargetAssembly
 {
     public Dictionary<string, BuildTargetBase> NameToBuildTargets { get; } = new Dictionary<string, BuildTargetBase>();
     
-    public void Initialize(string topLevelDirectory)
+    public void initialize(string topLevelDirectory)
     {
         if (!Directory.Exists(topLevelDirectory))
         {
@@ -21,7 +21,7 @@ public class BuildTargetAssembly
         BuildDependency();
     }
 
-    public void Deinitialize()
+    public void deinitialize()
     {
         NameToBuildTargets.Clear();
     }

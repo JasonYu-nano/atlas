@@ -32,7 +32,7 @@
     // triggers when user click close button. let mac windows know about close event.
     if (_associated_window)
     {
-        _associated_window->Destroy();
+        _associated_window->destroy();
     }
 }
 
@@ -41,7 +41,7 @@
 namespace atlas
 {
 
-NSRect FromRect(const FrameRect& rect)
+NSRect from_rect(const FrameRect& rect)
 {
     NSScreen* main_screen = [NSScreen mainScreen];
     NSRect screen_frame = [main_screen frame];
@@ -53,15 +53,15 @@ NSRect FromRect(const FrameRect& rect)
     return frame;
 }
 
-std::shared_ptr<MacWindow> MacWindow::Create(const MacApplication& application, const WindowDescription& description,
+std::shared_ptr<MacWindow> MacWindow::create(const MacApplication& application, const WindowDescription& description,
                                              const MacWindow* parent)
 {
     auto window= std::make_shared<MacWindow>(Private{});
-    window->Initialize(application, description, parent);
+    window->initialize(application, description, parent);
     return window;
 }
 
-void MacWindow::Initialize(const MacApplication& application, const WindowDescription& description, const MacWindow* parent)
+void MacWindow::initialize(const MacApplication& application, const WindowDescription& description, const MacWindow* parent)
 {
     NSWindowStyleMask style = NSWindowStyleMaskBorderless;
 
@@ -97,7 +97,7 @@ void MacWindow::Initialize(const MacApplication& application, const WindowDescri
     }
     else
     {
-        rect = FromRect(description.frame_rect);
+        rect = from_rect(description.frame_rect);
     }
 
     native_window_ = [[NSWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO];
@@ -120,7 +120,7 @@ void MacWindow::Initialize(const MacApplication& application, const WindowDescri
     initialized_ = true;
 }
 
-void MacWindow::Deinitialize()
+void MacWindow::deinitialize()
 {
     if (initialized_)
     {
@@ -134,7 +134,7 @@ void MacWindow::Deinitialize()
     }
 }
 
-void MacWindow::Destroy()
+void MacWindow::destroy()
 {
     if (initialized_)
     {
@@ -142,7 +142,7 @@ void MacWindow::Destroy()
         {
             [native_window_ setDelegate:nil]; // we don't need route event to window delegate
         }
-        Deinitialize();
+        deinitialize();
         on_window_destroyed_.broadcast(shared_from_this());
     }
 }

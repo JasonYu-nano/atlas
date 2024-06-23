@@ -20,7 +20,7 @@ public:
 
     void tick(float delta_time) override;
 
-    NODISCARD PlatformApplication* GetApplication() const
+    NODISCARD PlatformApplication* get_application() const
     {
         return application_.get();
     }

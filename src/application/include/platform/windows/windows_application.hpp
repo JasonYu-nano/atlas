@@ -16,15 +16,15 @@ class APPLICATION_API WindowsApplication : public ApplicationImplement
 public:
     WindowsApplication() : hinstance_(GetModuleHandle(nullptr)) {}
 
-    void Initialize() override;
-    void Deinitialize() override;
-    void Tick(float delta_time) override;
+    void initialize() override;
+    void deinitialize() override;
+    void tick(float delta_time) override;
 
-    std::shared_ptr<ApplicationWindow> MakeWindow(const WindowDescription& description, const ApplicationWindow* parent) override;
+    std::shared_ptr<ApplicationWindow> make_window(const WindowDescription& description, const ApplicationWindow* parent) override;
 
-    std::shared_ptr<ApplicationWindow> MakeDummyWindow() override;
+    std::shared_ptr<ApplicationWindow> make_dummy_window() override;
 
-    std::shared_ptr<ApplicationWindow> GetKeyWindow() const override;
+    std::shared_ptr<ApplicationWindow> get_key_window() const override;
 
     NODISCARD HINSTANCE GetInstanceHandle() const
     {

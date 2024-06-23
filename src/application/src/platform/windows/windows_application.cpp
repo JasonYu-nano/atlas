@@ -19,7 +19,7 @@ void WindowsApplication::Initialize()
     g_application = this;
 }
 
-void WindowsApplication::Deinitialize()
+void WindowsApplication::deinitialize()
 {
     if (windows_destroy_handle_.IsValid())
     {
@@ -33,7 +33,7 @@ void WindowsApplication::Deinitialize()
     }
 }
 
-void WindowsApplication::Tick(float delta_time)
+void WindowsApplication::tick(float delta_time)
 {
     MSG msg;
     // we use PeekMessage instead of GetMessage here
@@ -62,7 +62,7 @@ std::shared_ptr<ApplicationWindow> WindowsApplication::MakeWindow(const WindowDe
     return window;
 }
 
-std::shared_ptr<ApplicationWindow> WindowsApplication::MakeDummyWindow()
+std::shared_ptr<ApplicationWindow> WindowsApplication::make_dummy_window()
 {
     // we won't manage dummy window.
     WindowDescription desc;
@@ -70,7 +70,7 @@ std::shared_ptr<ApplicationWindow> WindowsApplication::MakeDummyWindow()
     return WindowsWindow::Create(*this, desc, nullptr);
 }
 
-std::shared_ptr<ApplicationWindow> WindowsApplication::GetKeyWindow() const
+std::shared_ptr<ApplicationWindow> WindowsApplication::get_key_window() const
 {
     return primary_window_.expired() ? nullptr : primary_window_.lock();
 }

@@ -17,7 +17,7 @@ static class AtlasBuildTool
         BuildTargetAssembly buildTargetAssembly = new BuildTargetAssembly();
         try
         {
-            buildTargetAssembly.Initialize(DirectoryUtils.EngineRootDirectory);
+            buildTargetAssembly.initialize(DirectoryUtils.EngineRootDirectory);
             var generator = new DefinitionsGenerator(buildTargetAssembly);
             var task = generator.GenerateAsync();
             Task.WhenAny(task);
@@ -36,7 +36,7 @@ static class AtlasBuildTool
         }
         finally
         {
-            buildTargetAssembly.Deinitialize();
+            buildTargetAssembly.deinitialize();
             var endTime = DateTime.Now;
             var timeSpan = endTime - startTime;
             Console.WriteLine($"atlas build tool finished running in {timeSpan.TotalSeconds} seconds");

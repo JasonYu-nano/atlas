@@ -17,34 +17,34 @@ public:
 
     PlatformApplication() = delete;
 
-    void Initialize()
+    void initialize()
     {
-        implement_->Initialize();
+        implement_->initialize();
     }
 
-    void Deinitialize()
+    void deinitialize()
     {
-        implement_->Deinitialize();
+        implement_->deinitialize();
     }
 
-    void Tick(float delta_time)
+    void tick(float delta_time)
     {
-        implement_->Tick(delta_time);
+        implement_->tick(delta_time);
     }
 
-    std::shared_ptr<ApplicationWindow> MakeWindow(const WindowDescription& description, const ApplicationWindow* parent = nullptr)
+    std::shared_ptr<ApplicationWindow> make_window(const WindowDescription& description, const ApplicationWindow* parent = nullptr)
     {
-        return implement_->MakeWindow(description, parent);
+        return implement_->make_window(description, parent);
     }
 
-    std::shared_ptr<ApplicationWindow> MakeDummyWindow()
+    std::shared_ptr<ApplicationWindow> make_dummy_window()
     {
-        return implement_->MakeDummyWindow();
+        return implement_->make_dummy_window();
     }
 
-    std::shared_ptr<ApplicationWindow> GetKeyWindow() const
+    NODISCARD std::shared_ptr<ApplicationWindow> get_key_window() const
     {
-        return implement_->GetKeyWindow();
+        return implement_->get_key_window();
     }
 
 private:

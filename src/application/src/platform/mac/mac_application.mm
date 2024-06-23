@@ -12,12 +12,12 @@
 namespace atlas
 {
 
-void MacApplication::Initialize()
+void MacApplication::initialize()
 {
-    windows_destroy_handle_ = MacWindow::on_window_destroyed_.add_raw(this, &MacApplication::OnWindowDestroyed);
+    windows_destroy_handle_ = MacWindow::on_window_destroyed_.add_raw(this, &MacApplication::on_window_destroyed);
 }
 
-void MacApplication::Deinitialize()
+void MacApplication::deinitialize()
 {
     if (windows_destroy_handle_.is_valid())
     {
@@ -26,12 +26,12 @@ void MacApplication::Deinitialize()
 
     for (auto&& windows : managed_windows)
     {
-        windows->Destroy();
+        windows->destroy();
     }
     managed_windows.clear();
 }
 
-void MacApplication::Tick(float delta_time)
+void MacApplication::tick(float delta_time)
 {
     while (NSEvent *Event = [NSApp nextEventMatchingMask: NSEventMaskAny untilDate: nil inMode: NSDefaultRunLoopMode dequeue: true])
     {
@@ -44,12 +44,12 @@ void MacApplication::Tick(float delta_time)
     }
 }
 
-std::shared_ptr<ApplicationWindow> MacApplication::MakeWindow(const WindowDescription& description, const ApplicationWindow* parent)
+std::shared_ptr<ApplicationWindow> MacApplication::make_window(const WindowDescription& description, const ApplicationWindow* parent)
 {
-    auto&& window = MacWindow::Create(*this, description, static_cast<const MacWindow*>(parent));
+    auto&& window = MacWindow::create(*this, description, static_cast<const MacWindow*>(parent));
     managed_windows.add(window);
 
-    if (window->CanBecomePrimary() && primary_window_.expired())
+    if (window->can_become_primary() && primary_window_.expired())
     {
         primary_window_ = window;
         [NSApp activateIgnoringOtherApps:YES];
@@ -58,7 +58,7 @@ std::shared_ptr<ApplicationWindow> MacApplication::MakeWindow(const WindowDescri
     return window;
 }
 
-void MacApplication::OnWindowDestroyed(std::shared_ptr<ApplicationWindow> window)
+void MacApplication::on_window_destroyed(std::shared_ptr<ApplicationWindow> window)
 {
     if (!primary_window_.expired())
     {
@@ -74,10 +74,10 @@ void MacApplication::OnWindowDestroyed(std::shared_ptr<ApplicationWindow> window
     bool need_shutdown_engine = false;
     if (primary_window_.expired())
     {
-        // find next primary window.
+        // find the next primary window.
         for (auto&& managed_window : std::ranges::reverse_view(managed_windows))
         {
-            if (managed_window->CanBecomePrimary())
+            if (managed_window->can_become_primary())
             {
                 primary_window_ = managed_window;
                 break;

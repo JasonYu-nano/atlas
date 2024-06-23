@@ -11,22 +11,22 @@ IMPLEMENT_MODULE(ApplicationModule, "application");
 void ApplicationModule::startup()
 {
     application_ = PlatformApplication::Create();
-    application_->Initialize();
+    application_->initialize();
 
     WindowDescription desc;
     desc.title = "Atlas Game";
-    application_->MakeWindow(desc);
+    application_->make_window(desc);
 }
 
 void ApplicationModule::shutdown()
 {
-    application_->Deinitialize();
+    application_->deinitialize();
     application_.reset();
 }
 
 void ApplicationModule::tick(float delta_time)
 {
-    application_->Tick(delta_time);
+    application_->tick(delta_time);
 }
 
 }// namespace atlas

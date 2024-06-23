@@ -12,7 +12,7 @@ namespace atlas
 DECLARE_DELEGATE_ONE_PARAM(OnEngineTick, float, delta_time);
 
 /**
- * @brief Register tick function in engine loop. Tick function will called in runtime and editor.
+ * @brief Register tick function in engine loop. tick function will called in runtime and editor.
  */
 class ENGINE_API EngineTickTask : public TickTask
 {
