@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include <thread>
-
 #include "io_backend_interface.hpp"
 #include "async/schedule_on.hpp"
+#include "async/thread.hpp"
 #include "container/array.hpp"
 #include "concurrency/priority_queue.hpp"
 
@@ -44,13 +43,6 @@ public:
     ~FilesystemIOBackend() override
     {
         request_stop_ = true;
-        for (auto&& thread : running_threads_)
-        {
-            if (thread.joinable())
-            {
-                thread.join();
-            }
-        }
         running_threads_.clear();
     }
 
@@ -64,7 +56,7 @@ public:
 private:
 
     std::atomic<bool> request_stop_{ false };
-    Array<std::thread> running_threads_;
+    Array<Thread> running_threads_;
     PriorityQueue<void, g_io_priority_count> request_queue_;
 };
 
