@@ -4,8 +4,9 @@
 #include "gtest/gtest.h"
 
 #include "misc/delegate_fwd.hpp"
-#include "module/module_manager.hpp"
 #include "misc/cmd_options.hpp"
+#include "file_system/directory.hpp"
+#include "io/llio.hpp"
 
 namespace atlas::test
 {
@@ -202,6 +203,26 @@ TEST(MiscTest, CmdOptTest)
     {
         auto v = CommandParser::value_of<int8>("uint");
         EXPECT_TRUE(*v == 99);
+    }
+}
+
+TEST(MiscTest, IOTest)
+{
+    static LowLevelIO llio;
+    auto file = Directory::get_engine_directory() / Path("test/test_core/test.txt").normalize();
+
+    {
+        IOBuffer buffer = {'a','b','c','d','e'};
+
+        auto task = llio.async_write(file, buffer);
+        task.then([=](auto write) {
+            EXPECT_TRUE(write == 5);
+
+            auto read_task = launch(llio.async_read(file));
+            auto&& b =  read_task.get_result();
+            EXPECT_TRUE(b.size() == 5);
+        });
+        task.start();
     }
 }
 

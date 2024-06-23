@@ -5,8 +5,6 @@
 
 #include "concurrency/lock_free_list.hpp"
 #include "concurrency/priority_queue.hpp"
-#include "file_system/directory.hpp"
-#include "io/llio.hpp"
 
 namespace atlas
 {
@@ -28,25 +26,6 @@ TEST(ConcurrencyTest, PriorityQueueTest)
     int32* t = queue.pop(1, false);
     EXPECT_EQ(*t, 2);
     delete t;
-}
-
-TEST(ConcurrencyTest, IOTest)
-{
-    static LowLevelIO llio;
-    auto file = Directory::get_engine_directory() / Path("test/test_core/test.txt").normalize();
-
-    {
-        IOBuffer buffer = {'a','b','c','d','e'};
-
-        auto task = llio.async_write(file, buffer);
-        task.then([=](auto write) {
-            EXPECT_TRUE(write == 5);
-
-            auto read_task = llio.async_read(file);
-            auto&& b =  read_task.get_result();
-            EXPECT_TRUE(b.size() == 5);
-        });
-    }
 }
 
 }// namespace atlas

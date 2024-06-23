@@ -17,7 +17,7 @@ enum class ECommandOptType
 {
     None,
     Boolean,
-    Integeral,
+    Integral,
     FloatPoint,
     String,
 };
@@ -58,7 +58,7 @@ struct CommandOptTraits<float> : FloatPointOptTraits {};
 
 struct IntegralOptTraits
 {
-    static constexpr auto type = ECommandOptType::Integeral;
+    static constexpr auto type = ECommandOptType::Integral;
     using backend_type = int64;
 };
 
@@ -224,7 +224,7 @@ protected:
  * @brief Static command line arguments parser.
  *
  * Starts by defining the command options, and then call ParseCommandLineOptions.
- * If you wants to define option before execute main function, @see DEFINE_COMMAND_OPTION.
+ * If you want to define option before executing the main function. @see DEFINE_COMMAND_OPTION.
  */
 class CORE_API CommandParser
 {
@@ -250,11 +250,11 @@ public:
     }
     /**
      * @brief Add a command option.
-     * @note The option name and short name can not be duplicated.
+     * @note The option name and short name cannot be duplicated.
      * @tparam Type Supports boolean, string, integral, float point.
      * @param name Option name.
      * @param short_name Option short name.
-     * @param description Descrition of the option.
+     * @param description Description of the option.
      * @return
      */
     template<typename Type>
@@ -285,11 +285,11 @@ public:
     }
     /**
      * @brief Add a command option with default value.
-     * @note The option name and short name can not be duplicated.
+     * @note The option name and short name cannot be duplicated.
      * @tparam Type Supports boolean, string, integral, float point.
      * @param name Option name.
      * @param short_name Option short name.
-     * @param description Descrition of the option.
+     * @param description Description of the option.
      * @param default_value 
      * @return 
      */
@@ -320,10 +320,10 @@ public:
         return opt;
     }
     /**
-     * @brief Gets value of given option.
+     * @brief Gets value of the given option.
      * @tparam Type
      * @param name
-     * @return Optional value of given option.
+     * @return Optional value of the given option.
      */
     template<typename Type>
     static std::optional<Type> value_of(StringView name)
@@ -336,7 +336,7 @@ public:
         return {};
     }
     /**
-     * @brief Checks whether given name is duplicated.
+     * @brief Checks whether given name are duplicated.
      * @param name
      * @param short_name
      * @return
@@ -362,7 +362,7 @@ private:
 };
 
 /**
- * @brief Helper struct used to add option before execute main function.
+ * @brief Helper struct used to add option before execute the main function.
  * @tparam T
  */
 template<typename T>
@@ -379,7 +379,7 @@ struct CommandOptionRegister
     }
 };
 
-// Use this macro to add option before execute main function.
+// Use this macro to add option before execute the main function.
 #define DEFINE_COMMAND_OPTION(type, name, short_name, description) \
     namespace cmd_opt_private { \
     static CommandOptionRegister<type> _register_##type##_##name(#name, short_name, description); \

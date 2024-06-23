@@ -114,7 +114,7 @@ private:
 };
 
 struct NoStopStateT {};
-NoStopStateT no_stop_state;
+inline constexpr NoStopStateT no_stop_state;
 
 class StopSource
 {

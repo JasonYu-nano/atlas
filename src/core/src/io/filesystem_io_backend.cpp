@@ -78,7 +78,7 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
 
     buffer.resize(old_size + actual_read_size);
 
-    co_await schedule_on(*this, priority);
+    co_await co_schedule_on(*this, priority);
 
     fseek(stream, offset, SEEK_SET);
     read = std::fread(buffer.data() + old_size, sizeof(byte), actual_read_size, stream);
@@ -118,7 +118,7 @@ Task<size_t> FilesystemIOBackend::async_write(Path file, IOBufferView buffer, bo
         fclose(stream);
     });
 
-    co_await schedule_on(*this, priority);
+    co_await co_schedule_on(*this, priority);
 
     write = fwrite(buffer.data(), sizeof(byte), buffer.size(), stream);
 
