@@ -7,16 +7,16 @@
 namespace atlas
 {
 
-void OpenGLContext::Create()
+void OpenGLContext::create()
 {
     if (platform_context_)
     {
-        Destroy();
+        destroy();
     }
     
 }
 
-void OpenGLContext::Destroy()
+void OpenGLContext::destroy()
 {
     delete platform_context_;
     platform_context_ = nullptr;

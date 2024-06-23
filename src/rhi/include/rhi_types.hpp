@@ -10,7 +10,7 @@ namespace atlas
 
 enum class ERhiBackend : uint8
 {
-    OpneGL,
+    OpenGL,
 };
 
 class RHI_API RHIBackendInitParams

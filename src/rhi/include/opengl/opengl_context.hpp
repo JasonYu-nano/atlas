@@ -15,9 +15,9 @@ class RHI_API OpenGLContext
 public:
     OpenGLContext();
 
-    void Create();
+    void create();
 
-    void Destroy();
+    void destroy();
 
 private:
     PlatformGLContext* platform_context_{ nullptr };

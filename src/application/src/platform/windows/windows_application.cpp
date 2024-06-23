@@ -12,10 +12,10 @@ namespace atlas
 
 static WindowsApplication* g_application = nullptr;
 
-void WindowsApplication::Initialize()
+void WindowsApplication::initialize()
 {
-    windows_destroy_handle_ = WindowsWindow::on_window_destroyed_.AddRaw(this, &WindowsApplication::OnWindowDestroyed);
-    RegisterWindowClass();
+    windows_destroy_handle_ = WindowsWindow::on_window_destroyed_.add_raw(this, &WindowsApplication::on_window_destroyed);
+    register_window_class();
     g_application = this;
 }
 
@@ -78,12 +78,12 @@ std::shared_ptr<ApplicationWindow> WindowsApplication::get_key_window() const
 std::shared_ptr<ApplicationWindow> WindowsApplication::GetWindow(HWND hwnd) const
 {
     const size_t index = managed_windows_.Find([hwnd](auto&& window) {
-        return window->GetNativeHandle() == hwnd;
+        return window->get_native_handle() == hwnd;
     });
     return index == INDEX_NONE ? nullptr : managed_windows_[index];
 }
 
-void WindowsApplication::RegisterWindowClass()
+void WindowsApplication::register_window_class()
 {
     // this struct holds information for the window class
     WNDCLASSEX wc;
@@ -94,7 +94,7 @@ void WindowsApplication::RegisterWindowClass()
     // fill in the struct with the needed information
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.lpfnWndProc = HandleWindowsMsg;
+    wc.lpfnWndProc = handle_windows_msg;
     wc.hInstance = hinstance_;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
@@ -112,7 +112,7 @@ void WindowsApplication::RegisterWindowClass()
     }
 }
 
-void WindowsApplication::OnWindowDestroyed(std::shared_ptr<ApplicationWindow> window)
+void WindowsApplication::on_window_destroyed(std::shared_ptr<ApplicationWindow> window)
 {
     if (!primary_window_.expired())
     {
@@ -150,11 +150,11 @@ void WindowsApplication::OnWindowDestroyed(std::shared_ptr<ApplicationWindow> wi
     }
 }
 
-LRESULT WindowsApplication::HandleWindowsMsg(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+LRESULT WindowsApplication::handle_windows_msg(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
     if (g_application)
     {
-        return g_application->ProcessMessage(hwnd, message, wparam, lparam);
+        return g_application->process_message(hwnd, message, wparam, lparam);
     }
     else
     {
@@ -162,7 +162,7 @@ LRESULT WindowsApplication::HandleWindowsMsg(HWND hwnd, UINT message, WPARAM wpa
     }
 }
 
-LRESULT WindowsApplication::ProcessMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+LRESULT WindowsApplication::process_message(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
     auto&& window = GetWindow(hwnd);
     if (!window)

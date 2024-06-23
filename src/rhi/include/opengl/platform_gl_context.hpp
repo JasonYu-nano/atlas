@@ -13,7 +13,7 @@ class PlatformGLContext
 public:
     virtual ~PlatformGLContext() = default;
 
-    virtual bool MakeCurrent(const ApplicationWindow& window) = 0;
+    virtual bool make_current(const ApplicationWindow& window) = 0;
 };
 
 }// namespace atlas

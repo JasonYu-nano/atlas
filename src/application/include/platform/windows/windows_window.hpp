@@ -31,7 +31,7 @@ public:
 
     void Hide() override;
 
-    void* GetNativeHandle() const override
+    void* get_native_handle() const override
     {
         return window_handle_;
     }

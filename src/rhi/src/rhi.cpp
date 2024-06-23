@@ -8,12 +8,12 @@
 namespace atlas
 {
 
-Rhi* Rhi::Create(ERhiBackend backend, RHIBackendInitParams* params)
+Rhi* Rhi::create(ERhiBackend backend, RHIBackendInitParams* params)
 {
     auto rhi = std::make_unique<Rhi>();
     switch (backend)
     {
-        case ERhiBackend::OpneGL:
+        case ERhiBackend::OpenGL:
         {
             rhi->backend_ = std::make_unique<RhiBackendOpenGL>(*static_cast<RHIBackendOpenGLInitParams*>(params));
             break;

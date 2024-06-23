@@ -135,7 +135,7 @@ public:
     WindowsGLContext();
     ~WindowsGLContext() override;
 
-    bool MakeCurrent(const ApplicationWindow& window) override;
+    bool make_current(const ApplicationWindow& window) override;
 
 private:
     static inline WindowGLStaticContext static_context_;

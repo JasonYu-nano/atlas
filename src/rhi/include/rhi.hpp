@@ -13,7 +13,7 @@ namespace atlas
 class RHI_API Rhi
 {
 public:
-    static Rhi* Create(ERhiBackend backend, RHIBackendInitParams* params);
+    static Rhi* create(ERhiBackend backend, RHIBackendInitParams* params);
 
 private:
     std::unique_ptr<class RhiBackend> backend_{ nullptr };

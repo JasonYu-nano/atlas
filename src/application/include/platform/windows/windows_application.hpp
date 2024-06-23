@@ -26,7 +26,7 @@ public:
 
     std::shared_ptr<ApplicationWindow> get_key_window() const override;
 
-    NODISCARD HINSTANCE GetInstanceHandle() const
+    NODISCARD HINSTANCE get_instance_handle() const
     {
         return hinstance_;
     }
@@ -34,13 +34,13 @@ public:
     NODISCARD std::shared_ptr<ApplicationWindow> GetWindow(HWND hwnd) const;
 
 private:
-    void RegisterWindowClass();
+    void register_window_class();
 
-    void OnWindowDestroyed(std::shared_ptr<ApplicationWindow> window);
+    void on_window_destroyed(std::shared_ptr<ApplicationWindow> window);
 
-    static LRESULT CALLBACK HandleWindowsMsg(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+    static LRESULT CALLBACK handle_windows_msg(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
-    LRESULT ProcessMessage(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+    LRESULT process_message(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
     DelegateHandle windows_destroy_handle_;
     HINSTANCE hinstance_{ nullptr };

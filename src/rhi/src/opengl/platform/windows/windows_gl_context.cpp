@@ -122,7 +122,7 @@ WindowsGLContext::WindowsGLContext()
         return;
     }
 
-    HWND hwnd = static_cast<HWND>(window->GetNativeHandle());
+    HWND hwnd = static_cast<HWND>(window->get_native_handle());
     if (!hwnd)
     {
         return;
@@ -204,9 +204,9 @@ WindowsGLContext::~WindowsGLContext()
     }
 }
 
-bool WindowsGLContext::MakeCurrent(const ApplicationWindow& window)
+bool WindowsGLContext::make_current(const ApplicationWindow& window)
 {
-    HWND hwnd = static_cast<HWND>(window.GetNativeHandle());
+    HWND hwnd = static_cast<HWND>(window.get_native_handle());
     if (!hwnd)
     {
         return false;

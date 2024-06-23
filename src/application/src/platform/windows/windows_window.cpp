@@ -94,15 +94,15 @@ void WindowsWindow::Initialize(const WindowsApplication& application, const Wind
     window_handle_ = CreateWindowEx(
         window_ex_style,
         window_class_name_,
-        description.title.ToWide().data(),
+        description.title.to_wide().data(),
         window_style,
         x,
         y,
         width,
         height,
-        parent ? static_cast<HWND>(parent->GetNativeHandle()) : nullptr,
+        parent ? static_cast<HWND>(parent->get_native_handle()) : nullptr,
         NULL,
-        application.GetInstanceHandle(),
+        application.get_instance_handle(),
         NULL);
 
     if (!window_handle_)
