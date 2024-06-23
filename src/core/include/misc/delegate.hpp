@@ -423,7 +423,7 @@ public:
         return Delegate(std::make_shared<details::StaticDelegateInstance<RetType(Args...), Payload...>>(fn, std::forward<Payload>(payload)...));
     }
     /**
-     * @brief Creates a delegate bound to member method of raw pointer.
+     * @brief Creates a delegate bound to member method of a raw pointer.
      * @tparam Object
      * @tparam Payload
      * @param object
@@ -437,7 +437,7 @@ public:
         return Delegate(std::make_shared<details::RawDelegateInstance<Object, true, RetType(Args...), Payload...>>(object, fn, std::forward<Payload>(payload)...));
     }
     /**
-     * @brief Creates a delegate bound to member method of raw pointer.
+     * @brief Creates a delegate bound to member method of a raw pointer.
      * @tparam Object
      * @tparam Payload
      * @param object
@@ -451,7 +451,7 @@ public:
         return Delegate(std::make_shared<details::RawDelegateInstance<Object, false, RetType(Args...), Payload...>>(object, fn, std::forward<Payload>(payload)...));
     }
     /**
-     * @brief Creates a delegate bound to member method of shared pointer.
+     * @brief Creates a delegate bound to member method of a shared pointer.
      * @tparam Object
      * @tparam Payload
      * @param object
@@ -465,7 +465,7 @@ public:
         return Delegate(std::make_shared<details::SPDelegateInstance<Object, true, RetType(Args...), Payload...>>(object, fn, std::forward<Payload>(payload)...));
     }
     /**
-     * @brief Creates a delegate bound to member method of shared pointer.
+     * @brief Creates a delegate bound to member method of a shared pointer.
      * @tparam Object
      * @tparam Payload
      * @param object
