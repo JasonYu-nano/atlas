@@ -3,6 +3,7 @@ add_atlas_library(
         PUBLIC_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include/opengl
         PRIVATE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
         PUBLIC_LINK_LIB application
+        PLATFORM_CODE_DIRS "include/opengl/platform" "src/opengl/platform"
 )
 
 find_package(OpenGL COMPONENTS OpenGL)

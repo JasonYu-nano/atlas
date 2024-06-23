@@ -29,7 +29,7 @@ struct ModuleInfo
     static inline int32 current_load_order = INDEX_NONE;
     StringName name;
     int32 load_order = INDEX_NONE;
-    // make sure module handle is release after module
+    // make sure the module handle is release after module
     std::unique_ptr<void, ReleaseModuleHandle> module_handle = nullptr;
     std::unique_ptr<IModule> module = nullptr;
 };

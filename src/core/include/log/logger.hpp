@@ -31,7 +31,7 @@ class Logger_##logger_name                                                      
 {                                                                                                               \
 public:                                                                                                         \
     Logger_##logger_name() = delete;                                                                            \
-    static inline std::unique_ptr<spdlog::logger> logger_ = atlas::create_logger(#logger_name, #file_to_save);   \
+    static inline std::unique_ptr<spdlog::logger> logger_ = atlas::create_logger(#logger_name, #file_to_save);  \
 };
 
 #define DEFINE_LOGGER(logger_name) DEFINE_LOGGER_DETAILED(logger_name, game)

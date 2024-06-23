@@ -4,7 +4,7 @@
 #include "platform/windows/windows_gl_context.hpp"
 
 #include "application_module.hpp"
-#include "misc/scope_guard.hpp"
+#include "misc/on_scope_exit.hpp"
 #include "module/module_manager.hpp"
 #include "rhi_log.hpp"
 
@@ -134,7 +134,7 @@ WindowsGLContext::WindowsGLContext()
         return;
     }
 
-    auto guard_dc = MakeScopeGuard([=] {
+    auto guard_dc = on_scope_exit([]{
         ::ReleaseDC(hwnd, hdc);
     });
 

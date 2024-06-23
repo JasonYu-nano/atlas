@@ -138,7 +138,7 @@ void ModuleManager::create_module_impl(ModuleInfo& module_info)
     if (handle)
     {
         module_info.module_handle = std::unique_ptr<void, ReleaseModuleHandle>(handle);
-        fn_create_module fn_address = (fn_create_module)PlatformTraits::get_exported_symbol(handle, "CreateModule");
+        fn_create_module fn_address = (fn_create_module)PlatformTraits::get_exported_symbol(handle, "create_module");
         if (fn_address)
         {
             module_info.module = std::unique_ptr<IModule>(fn_address());

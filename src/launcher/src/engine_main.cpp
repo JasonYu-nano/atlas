@@ -3,7 +3,7 @@
 
 #include "engine_main.hpp"
 #include "game_engine.hpp"
-#include "misc/scope_guard.hpp"
+#include "misc/on_scope_exit.hpp"
 
 namespace atlas
 {
@@ -13,7 +13,7 @@ int EngineMain(int argc, char* argv[])
     g_engine = new GameEngine();
 
     // make sure can always call engine shutdown on program terminated.
-    auto guard = MakeScopeGuard([] {
+    auto guard = on_scope_exit([]{
         g_engine->shutdown();
     });
 
@@ -26,7 +26,7 @@ int EngineMain(int argc, char* argv[])
 
     g_engine->shutdown();
 
-    guard.Release();
+    guard.cancel();
 
     delete g_engine;
     g_engine = nullptr;

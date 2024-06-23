@@ -40,7 +40,7 @@ static int32 g_engine_main_error_code = 0;
 {
     if (g_engine)
     {
-        g_engine->RequestShutdown();
+        g_engine->request_shutdown();
         [NSApp terminate:nil];
     }
 }

@@ -14,21 +14,21 @@ namespace atlas
 
 void MacApplication::Initialize()
 {
-    windows_destroy_handle_ = MacWindow::on_window_destroyed_.AddRaw(this, &MacApplication::OnWindowDestroyed);
+    windows_destroy_handle_ = MacWindow::on_window_destroyed_.add_raw(this, &MacApplication::OnWindowDestroyed);
 }
 
 void MacApplication::Deinitialize()
 {
-    if (windows_destroy_handle_.IsValid())
+    if (windows_destroy_handle_.is_valid())
     {
-        MacWindow::on_window_destroyed_.Remove(windows_destroy_handle_);
+        MacWindow::on_window_destroyed_.remove(windows_destroy_handle_);
     }
 
     for (auto&& windows : managed_windows)
     {
         windows->Destroy();
     }
-    managed_windows.Clear();
+    managed_windows.clear();
 }
 
 void MacApplication::Tick(float delta_time)
@@ -47,7 +47,7 @@ void MacApplication::Tick(float delta_time)
 std::shared_ptr<ApplicationWindow> MacApplication::MakeWindow(const WindowDescription& description, const ApplicationWindow* parent)
 {
     auto&& window = MacWindow::Create(*this, description, static_cast<const MacWindow*>(parent));
-    managed_windows.Add(window);
+    managed_windows.add(window);
 
     if (window->CanBecomePrimary() && primary_window_.expired())
     {
@@ -69,7 +69,7 @@ void MacApplication::OnWindowDestroyed(std::shared_ptr<ApplicationWindow> window
         }
     }
 
-    managed_windows.Remove(window);
+    managed_windows.remove(window);
 
     bool need_shutdown_engine = false;
     if (primary_window_.expired())
@@ -89,7 +89,7 @@ void MacApplication::OnWindowDestroyed(std::shared_ptr<ApplicationWindow> window
 
     if (need_shutdown_engine)
     {
-        g_engine->RequestShutdown();
+        g_engine->request_shutdown();
     }
 }
 

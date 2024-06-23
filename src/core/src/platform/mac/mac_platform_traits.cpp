@@ -12,7 +12,7 @@ namespace atlas
 
 void* MacPlatformTraits::load_library(const Path& path)
 {
-    auto&& sys_path = path.ToOSPath();
+    auto&& sys_path = path.to_os_path();
     void* handle = ::dlopen(sys_path.data(), RTLD_LAZY);
     if (handle == nullptr)
     {
@@ -30,6 +30,15 @@ void MacPlatformTraits::free_library(void* module_handle)
 void* MacPlatformTraits::get_exported_symbol(void* handle, const String& symbol_name)
 {
     return dlsym(handle, symbol_name.data());
+}
+
+Path MacPlatformTraits::get_library_path(const Path& module_dir, StringName lib_name)
+{
+#if DEBUG
+    return module_dir / String::format("lib{0}d.dylib", lib_name.to_lexical());
+#else
+    return module_dir / String::format("lib{0}.dylib", lib_name.to_lexical());
+#endif
 }
 
 } // namespace atlas

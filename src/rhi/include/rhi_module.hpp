@@ -13,14 +13,14 @@ namespace atlas
 class RHI_API RHIModule : public IModule, public TickableObject
 {
 public:
-    void Startup() override;
+    void startup() override;
 
-    void Shutdown() override;
+    void shutdown() override;
 
-    void Tick(float delta_time) override;
+    void tick(float delta_time) override;
 
 private:
-    class WindowsGLContext* ctx_{ nullptr   };
+    //class WindowsGLContext* ctx_{ nullptr   };
 };
 
 } // namespace atlas

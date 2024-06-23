@@ -18,6 +18,8 @@ public:
     static void free_library(void* module_handle);
 
     static void* get_exported_symbol(void* handle, const String& symbol_name);
+
+    static Path get_library_path(const Path& module_dir, StringName lib_name);
 };
 
 using PlatformTraits = MacPlatformTraits;

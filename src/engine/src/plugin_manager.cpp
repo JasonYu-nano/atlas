@@ -21,7 +21,7 @@ void PluginManager::scan_plugins(const Path& directory)
 {
     if (!std::filesystem::exists(directory))
     {
-        LOG_INFO(engine, "plugin directory {0} is not exists", directory.ToString());
+        LOG_INFO(engine, "plugin directory {0} is not exists", directory.to_string());
         return;
     }
 

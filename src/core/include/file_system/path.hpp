@@ -457,7 +457,7 @@ public:
      * @brief Converts to OS style string.
      * @return
      */
-    NODISCARD std::string ToOSPath() const
+    NODISCARD std::string to_os_path() const
     {
         return { text_.data() };
     }

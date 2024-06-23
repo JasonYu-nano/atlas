@@ -102,7 +102,7 @@ void MacWindow::Initialize(const MacApplication& application, const WindowDescri
 
     native_window_ = [[NSWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO];
 
-    [native_window_ setTitle:[NSString stringWithUTF8String:description.title.Data()]];
+    [native_window_ setTitle:[NSString stringWithUTF8String:description.title.data()]];
     [native_window_ setBackgroundColor:[NSColor whiteColor]];
     [native_window_ makeKeyAndOrderFront:NSApp];
     [native_window_ setDelegate:[[WindowDelegate alloc] init:this]];
@@ -143,7 +143,7 @@ void MacWindow::Destroy()
             [native_window_ setDelegate:nil]; // we don't need route event to window delegate
         }
         Deinitialize();
-        on_window_destroyed_.Broadcast(shared_from_this());
+        on_window_destroyed_.broadcast(shared_from_this());
     }
 }
 

@@ -10,7 +10,7 @@ namespace atlas
 
 // Use IMPLEMENT_MODULE macro to implement unified creator function.
 #define IMPLEMENT_MODULE(module_class, module_name) \
-extern "C" DLL_EXPORT IModule* CreateModule() { return new module_class(); }
+extern "C" DLL_EXPORT IModule* create_module() { return new module_class(); }
 
 /**
  * @brief Interfaces for all modules managed by the ModuleManager.
