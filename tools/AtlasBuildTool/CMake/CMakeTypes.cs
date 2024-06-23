@@ -29,4 +29,5 @@ public static class CMakeTypes
 
     public const string AddLibraryFunction = "add_atlas_library";
     public const string AddExecutableFunction = "add_atlas_executable";
+    public const string AddProjectFunction = "add_atlas_project";
 }

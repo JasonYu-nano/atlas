@@ -158,6 +158,10 @@ public class BuildTargetAssembly
         {
             isExecutable = false;
         }
+        else if ((funStartIndex = content.IndexOf(CMakeTypes.AddProjectFunction, StringComparison.Ordinal)) != -1)
+        {
+            isExecutable = false;
+        }
         else
         {
             return string.Empty;
