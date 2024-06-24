@@ -33,4 +33,21 @@ void* WindowsPlatformTraits::get_exported_symbol(void* handle, const String& sym
     return ::GetProcAddress((HMODULE)handle, symbol_name.data());
 }
 
+void WindowsPlatformTraits::set_thread_name(void* thread_handle, const String& name)
+{
+    typedef HRESULT(WINAPI *SetThreadDescriptionFnPtr)(HANDLE hThread, PCWSTR lpThreadDescription);
+
+    static SetThreadDescriptionFnPtr set_thread_description = reinterpret_cast<SetThreadDescriptionFnPtr>(::GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "SetThreadDescription"));
+
+    if (set_thread_description)
+    {
+        set_thread_description(thread_handle, name.to_wide().data());
+    }
+}
+
+void* WindowsPlatformTraits::get_this_thread_handle()
+{
+    return ::GetCurrentThread();
+}
+
 } // namespace atlas

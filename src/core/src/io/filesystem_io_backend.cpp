@@ -13,9 +13,9 @@
 namespace atlas
 {
 
-void IOTaskWorker::operator()()
+void IOTaskWorker::operator()(StopToken stop_token)
 {
-    while (!producer_->request_stop_)
+    while (!stop_token.stop_requested())
     {
         void* address = producer_->request_queue_.pop(thread_id_, false);
         if (!address)

@@ -18,6 +18,10 @@ public:
     static void free_library(void* module_handle);
 
     static void* get_exported_symbol(void* handle, const String& symbol_name);
+
+    static void set_thread_name(void* thread_handle, const String& name);
+
+    static void* get_this_thread_handle();
 };
 
 using PlatformTraits = WindowsPlatformTraits;

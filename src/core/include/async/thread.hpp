@@ -7,6 +7,7 @@
 
 #include "core_def.hpp"
 #include "misc/stop_token.hpp"
+#include "platform/windows/windows_platform_traits.hpp"
 
 namespace atlas
 {
@@ -22,14 +23,19 @@ public:
 
     Thread() = default;
 
-    template <typename Callable, typename... Args, typename = std::enable_if_t<!std::is_same<std::remove_cvref_t<Callable>, Thread>::value>>
-    explicit Thread(Callable&& callable, Args&&... args)
+    template <typename Callable, typename... Args, typename = std::enable_if_t<!std::is_same_v<std::remove_cvref_t<Callable>, Thread>>>
+    explicit Thread(Callable&& callable, Args&&... args) requires(std::is_invocable_v<std::decay_t<Callable>, std::decay_t<Args>...>)
         : thread_(std::forward<Callable>(callable), std::forward<Args>(args)...)
     {}
 
+    template <typename Callable, typename... Args, typename = std::enable_if_t<!std::is_same_v<std::remove_cvref_t<Callable>, Thread>>>
+    explicit Thread(Callable&& callable, Args&&... args) requires(std::is_invocable_v<std::decay_t<Callable>, StopToken, std::decay_t<Args>...>)
+        : thread_(std::thread(std::forward<Callable>(callable), stop_source_.get_token(), std::forward<Args>(args)...))
+    {}
+
     Thread(Thread&& rhs) noexcept
-        : thread_(std::move(rhs.thread_))
-        , stop_source_(std::move(rhs.stop_source_))
+        : stop_source_(std::move(rhs.stop_source_))
+        , thread_(std::move(rhs.thread_))
     {}
 
     Thread(const Thread& rhs) = delete;
@@ -96,13 +102,33 @@ public:
         stop_source_.request_stop();
     }
 
+    void set_name(const String& name)
+    {
+        PlatformTraits::set_thread_name(native_handle(), name);
+    }
+
     static uint32 hardware_concurrency() noexcept
     {
         return std::thread::hardware_concurrency();
     }
 private:
-    std::thread thread_;
     StopSource stop_source_;
+    std::thread thread_;
 };
+
+namespace this_thread
+{
+
+CORE_API inline void* native_handle()
+{
+    return PlatformTraits::get_this_thread_handle();
+}
+
+CORE_API inline void set_name(const String& name)
+{
+    PlatformTraits::set_thread_name(PlatformTraits::get_this_thread_handle(), name);
+}
+
+}// namespace this_thread
 
 }// namespace atlas
