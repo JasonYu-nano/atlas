@@ -16,34 +16,34 @@ class WindowsWindow : public ApplicationWindow, public std::enable_shared_from_t
     using base = ApplicationWindow;
     struct Private {};
 public:
-    static std::shared_ptr<WindowsWindow> Create(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent = nullptr);
+    static std::shared_ptr<WindowsWindow> create(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent = nullptr);
 
     explicit WindowsWindow(Private) {};
 
     ~WindowsWindow() override
     {
-        Deinitialize();
+        deinitialize();
     }
 
-    void Destroy() override;
+    void destroy() override;
 
-    void Show() override;
+    void show() override;
 
-    void Hide() override;
+    void hide() override;
 
     void* get_native_handle() const override
     {
         return window_handle_;
     }
 
-    NODISCARD HWND GetHandle() const
+    NODISCARD HWND native_handle() const
     {
         return window_handle_;
     }
 
 protected:
-    void Initialize(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent);
-    void Deinitialize();
+    void initialize(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent);
+    void deinitialize();
 
 public:
     static inline const wchar_t* window_class_name_ = L"Atlas";

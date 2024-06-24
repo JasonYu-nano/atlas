@@ -40,7 +40,7 @@ public:
 
     void* ResolveGLSymbol(StringView symbol) const
     {
-        return dll_handle_ ? PlatformTraits::GetExportedSymbol(dll_handle_, symbol) : nullptr;
+        return dll_handle_ ? PlatformTraits::get_exported_symbol(dll_handle_, String(symbol)) : nullptr;
     }
 private:
     // For Mesa llvmpipe shipped with a name other than opengl32.dll
@@ -116,7 +116,7 @@ private:
 
     void* ResolveSymbol(StringView symbol) const
     {
-        return dll_handle_ ? PlatformTraits::GetExportedSymbol(dll_handle_, symbol) : nullptr;
+        return dll_handle_ ? PlatformTraits::get_exported_symbol(dll_handle_, String(symbol)) : nullptr;
     }
 
     void* dll_handle_{ nullptr };

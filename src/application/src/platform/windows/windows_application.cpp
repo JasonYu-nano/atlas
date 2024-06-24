@@ -21,10 +21,10 @@ void WindowsApplication::initialize()
 
 void WindowsApplication::deinitialize()
 {
-    if (windows_destroy_handle_.IsValid())
+    if (windows_destroy_handle_.is_valid())
     {
-        WindowsWindow::on_window_destroyed_.Remove(windows_destroy_handle_);
-        windows_destroy_handle_.Invalidate();
+        WindowsWindow::on_window_destroyed_.remove(windows_destroy_handle_);
+        windows_destroy_handle_.invalidate();
     }
 
     if (g_application == this)
@@ -49,12 +49,12 @@ void WindowsApplication::tick(float delta_time)
     }
 }
 
-std::shared_ptr<ApplicationWindow> WindowsApplication::MakeWindow(const WindowDescription& description, const ApplicationWindow* parent)
+std::shared_ptr<ApplicationWindow> WindowsApplication::make_window(const WindowDescription& description, const ApplicationWindow* parent)
 {
-    auto&& window = WindowsWindow::Create(*this, description, parent);
-    managed_windows_.Add(window);
+    auto&& window = WindowsWindow::create(*this, description, parent);
+    managed_windows_.add(window);
 
-    if (primary_window_.expired() && window->CanBecomePrimary())
+    if (primary_window_.expired() && window->can_become_primary())
     {
         primary_window_ = window;
     }
@@ -67,7 +67,7 @@ std::shared_ptr<ApplicationWindow> WindowsApplication::make_dummy_window()
     // we won't manage dummy window.
     WindowDescription desc;
     desc.display_when_initialize = false;
-    return WindowsWindow::Create(*this, desc, nullptr);
+    return WindowsWindow::create(*this, desc, nullptr);
 }
 
 std::shared_ptr<ApplicationWindow> WindowsApplication::get_key_window() const
@@ -75,9 +75,9 @@ std::shared_ptr<ApplicationWindow> WindowsApplication::get_key_window() const
     return primary_window_.expired() ? nullptr : primary_window_.lock();
 }
 
-std::shared_ptr<ApplicationWindow> WindowsApplication::GetWindow(HWND hwnd) const
+std::shared_ptr<ApplicationWindow> WindowsApplication::get_window(HWND hwnd) const
 {
-    const size_t index = managed_windows_.Find([hwnd](auto&& window) {
+    const size_t index = managed_windows_.find([hwnd](auto&& window) {
         return window->get_native_handle() == hwnd;
     });
     return index == INDEX_NONE ? nullptr : managed_windows_[index];
@@ -107,7 +107,7 @@ void WindowsApplication::register_window_class()
         LOG_ERROR(app, "RegisterClassEx failed in windows platform");
         if (g_engine)
         {
-            g_engine->RequestShutdown();
+            g_engine->request_shutdown();
         }
     }
 }
@@ -123,15 +123,15 @@ void WindowsApplication::on_window_destroyed(std::shared_ptr<ApplicationWindow> 
         }
     }
 
-    managed_windows_.Remove(std::static_pointer_cast<WindowsWindow>(window));
+    managed_windows_.remove(std::static_pointer_cast<WindowsWindow>(window));
 
-    bool need_shutdown_engine = managed_windows_.IsEmpty();
+    bool need_shutdown_engine = managed_windows_.is_empty();
     if (!need_shutdown_engine && primary_window_.expired())
     {
         // find next primary window.
         for (auto&& managed_window : managed_windows_)
         {
-            if (managed_window->CanBecomePrimary())
+            if (managed_window->can_become_primary())
             {
                 primary_window_ = managed_window;
                 break;
@@ -164,7 +164,7 @@ LRESULT WindowsApplication::handle_windows_msg(HWND hwnd, UINT message, WPARAM w
 
 LRESULT WindowsApplication::process_message(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-    auto&& window = GetWindow(hwnd);
+    auto&& window = get_window(hwnd);
     if (!window)
     {
         return ::DefWindowProc(hwnd, message, wparam, lparam);
@@ -176,7 +176,7 @@ LRESULT WindowsApplication::process_message(HWND hwnd, UINT message, WPARAM wpar
     {
         case WM_DESTROY:
         {
-            window->Destroy();
+            window->destroy();
         } break;
         default:
             result = ::DefWindowProc(hwnd, message, wparam, lparam);

@@ -31,7 +31,7 @@ public:
         return hinstance_;
     }
 
-    NODISCARD std::shared_ptr<ApplicationWindow> GetWindow(HWND hwnd) const;
+    NODISCARD std::shared_ptr<ApplicationWindow> get_window(HWND hwnd) const;
 
 private:
     void register_window_class();

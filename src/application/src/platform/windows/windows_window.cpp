@@ -8,23 +8,23 @@
 namespace atlas
 {
 
-std::shared_ptr<WindowsWindow> WindowsWindow::Create(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent)
+std::shared_ptr<WindowsWindow> WindowsWindow::create(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent)
 {
     auto window = std::make_shared<WindowsWindow>(Private{});
-    window->Initialize(application, description, parent);
+    window->initialize(application, description, parent);
     return window;
 }
 
-void WindowsWindow::Destroy()
+void WindowsWindow::destroy()
 {
     if (initialized_)
     {
-        Deinitialize();
-        on_window_destroyed_.Broadcast(shared_from_this());
+        deinitialize();
+        on_window_destroyed_.broadcast(shared_from_this());
     }
 }
 
-void WindowsWindow::Show()
+void WindowsWindow::show()
 {
     if (!is_visible_)
     {
@@ -33,7 +33,7 @@ void WindowsWindow::Show()
     }
 }
 
-void WindowsWindow::Hide()
+void WindowsWindow::hide()
 {
     if (is_visible_)
     {
@@ -42,7 +42,7 @@ void WindowsWindow::Hide()
     }
 }
 
-void WindowsWindow::Initialize(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent)
+void WindowsWindow::initialize(const WindowsApplication& application, const WindowDescription& description, const ApplicationWindow* parent)
 {
     uint32 window_style = 0;
     uint32 window_ex_style = 0;
@@ -113,13 +113,13 @@ void WindowsWindow::Initialize(const WindowsApplication& application, const Wind
 
     if (description.display_when_initialize)
     {
-        Show();
+        show();
     }
 
     initialized_ = true;
 }
 
-void WindowsWindow::Deinitialize()
+void WindowsWindow::deinitialize()
 {
     if (initialized_)
     {

@@ -13,7 +13,7 @@ namespace atlas
 
 WindowsOpenGL32::WindowsOpenGL32()
 {
-    dll_handle_ = PlatformTraits::LoadDynamicLibrary({"opengl32.dll"});
+    dll_handle_ = PlatformTraits::load_library({"opengl32.dll"});
     if (dll_handle_)
     {
         WglCreateContext = reinterpret_cast<HGLRC (WINAPI *)(HDC)>(ResolveGLSymbol("wglCreateContext"));
@@ -37,14 +37,14 @@ WindowsOpenGL32::~WindowsOpenGL32()
 {
     if (dll_handle_)
     {
-        PlatformTraits::FreeDynamicLibrary(dll_handle_);
+        PlatformTraits::free_library(dll_handle_);
         dll_handle_ = nullptr;
     }
 }
 
 WindowGLStaticContext::WindowGLStaticContext()
 {
-    dll_handle_ = PlatformTraits::LoadDynamicLibrary({"opengl32.dll"});
+    dll_handle_ = PlatformTraits::load_library({"opengl32.dll"});
     if (dll_handle_)
     {
         wgl_create_context_ = reinterpret_cast<FnWglCreateContext>(ResolveSymbol("wglCreateContext"));
@@ -77,7 +77,7 @@ WindowGLStaticContext::~WindowGLStaticContext()
 {
     if (dll_handle_)
     {
-        PlatformTraits::FreeDynamicLibrary(dll_handle_);
+        PlatformTraits::free_library(dll_handle_);
         dll_handle_ = nullptr;
     }
 }
@@ -105,18 +105,18 @@ String WindowGLStaticContext::GetGLError() const
 
 WindowsGLContext::WindowsGLContext()
 {
-    auto app_module = static_cast<ApplicationModule*>(ModuleManager::Load("application"));
+    auto app_module = static_cast<ApplicationModule*>(ModuleManager::load("application"));
     if (!app_module)
     {
         return;
     }
-    PlatformApplication* app = app_module->GetApplication();
+    PlatformApplication* app = app_module->get_application();
     if (!app)
     {
         return;
     }
 
-    std::shared_ptr<ApplicationWindow> window = app->MakeDummyWindow();
+    std::shared_ptr<ApplicationWindow> window = app->make_dummy_window();
     if (!window)
     {
         return;
@@ -134,7 +134,7 @@ WindowsGLContext::WindowsGLContext()
         return;
     }
 
-    auto guard_dc = on_scope_exit([]{
+    auto guard_dc = on_scope_exit([=]{
         ::ReleaseDC(hwnd, hdc);
     });
 
@@ -195,7 +195,7 @@ WindowsGLContext::~WindowsGLContext()
     {
         ReleaseDC(hwnd, hdc);
     }
-    window_contexts_.Clear();
+    window_contexts_.clear();
 
     if (render_context_)
     {
@@ -214,7 +214,7 @@ bool WindowsGLContext::make_current(const ApplicationWindow& window)
 
     //TODO: check if it's already the current context
 
-    size_t idx = window_contexts_.Add({hwnd, GetDC(hwnd), render_context_});
+    size_t idx = window_contexts_.add({hwnd, GetDC(hwnd), render_context_});
     const ContextInfo& info = window_contexts_[idx];
     const bool result = static_context_.wgl_make_current_(info.hdc, render_context_);
     if (!result)
