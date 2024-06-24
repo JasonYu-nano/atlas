@@ -19,7 +19,7 @@ class IOTaskWorker
 public:
     explicit IOTaskWorker(uint8 thread_id, FilesystemIOBackend* producer) : thread_id_(thread_id), producer_(producer) {}
 
-    void operator() ();
+    void operator() (StopToken stop_token);
 
 private:
     uint8 thread_id_{ 0 };
@@ -37,12 +37,16 @@ public:
         for (uint32 i = 0; i < get_io_worker_count(); ++i)
         {
             running_threads_.emplace(IOTaskWorker(running_threads_.size(), this));
+            running_threads_.last().set_name(String::format("io thread - {0}", running_threads_.size()));
         }
     }
 
     ~FilesystemIOBackend() override
     {
-        request_stop_ = true;
+        for(auto&& thread : running_threads_)
+        {
+            thread.request_stop();
+        }
         running_threads_.clear();
     }
 
@@ -54,8 +58,6 @@ public:
 
     static uint32 get_io_worker_count();
 private:
-
-    std::atomic<bool> request_stop_{ false };
     Array<Thread> running_threads_;
     PriorityQueue<void, g_io_priority_count> request_queue_;
 };

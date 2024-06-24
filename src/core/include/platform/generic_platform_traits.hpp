@@ -18,6 +18,8 @@ public:
     static const Path& get_engine_directory();
     static const Path& get_relative_build_directory();
     static Path get_library_path(const Path& module_dir, StringName lib_name);
+    static void set_thread_name(void* thread_handle, const String& name) {};
+    static void* get_this_thread_handle() { return nullptr; }
 
     GenericPlatformTraits() = delete;
 };

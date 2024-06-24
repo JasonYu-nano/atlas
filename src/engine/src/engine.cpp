@@ -1,13 +1,14 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
+#include <fstream>
+
 #include "engine.hpp"
 
 #include "project.hpp"
+#include "async/thread.hpp"
 #include "misc/cmd_options.hpp"
 #include "misc/json.hpp"
-
-#include <fstream>
 
 namespace atlas
 {
@@ -18,6 +19,8 @@ DEFINE_COMMAND_OPTION(String, project, "p", "The path of the project to start")
 
 void Engine::startup(int argc, char** argv)
 {
+    this_thread::set_name("game thread");
+
     CommandParser::parse_command_line_options(argc, argv);
 
     current_time_ = duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
