@@ -4,7 +4,9 @@
 #include "rhi_module.hpp"
 
 #include "application_module.hpp"
+#include "opengl_context.hpp"
 #include "module/module_manager.hpp"
+#include "platform/windows/windows_gl_context.hpp"
 
 namespace atlas
 {
@@ -13,38 +15,54 @@ IMPLEMENT_MODULE(RHIModule, "rhi");
 
 void RHIModule::startup()
 {
-//    ctx_ = new WindowsGLContext();
-//
-//    auto app_module = static_cast<ApplicationModule*>(ModuleManager::Load("application"));
-//    if (!app_module)
-//    {
-//        return;
-//    }
-//    PlatformApplication* app = app_module->GetApplication();
-//    if (!app)
-//    {
-//        return;
-//    }
-//
-//    if (auto&& key = app->GetKeyWindow())
-//    {
-//        if (ctx_->MakeCurrent(*key))
-//        {
-//            glViewport(0, 0, 800, 600);
-//        }
-//    }
+    ctx_ = new OpenGLContext();
+    ctx_->create();
+
+    auto app_module = static_cast<ApplicationModule*>(ModuleManager::load("application"));
+    if (!app_module)
+    {
+        return;
+    }
+    PlatformApplication* app = app_module->get_application();
+    if (!app)
+    {
+        return;
+    }
+
+    if (auto&& key = app->get_key_window())
+    {
+        if (ctx_->make_current(*key))
+        {
+
+        }
+    }
 }
 
 void RHIModule::shutdown()
 {
-//    delete ctx_;
-//    ctx_ = nullptr;
+    delete ctx_;
+    ctx_ = nullptr;
 }
 
 void RHIModule::tick(float delta_time)
 {
-//    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-//    glClear(GL_COLOR_BUFFER_BIT);
+    if (ctx_)
+    {
+        auto app_module = static_cast<ApplicationModule*>(ModuleManager::load("application"));
+        if (app_module)
+        {
+            PlatformApplication* app = app_module->get_application();
+            if (app)
+            {
+                if (auto&& key = app->get_key_window())
+                {
+                    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+                    glClear(GL_COLOR_BUFFER_BIT);
+                    ctx_->swap_buffers(*key);
+                }
+            }
+        }
+    }
 }
 
 }// namespace atlas

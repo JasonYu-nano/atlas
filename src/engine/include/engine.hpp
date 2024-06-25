@@ -6,6 +6,7 @@
 #include "module/module_manager.hpp"
 #include "plugin_manager.hpp"
 #include "project.hpp"
+#include "io/llio.hpp"
 #include "tickable/tick_task_manager.hpp"
 
 namespace atlas
@@ -46,6 +47,8 @@ public:
 
     TickTaskManager* get_tick_task_manager() const { return tick_task_manager_.get(); }
 
+    LowLevelIO& get_llio() const { return llio_; }
+
 protected:
     void load_project();
 
@@ -57,6 +60,8 @@ protected:
 
     std::unique_ptr<TickTaskManager> tick_task_manager_{ nullptr };
     std::unique_ptr<PluginManager> plugin_manager_{ nullptr };
+
+    mutable LowLevelIO llio_;
 
     Project project_;
 };

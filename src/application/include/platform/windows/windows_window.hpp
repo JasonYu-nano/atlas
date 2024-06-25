@@ -31,12 +31,7 @@ public:
 
     void hide() override;
 
-    void* get_native_handle() const override
-    {
-        return window_handle_;
-    }
-
-    NODISCARD HWND native_handle() const
+    void* native_handle() const override
     {
         return window_handle_;
     }

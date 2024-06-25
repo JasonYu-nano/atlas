@@ -13,11 +13,17 @@ class PlatformGLContext;
 class RHI_API OpenGLContext
 {
 public:
-    OpenGLContext();
+    OpenGLContext() = default;
+
+    ~OpenGLContext();
 
     void create();
 
     void destroy();
+
+    bool make_current(class ApplicationWindow& window);
+
+    void swap_buffers(class ApplicationWindow& window);
 
 private:
     PlatformGLContext* platform_context_{ nullptr };

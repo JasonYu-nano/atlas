@@ -78,7 +78,7 @@ std::shared_ptr<ApplicationWindow> WindowsApplication::get_key_window() const
 std::shared_ptr<ApplicationWindow> WindowsApplication::get_window(HWND hwnd) const
 {
     const size_t index = managed_windows_.find([hwnd](auto&& window) {
-        return window->get_native_handle() == hwnd;
+        return window->native_handle() == hwnd;
     });
     return index == INDEX_NONE ? nullptr : managed_windows_[index];
 }

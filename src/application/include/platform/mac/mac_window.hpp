@@ -48,7 +48,7 @@ public:
         return can_be_primary_;
     }
 
-    NODISCARD void* get_native_handle() const override
+    NODISCARD void* native_handle() const override
     {
         return native_window_;
     }

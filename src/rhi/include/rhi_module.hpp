@@ -20,7 +20,7 @@ public:
     void tick(float delta_time) override;
 
 private:
-    //class WindowsGLContext* ctx_{ nullptr   };
+    class OpenGLContext* ctx_{ nullptr };
 };
 
 } // namespace atlas

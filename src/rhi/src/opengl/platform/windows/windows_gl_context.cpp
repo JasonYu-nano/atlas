@@ -16,20 +16,20 @@ WindowsOpenGL32::WindowsOpenGL32()
     dll_handle_ = PlatformTraits::load_library({"opengl32.dll"});
     if (dll_handle_)
     {
-        WglCreateContext = reinterpret_cast<HGLRC (WINAPI *)(HDC)>(ResolveGLSymbol("wglCreateContext"));
-        WglDeleteContext = reinterpret_cast<BOOL (WINAPI *)(HGLRC)>(ResolveGLSymbol("wglDeleteContext"));
-        WglGetCurrentContext = reinterpret_cast<HGLRC (WINAPI *)()>(ResolveGLSymbol("wglGetCurrentContext"));
-        WglGetCurrentDC = reinterpret_cast<HDC (WINAPI *)()>(ResolveGLSymbol("wglGetCurrentDC"));
-        WglGetProcAddress = reinterpret_cast<PROC (WINAPI *)(LPCSTR)>(ResolveGLSymbol("wglGetProcAddress"));
-        WglMakeCurrent = reinterpret_cast<BOOL (WINAPI *)(HDC, HGLRC)>(ResolveGLSymbol("wglMakeCurrent"));
-        WglShareLists = reinterpret_cast<BOOL (WINAPI *)(HGLRC, HGLRC)>(ResolveGLSymbol("wglShareLists"));
-        WglSwapBuffers = reinterpret_cast<BOOL (WINAPI *)(HDC)>(ResolveGLSymbol("wglSwapBuffers"));
-        WglSetPixelFormat = reinterpret_cast<BOOL (WINAPI *)(HDC, int, const PIXELFORMATDESCRIPTOR *)>(ResolveGLSymbol("wglSetPixelFormat"));
-        WglDescribePixelFormat = reinterpret_cast<int (WINAPI *)(HDC, int, UINT, PIXELFORMATDESCRIPTOR *)>(ResolveGLSymbol("wglDescribePixelFormat"));
+        WglCreateContext = reinterpret_cast<HGLRC (WINAPI *)(HDC)>(resolve_gl_symbol("wglCreateContext"));
+        WglDeleteContext = reinterpret_cast<BOOL (WINAPI *)(HGLRC)>(resolve_gl_symbol("wglDeleteContext"));
+        WglGetCurrentContext = reinterpret_cast<HGLRC (WINAPI *)()>(resolve_gl_symbol("wglGetCurrentContext"));
+        WglGetCurrentDC = reinterpret_cast<HDC (WINAPI *)()>(resolve_gl_symbol("wglGetCurrentDC"));
+        WglGetProcAddress = reinterpret_cast<PROC (WINAPI *)(LPCSTR)>(resolve_gl_symbol("wglGetProcAddress"));
+        WglMakeCurrent = reinterpret_cast<BOOL (WINAPI *)(HDC, HGLRC)>(resolve_gl_symbol("wglMakeCurrent"));
+        WglShareLists = reinterpret_cast<BOOL (WINAPI *)(HGLRC, HGLRC)>(resolve_gl_symbol("wglShareLists"));
+        WglSwapBuffers = reinterpret_cast<BOOL (WINAPI *)(HDC)>(resolve_gl_symbol("wglSwapBuffers"));
+        WglSetPixelFormat = reinterpret_cast<BOOL (WINAPI *)(HDC, int, const PIXELFORMATDESCRIPTOR *)>(resolve_gl_symbol("wglSetPixelFormat"));
+        WglDescribePixelFormat = reinterpret_cast<int (WINAPI *)(HDC, int, UINT, PIXELFORMATDESCRIPTOR *)>(resolve_gl_symbol("wglDescribePixelFormat"));
 
-        GlGetError = reinterpret_cast<GLenum (APIENTRY *)()>(ResolveGLSymbol("glGetError"));
-        GlGetIntegerv = reinterpret_cast<void (APIENTRY *)(GLenum , GLint *)>(ResolveGLSymbol("glGetIntegerv"));
-        GlGetString = reinterpret_cast<const GLubyte * (APIENTRY *)(GLenum )>(ResolveGLSymbol("glGetString"));
+        GlGetError = reinterpret_cast<GLenum (APIENTRY *)()>(resolve_gl_symbol("glGetError"));
+        GlGetIntegerv = reinterpret_cast<void (APIENTRY *)(GLenum , GLint *)>(resolve_gl_symbol("glGetIntegerv"));
+        GlGetString = reinterpret_cast<const GLubyte * (APIENTRY *)(GLenum )>(resolve_gl_symbol("glGetString"));
     }
 }
 
@@ -47,20 +47,20 @@ WindowGLStaticContext::WindowGLStaticContext()
     dll_handle_ = PlatformTraits::load_library({"opengl32.dll"});
     if (dll_handle_)
     {
-        wgl_create_context_ = reinterpret_cast<FnWglCreateContext>(ResolveSymbol("wglCreateContext"));
-        wgl_delete_context_ = reinterpret_cast<FnWglDeleteContext>(ResolveSymbol("wglDeleteContext"));
-        wgl_get_current_context_ = reinterpret_cast<FnWglGetCurrentContext>(ResolveSymbol("wglGetCurrentContext"));
-        wgl_get_current_dc_ = reinterpret_cast<FnWglGetCurrentDC>(ResolveSymbol("wglGetCurrentDC"));
-        wgl_get_proc_address_ = reinterpret_cast<FnWglGetProcAddress>(ResolveSymbol("wglGetProcAddress"));
-        wgl_make_current_ = reinterpret_cast<FnWglMakeCurrent>(ResolveSymbol("wglMakeCurrent"));
-        wgl_share_lists_ = reinterpret_cast<FnWglShareLists>(ResolveSymbol("wglShareLists"));
-        wgl_swap_buffers_ = reinterpret_cast<BOOL (WINAPI *)(HDC)>(ResolveSymbol("wglSwapBuffers"));
-        wgl_set_pixel_format_ = reinterpret_cast<BOOL (WINAPI *)(HDC, int, const PIXELFORMATDESCRIPTOR *)>(ResolveSymbol("wglSetPixelFormat"));
-        wgl_describe_pixel_format_ = reinterpret_cast<int (WINAPI *)(HDC, int, UINT, PIXELFORMATDESCRIPTOR *)>(ResolveSymbol("wglDescribePixelFormat"));
+        wgl_create_context_ = reinterpret_cast<FnWglCreateContext>(resolve_symbol("wglCreateContext"));
+        wgl_delete_context_ = reinterpret_cast<FnWglDeleteContext>(resolve_symbol("wglDeleteContext"));
+        wgl_get_current_context_ = reinterpret_cast<FnWglGetCurrentContext>(resolve_symbol("wglGetCurrentContext"));
+        wgl_get_current_dc_ = reinterpret_cast<FnWglGetCurrentDC>(resolve_symbol("wglGetCurrentDC"));
+        wgl_get_proc_address_ = reinterpret_cast<FnWglGetProcAddress>(resolve_symbol("wglGetProcAddress"));
+        wgl_make_current_ = reinterpret_cast<FnWglMakeCurrent>(resolve_symbol("wglMakeCurrent"));
+        wgl_share_lists_ = reinterpret_cast<FnWglShareLists>(resolve_symbol("wglShareLists"));
+        wgl_swap_buffers_ = reinterpret_cast<BOOL (WINAPI *)(HDC)>(resolve_symbol("wglSwapBuffers"));
+        wgl_set_pixel_format_ = reinterpret_cast<BOOL (WINAPI *)(HDC, int, const PIXELFORMATDESCRIPTOR *)>(resolve_symbol("wglSetPixelFormat"));
+        wgl_describe_pixel_format_ = reinterpret_cast<int (WINAPI *)(HDC, int, UINT, PIXELFORMATDESCRIPTOR *)>(resolve_symbol("wglDescribePixelFormat"));
 
-        gl_get_error_ = reinterpret_cast<FnGlGetError>(ResolveSymbol("glGetError"));
-        gl_get_integerv_ = reinterpret_cast<FnGlGetIntegerv>(ResolveSymbol("glGetIntegerv"));
-        gl_get_string_ = reinterpret_cast<FnGlGetString>(ResolveSymbol("glGetString"));
+        gl_get_error_ = reinterpret_cast<FnGlGetError>(resolve_symbol("glGetError"));
+        gl_get_integerv_ = reinterpret_cast<FnGlGetIntegerv>(resolve_symbol("glGetIntegerv"));
+        gl_get_string_ = reinterpret_cast<FnGlGetString>(resolve_symbol("glGetString"));
 
         if (wgl_get_proc_address_)
         {
@@ -82,23 +82,23 @@ WindowGLStaticContext::~WindowGLStaticContext()
     }
 }
 
-String WindowGLStaticContext::GetGLString(uint32 which) const
+String WindowGLStaticContext::get_gl_string(uint32 which) const
 {
     if (gl_get_string_)
     {
         if (const GLubyte* s = gl_get_string_(which))
         {
-            return String(reinterpret_cast<const char*>(s));
+            return {reinterpret_cast<const char*>(s)};
         }
     }
     return {};
 }
 
-String WindowGLStaticContext::GetGLError() const
+String WindowGLStaticContext::get_gl_error() const
 {
     if (gl_get_string_)
     {
-        return GetGLString(gl_get_error_());
+        return get_gl_string(gl_get_error_());
     }
     return {};
 }
@@ -122,7 +122,7 @@ WindowsGLContext::WindowsGLContext()
         return;
     }
 
-    HWND hwnd = static_cast<HWND>(window->get_native_handle());
+    HWND hwnd = static_cast<HWND>(window->native_handle());
     if (!hwnd)
     {
         return;
@@ -138,7 +138,7 @@ WindowsGLContext::WindowsGLContext()
         ::ReleaseDC(hwnd, hdc);
     });
 
-    if (static_context_.SupportExtension() && false)
+    if (static_context_.support_extension() && false)
     {
         if (static_context_.wgl_get_extensions_string_arb_)
         {
@@ -160,20 +160,28 @@ WindowsGLContext::WindowsGLContext()
         std::memset(&obtained_pixel_format_descriptor_, 0, sizeof(PIXELFORMATDESCRIPTOR));
         obtained_pixel_format_descriptor_.nSize = sizeof(PIXELFORMATDESCRIPTOR);
         obtained_pixel_format_descriptor_.nVersion = 1;
-        obtained_pixel_format_descriptor_.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_GENERIC_FORMAT;
+        obtained_pixel_format_descriptor_.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_GENERIC_FORMAT | PFD_DOUBLEBUFFER;
         obtained_pixel_format_descriptor_.iPixelType = PFD_TYPE_RGBA;
+        obtained_pixel_format_descriptor_.cColorBits = 24;
+        obtained_pixel_format_descriptor_.cDepthBits = 16;
+        obtained_pixel_format_descriptor_.iLayerType = PFD_MAIN_PLANE;
 
         // Use the GDI functions. Under the hood this will call the wgl variants in opengl32.dll.
         pixel_format_ = ChoosePixelFormat(hdc, &obtained_pixel_format_descriptor_);
+
+        if (pixel_format_ >= 0)
+        {
+            static_context_.wgl_describe_pixel_format_(hdc, pixel_format_, sizeof(PIXELFORMATDESCRIPTOR), &obtained_pixel_format_descriptor_);
+        }
     }
 
     if (!pixel_format_)
     {
-        LOG_WARN(rhi, "unable find a suitable pixel format.");
+        LOG_WARN(rhi, "Unable find a suitable pixel format.");
         return;
     }
 
-    if (!SetPixelFormat(hdc, pixel_format_, &obtained_pixel_format_descriptor_))
+    if (!SetPixelFormat(hdc, pixel_format_, &obtained_pixel_format_descriptor_)) //TODO:
     {
         LOG_WARN(rhi, "SetPixelFormat failed.");
         return;
@@ -182,15 +190,16 @@ WindowsGLContext::WindowsGLContext()
     render_context_ = static_context_.wgl_create_context_(hdc);
     if (!render_context_)
     {
-        LOG_WARN(rhi, "unable to create a gl Context.");
+        LOG_WARN(rhi, "Unable to create a gl Context.");
         return;
     }
-
-    LOG_INFO(rhi, "OpenGL version: {0}", static_context_.GetGLString(GL_VERSION));
+    const bool result = static_context_.wgl_make_current_(hdc, render_context_);
+    LOG_INFO(rhi, "OpenGL version: {0}", static_context_.get_gl_string(GL_VERSION));
 }
 
 WindowsGLContext::~WindowsGLContext()
 {
+    //static_context_.wgl_make_current_(info.hdc, nullptr);
     for (auto& [hwnd, hdc, ctx] : window_contexts_)
     {
         ReleaseDC(hwnd, hdc);
@@ -199,29 +208,73 @@ WindowsGLContext::~WindowsGLContext()
 
     if (render_context_)
     {
-        wglDeleteContext(render_context_);
+        static_context_.wgl_delete_context_(render_context_);
         render_context_ = nullptr;
     }
 }
 
-bool WindowsGLContext::make_current(const ApplicationWindow& window)
+bool WindowsGLContext::make_current(ApplicationWindow& window)
 {
-    HWND hwnd = static_cast<HWND>(window.get_native_handle());
+    HWND hwnd = static_cast<HWND>(window.native_handle());
     if (!hwnd)
     {
         return false;
     }
+    
+    if (const ContextInfo* context_info = find_context(static_cast<HWND>(window.native_handle())))
+    {
+        if (static_context_.wgl_get_current_context_() == context_info->ctx && static_context_.wgl_get_current_dc_() == context_info->hdc)
+        {
+            return true;
+        }
+        const bool success = static_context_.wgl_make_current_(context_info->hdc, context_info->ctx);
+        if (!success)
+        {
+            LOG_WARN(rhi, "wgl_make_current_() failed for existing context info");
+        }
+        return success;
+    }
 
-    //TODO: check if it's already the current context
+    const HDC hdc = GetDC(hwnd);
 
-    size_t idx = window_contexts_.add({hwnd, GetDC(hwnd), render_context_});
+    if (!window.has_flag(EWindowFlag::OpenGlPixelFormatInitialized))
+    {
+        if (!static_context_.wgl_set_pixel_format_(hdc, pixel_format_, &obtained_pixel_format_descriptor_))
+        {
+            ReleaseDC(hwnd, hdc);
+            return false;
+        }
+        window.set_flag(EWindowFlag::OpenGlPixelFormatInitialized);
+    }
+
+    size_t idx = window_contexts_.add({hwnd, hdc, render_context_});
     const ContextInfo& info = window_contexts_[idx];
     const bool result = static_context_.wgl_make_current_(info.hdc, render_context_);
     if (!result)
     {
-        LOG_ERROR(rhi, "opengl error: {0}", static_context_.GetGLError());
+        LOG_ERROR(rhi, "OpenGL error: {0}", static_context_.get_gl_error());
     }
     return result;
+}
+
+bool WindowsGLContext::swap_buffers(ApplicationWindow& window)
+{
+    if (const ContextInfo* context_info = find_context(static_cast<HWND>(window.native_handle())))
+    {
+        SwapBuffers(context_info->hdc);
+        return true;
+    }
+    LOG_WARN(rhi, "Cannot find window {0}", window.native_handle());
+    return false;
+}
+
+WindowsGLContext::ContextInfo* WindowsGLContext::find_context(HWND hwnd)
+{
+    size_t index = window_contexts_.find([=](auto&& elem) {
+        return elem.hwnd == hwnd;
+    });
+
+    return index == INDEX_NONE ? nullptr : &window_contexts_[index];
 }
 
 }// namespace atlas

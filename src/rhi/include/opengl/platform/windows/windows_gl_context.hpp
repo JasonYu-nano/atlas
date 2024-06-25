@@ -19,7 +19,7 @@ public:
     WindowsOpenGL32();
     ~WindowsOpenGL32();
 
-    NODISCARD bool IsValid() const
+    NODISCARD bool is_valid() const
     {
         return !!dll_handle_;
     }
@@ -38,7 +38,7 @@ public:
     void (APIENTRY * GlGetIntegerv)(GLenum pname, GLint* params);
     const GLubyte * (APIENTRY * GlGetString)(GLenum name);
 
-    void* ResolveGLSymbol(StringView symbol) const
+    void* resolve_gl_symbol(StringView symbol) const
     {
         return dll_handle_ ? PlatformTraits::get_exported_symbol(dll_handle_, String(symbol)) : nullptr;
     }
@@ -83,13 +83,13 @@ public:
 
     ~WindowGLStaticContext();
 
-    NODISCARD bool SupportExtension() const
+    NODISCARD bool support_extension() const
     {
         return wgl_get_pixel_format_attrib_ivarb_ && wgl_choose_pixel_format_arb_ && wgl_create_context_attribs_arb_;
     }
 
-    NODISCARD String GetGLString(uint32 which) const;
-    NODISCARD String GetGLError() const;
+    NODISCARD String get_gl_string(uint32 which) const;
+    NODISCARD String get_gl_error() const;
 
     FnWglCreateContext wgl_create_context_;
     FnWglDeleteContext wgl_delete_context_;
@@ -104,6 +104,9 @@ public:
     FnWglCreateContextAttribsARB wgl_create_context_attribs_arb_;
     FnWglSwapInternalExt wgl_swap_internal_ext_;
     FnWglGetExtensionsStringARB wgl_get_extensions_string_arb_;
+
+    FnWglSetPixelFormat wgl_set_pixel_format_;
+    FnWglDescribePixelFormat wgl_describe_pixel_format_;
 private:
     // GL1+GLES2 common
     FnGlGetError gl_get_error_;
@@ -111,10 +114,8 @@ private:
     FnGlGetString gl_get_string_;
     // For Mesa llvmpipe shipped with a name other than opengl32.dll
     FnWglSwapBuffers wgl_swap_buffers_;
-    FnWglSetPixelFormat wgl_set_pixel_format_;
-    FnWglDescribePixelFormat wgl_describe_pixel_format_;
 
-    void* ResolveSymbol(StringView symbol) const
+    void* resolve_symbol(StringView symbol) const
     {
         return dll_handle_ ? PlatformTraits::get_exported_symbol(dll_handle_, String(symbol)) : nullptr;
     }
@@ -135,9 +136,13 @@ public:
     WindowsGLContext();
     ~WindowsGLContext() override;
 
-    bool make_current(const ApplicationWindow& window) override;
+    bool make_current(ApplicationWindow& window) override;
+
+    bool swap_buffers(ApplicationWindow& window) override;
 
 private:
+    ContextInfo* find_context(HWND hwnd);
+
     static inline WindowGLStaticContext static_context_;
 
     HGLRC render_context_{ nullptr };
@@ -145,5 +150,7 @@ private:
     PIXELFORMATDESCRIPTOR obtained_pixel_format_descriptor_;
     Array<ContextInfo> window_contexts_;
 };
+
+using PlatformGLContextImpl = WindowsGLContext;
 
 }// namespace atlas

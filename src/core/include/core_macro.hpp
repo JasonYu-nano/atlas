@@ -21,3 +21,23 @@
 #define FORWARD_DECLARE_OBJC_CLASS(classname) class classname
 #endif
 #endif
+
+#define ENUM_BIT_MASK(enum_type)                                        \
+inline constexpr enum_type operator&(enum_type lhs, enum_type rhs) {    \
+    return static_cast<enum_type>(                                      \
+        static_cast<std::underlying_type_t<enum_type>>(lhs) &           \
+        static_cast<std::underlying_type_t<enum_type>>(rhs));           \
+}                                                                       \
+inline constexpr enum_type operator|(enum_type lhs, enum_type rhs) {    \
+    return static_cast<enum_type>(                                      \
+        static_cast<std::underlying_type_t<enum_type>>(lhs) |           \
+        static_cast<std::underlying_type_t<enum_type>>(rhs));           \
+}                                                                       \
+inline constexpr enum_type& operator&=(enum_type& lhs, enum_type rhs) { \
+    lhs = lhs & rhs;                                                    \
+    return lhs;                                                         \
+}                                                                       \
+inline constexpr enum_type& operator|=(enum_type& lhs, enum_type rhs) { \
+    lhs = lhs | rhs;                                                    \
+    return lhs;                                                         \
+}

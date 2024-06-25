@@ -100,7 +100,7 @@ void WindowsWindow::initialize(const WindowsApplication& application, const Wind
         y,
         width,
         height,
-        parent ? static_cast<HWND>(parent->get_native_handle()) : nullptr,
+        parent ? static_cast<HWND>(parent->native_handle()) : nullptr,
         NULL,
         application.get_instance_handle(),
         NULL);

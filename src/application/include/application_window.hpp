@@ -42,6 +42,14 @@ struct APPLICATION_API WindowDescription
     FrameRect frame_rect = {100, 100, 800, 600};
 };
 
+enum class EWindowFlag : uint8
+{
+    None = 0,
+    OpenGlPixelFormatInitialized = 0x1,
+};
+
+ENUM_BIT_MASK(EWindowFlag);
+
 /**
  * @brief The base class of native window.
  */
@@ -84,10 +92,21 @@ public:
      * eg: NSWindow, HWND...
      * @return
      */
-    NODISCARD virtual void* get_native_handle() const
+    NODISCARD virtual void* native_handle() const
     {
         return nullptr;
     }
+
+    void set_flag(EWindowFlag flag)
+    {
+        flag_ |= flag;
+    }
+
+    NODISCARD bool has_flag(EWindowFlag flag) const
+    {
+        return (flag_ & flag) != EWindowFlag::None;
+    }
+
     DECLARE_MULTICAST_DELEGATE_ONE_PARAM(OnWindowDestroyed, std::shared_ptr<ApplicationWindow>, window);
     /**
      * @brief Event broadcast when a window was destroyed.
@@ -97,6 +116,7 @@ public:
 protected:
 
     bool initialized_{ false };
+    EWindowFlag flag_{ 0 };
 };
 
 }// namespace atlas
