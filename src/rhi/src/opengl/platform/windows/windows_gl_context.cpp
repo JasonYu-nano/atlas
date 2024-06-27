@@ -11,36 +11,154 @@
 namespace atlas
 {
 
-WindowsOpenGL32::WindowsOpenGL32()
+static PIXELFORMATDESCRIPTOR pixel_format_from_surface_format(const SurfaceFormat& format,
+                                  const WindowsOpenGLAdditionalFormat& additional)
 {
-    dll_handle_ = PlatformTraits::load_library({"opengl32.dll"});
-    if (dll_handle_)
+    PIXELFORMATDESCRIPTOR pfd = {};
+    pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+    pfd.nVersion = 1;
+    pfd.iPixelType = PFD_TYPE_RGBA;
+    pfd.iLayerType  = PFD_MAIN_PLANE;
+    pfd.dwFlags = PFD_SUPPORT_OPENGL | PFD_SUPPORT_COMPOSITION;
+    const bool is_pixmap = test_flags(additional.format_flags, EWindowsGLFormatFlags::RenderToPixmap);
+    pfd.dwFlags |= is_pixmap ? PFD_DRAW_TO_BITMAP : PFD_DRAW_TO_WINDOW;
+    if (!test_flags(additional.format_flags, EWindowsGLFormatFlags::DirectRendering))
     {
-        WglCreateContext = reinterpret_cast<HGLRC (WINAPI *)(HDC)>(resolve_gl_symbol("wglCreateContext"));
-        WglDeleteContext = reinterpret_cast<BOOL (WINAPI *)(HGLRC)>(resolve_gl_symbol("wglDeleteContext"));
-        WglGetCurrentContext = reinterpret_cast<HGLRC (WINAPI *)()>(resolve_gl_symbol("wglGetCurrentContext"));
-        WglGetCurrentDC = reinterpret_cast<HDC (WINAPI *)()>(resolve_gl_symbol("wglGetCurrentDC"));
-        WglGetProcAddress = reinterpret_cast<PROC (WINAPI *)(LPCSTR)>(resolve_gl_symbol("wglGetProcAddress"));
-        WglMakeCurrent = reinterpret_cast<BOOL (WINAPI *)(HDC, HGLRC)>(resolve_gl_symbol("wglMakeCurrent"));
-        WglShareLists = reinterpret_cast<BOOL (WINAPI *)(HGLRC, HGLRC)>(resolve_gl_symbol("wglShareLists"));
-        WglSwapBuffers = reinterpret_cast<BOOL (WINAPI *)(HDC)>(resolve_gl_symbol("wglSwapBuffers"));
-        WglSetPixelFormat = reinterpret_cast<BOOL (WINAPI *)(HDC, int, const PIXELFORMATDESCRIPTOR *)>(resolve_gl_symbol("wglSetPixelFormat"));
-        WglDescribePixelFormat = reinterpret_cast<int (WINAPI *)(HDC, int, UINT, PIXELFORMATDESCRIPTOR *)>(resolve_gl_symbol("wglDescribePixelFormat"));
-
-        GlGetError = reinterpret_cast<GLenum (APIENTRY *)()>(resolve_gl_symbol("glGetError"));
-        GlGetIntegerv = reinterpret_cast<void (APIENTRY *)(GLenum , GLint *)>(resolve_gl_symbol("glGetIntegerv"));
-        GlGetString = reinterpret_cast<const GLubyte * (APIENTRY *)(GLenum )>(resolve_gl_symbol("glGetString"));
+        pfd.dwFlags |= PFD_GENERIC_FORMAT;
     }
+
+    if (format.stereo())
+    {
+        pfd.dwFlags |= PFD_STEREO;
+    }
+
+    if (format.swap_behavior() != ESwapBehavior::SingleBuffer && !is_pixmap)
+    {
+        pfd.dwFlags |= PFD_DOUBLEBUFFER;
+    }
+    pfd.cDepthBits = format.depth_buffer_size() >= 0 ? format.depth_buffer_size() : 32;
+    pfd.cRedBits = format.red_buffer_size() > 0 ? format.red_buffer_size() : 8;
+    pfd.cGreenBits = format.green_buffer_size() > 0 ? format.green_buffer_size() : 8;
+    pfd.cBlueBits = format.blue_buffer_size() > 0 ? format.blue_buffer_size() : 8;
+    pfd.cAlphaBits = format.alpha_buffer_size() > 0 ? format.alpha_buffer_size() : 8;
+    pfd.cStencilBits = format.stencil_buffer_size() > 0 ? format.stencil_buffer_size() : 8;
+    if (test_flags(additional.format_flags, EWindowsGLFormatFlags::AccumBuffer))
+    {
+        pfd.cAccumRedBits = pfd.cAccumGreenBits = pfd.cAccumBlueBits = pfd.cAccumAlphaBits = 16;
+    }
+    return pfd;
 }
 
-WindowsOpenGL32::~WindowsOpenGL32()
+static bool is_direct_rendering(const PIXELFORMATDESCRIPTOR &pfd)
 {
-    if (dll_handle_)
-    {
-        PlatformTraits::free_library(dll_handle_);
-        dll_handle_ = nullptr;
-    }
+    return (pfd.dwFlags & PFD_GENERIC_ACCELERATED) || !(pfd.dwFlags & PFD_GENERIC_FORMAT);
 }
+
+static bool has_overlay(const PIXELFORMATDESCRIPTOR &pd)
+{
+    return (pd.bReserved & 0x0f) != 0;
+}
+
+static bool is_acceptable_format(const WindowsOpenGLAdditionalFormat& additional, const PIXELFORMATDESCRIPTOR& pfd, bool ignore_gl_support = false) // ARB format may not contain it.
+{
+    const bool pixmap_requested = test_flags(additional.format_flags, EWindowsGLFormatFlags::RenderToPixmap);
+    if (pixmap_requested && (pfd.dwFlags & PFD_DRAW_TO_BITMAP) == 0)
+    {
+        return false;
+    }
+
+    if (pixmap_requested && pfd.cColorBits != additional.pixmap_depth)
+    {
+        return false;
+    }
+
+    if (!ignore_gl_support && (pfd.dwFlags & PFD_SUPPORT_OPENGL) == 0)
+    {
+        return false;
+    }
+
+    if (test_flags(additional.format_flags, EWindowsGLFormatFlags::Overlay) != has_overlay(pfd))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+namespace gdi
+{
+
+static int choose_pixel_format(HDC hdc, const SurfaceFormat& format, const WindowsOpenGLAdditionalFormat& additional, PIXELFORMATDESCRIPTOR& pfd)
+{
+    std::memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+    pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+    pfd.nVersion = 1;
+
+    PIXELFORMATDESCRIPTOR request_pfd = pixel_format_from_surface_format(format, additional);
+    int32 pixel_format = ChoosePixelFormat(hdc, &request_pfd);
+    if (pixel_format > 0)
+    {
+        DescribePixelFormat(hdc, pixel_format, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+        if (is_acceptable_format(additional, pfd))
+        {
+            return pixel_format;
+        }
+    }
+
+    const int pfi_max = DescribePixelFormat(hdc, 0, 0, nullptr);
+    int best_score = -1;
+    int best_pfi = -1;
+    const bool stereo_requested = format.stereo();
+    const bool accum_buffer_requested = test_flags(additional.format_flags, EWindowsGLFormatFlags::AccumBuffer);
+    const bool double_buffer_requested = format.swap_behavior() == ESwapBehavior::DoubleBuffer;
+    const bool direct_rendering_requested = test_flags(additional.format_flags, EWindowsGLFormatFlags::DirectRendering);
+    for (int pfi = 1; pfi <= pfi_max; pfi++)
+    {
+        PIXELFORMATDESCRIPTOR check_pfd = {};
+        check_pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+        check_pfd.nVersion = 1;
+
+        DescribePixelFormat(hdc, pfi, sizeof(PIXELFORMATDESCRIPTOR), &check_pfd);
+        if (is_acceptable_format(additional, check_pfd))
+        {
+            int32 score = check_pfd.cColorBits + check_pfd.cAlphaBits + check_pfd.cStencilBits;
+            if (accum_buffer_requested)
+            {
+                score += check_pfd.cAccumBits;
+            }
+            if (double_buffer_requested == (check_pfd.dwFlags & PFD_DOUBLEBUFFER) != 0)
+            {
+                score += 1000;
+            }
+            if (stereo_requested == ((check_pfd.dwFlags & PFD_STEREO) != 0))
+            {
+                score += 2000;
+            }
+            if (direct_rendering_requested == is_direct_rendering(check_pfd))
+            {
+                score += 4000;
+            }
+            if (check_pfd.iPixelType == PFD_TYPE_RGBA)
+            {
+                score += 8000;
+            }
+            if (score > best_score)
+            {
+                best_score = score;
+                best_pfi = pfi;
+                pfd = check_pfd;
+            }
+            LOG_INFO(rhi, "Checking pixel format {0} / {1}. Current score: {2}, best score: {3}, best pixel format {4}", pfi, pfi_max, score, best_score, best_pfi);
+        }
+    }
+    if (best_pfi > 0)
+    {
+        pixel_format = best_pfi;
+    }
+    return pixel_format;
+}
+
+}// namespace gdi
 
 WindowGLStaticContext::WindowGLStaticContext()
 {
@@ -103,8 +221,18 @@ String WindowGLStaticContext::get_gl_error() const
     return {};
 }
 
-WindowsGLContext::WindowsGLContext()
+WindowsGLContext::WindowsGLContext(const SurfaceFormat& request_format, const WindowsOpenGLAdditionalFormat& additional)
 {
+    ERenderableType renderable_type = request_format.renderable_type();
+    if (renderable_type == ERenderableType::Default)
+    {
+        renderable_type = ERenderableType::OpenGL;
+    }
+    if (renderable_type != ERenderableType::OpenGL)
+    {
+        return;
+    }
+
     auto app_module = static_cast<ApplicationModule*>(ModuleManager::load("application"));
     if (!app_module)
     {
@@ -157,22 +285,8 @@ WindowsGLContext::WindowsGLContext()
 
     if (!pixel_format_)
     {
-        std::memset(&obtained_pixel_format_descriptor_, 0, sizeof(PIXELFORMATDESCRIPTOR));
-        obtained_pixel_format_descriptor_.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-        obtained_pixel_format_descriptor_.nVersion = 1;
-        obtained_pixel_format_descriptor_.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_GENERIC_FORMAT | PFD_DOUBLEBUFFER;
-        obtained_pixel_format_descriptor_.iPixelType = PFD_TYPE_RGBA;
-        obtained_pixel_format_descriptor_.cColorBits = 24;
-        obtained_pixel_format_descriptor_.cDepthBits = 16;
-        obtained_pixel_format_descriptor_.iLayerType = PFD_MAIN_PLANE;
-
         // Use the GDI functions. Under the hood this will call the wgl variants in opengl32.dll.
-        pixel_format_ = ChoosePixelFormat(hdc, &obtained_pixel_format_descriptor_);
-
-        if (pixel_format_ >= 0)
-        {
-            static_context_.wgl_describe_pixel_format_(hdc, pixel_format_, sizeof(PIXELFORMATDESCRIPTOR), &obtained_pixel_format_descriptor_);
-        }
+        pixel_format_ = gdi::choose_pixel_format(hdc, request_format, additional, obtained_pixel_format_descriptor_);
     }
 
     if (!pixel_format_)
@@ -193,18 +307,11 @@ WindowsGLContext::WindowsGLContext()
         LOG_WARN(rhi, "Unable to create a gl Context.");
         return;
     }
-    const bool result = static_context_.wgl_make_current_(hdc, render_context_);
-    LOG_INFO(rhi, "OpenGL version: {0}", static_context_.get_gl_string(GL_VERSION));
 }
 
 WindowsGLContext::~WindowsGLContext()
 {
-    //static_context_.wgl_make_current_(info.hdc, nullptr);
-    for (auto& [hwnd, hdc, ctx] : window_contexts_)
-    {
-        ReleaseDC(hwnd, hdc);
-    }
-    window_contexts_.clear();
+    WindowsGLContext::done_current();
 
     if (render_context_)
     {
@@ -220,7 +327,7 @@ bool WindowsGLContext::make_current(ApplicationWindow& window)
     {
         return false;
     }
-    
+
     if (const ContextInfo* context_info = find_context(static_cast<HWND>(window.native_handle())))
     {
         if (static_context_.wgl_get_current_context_() == context_info->ctx && static_context_.wgl_get_current_dc_() == context_info->hdc)
@@ -266,6 +373,16 @@ bool WindowsGLContext::swap_buffers(ApplicationWindow& window)
     }
     LOG_WARN(rhi, "Cannot find window {0}", window.native_handle());
     return false;
+}
+
+void WindowsGLContext::done_current()
+{
+    static_context_.wgl_make_current_(nullptr, nullptr);
+    for (auto& [hwnd, hdc, ctx] : window_contexts_)
+    {
+        ReleaseDC(hwnd, hdc);
+    }
+    window_contexts_.clear();
 }
 
 WindowsGLContext::ContextInfo* WindowsGLContext::find_context(HWND hwnd)

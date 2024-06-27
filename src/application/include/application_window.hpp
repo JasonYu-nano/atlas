@@ -44,8 +44,8 @@ struct APPLICATION_API WindowDescription
 
 enum class EWindowFlag : uint8
 {
-    None = 0,
-    OpenGlPixelFormatInitialized = 0x1,
+    None                            = 0,
+    OpenGlPixelFormatInitialized    = 1 << 0,
 };
 
 ENUM_BIT_MASK(EWindowFlag);

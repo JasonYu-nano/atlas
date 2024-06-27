@@ -23,7 +23,7 @@ void OpenGLContext::create()
         destroy();
     }
 
-    platform_context_ = new PlatformGLContextImpl();
+    platform_context_ = new PlatformGLContextImpl(SurfaceFormat::default_format());
 }
 
 void OpenGLContext::destroy()

@@ -13,9 +13,15 @@ class PlatformGLContext
 public:
     virtual ~PlatformGLContext() = default;
 
+    NODISCARD virtual bool is_sharing() const = 0;
+
+    NODISCARD virtual bool valid() const = 0;
+
     virtual bool make_current(ApplicationWindow& window) = 0;
 
     virtual bool swap_buffers(ApplicationWindow& window) = 0;
+
+    virtual void done_current() = 0;
 };
 
 }// namespace atlas

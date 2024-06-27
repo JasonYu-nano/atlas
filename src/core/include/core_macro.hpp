@@ -23,21 +23,30 @@
 #endif
 
 #define ENUM_BIT_MASK(enum_type)                                        \
-inline constexpr enum_type operator&(enum_type lhs, enum_type rhs) {    \
+constexpr enum_type operator&(enum_type lhs, enum_type rhs)      \
+{                                                                       \
     return static_cast<enum_type>(                                      \
         static_cast<std::underlying_type_t<enum_type>>(lhs) &           \
         static_cast<std::underlying_type_t<enum_type>>(rhs));           \
 }                                                                       \
-inline constexpr enum_type operator|(enum_type lhs, enum_type rhs) {    \
+constexpr enum_type operator|(enum_type lhs, enum_type rhs)      \
+{                                                                       \
     return static_cast<enum_type>(                                      \
         static_cast<std::underlying_type_t<enum_type>>(lhs) |           \
         static_cast<std::underlying_type_t<enum_type>>(rhs));           \
 }                                                                       \
-inline constexpr enum_type& operator&=(enum_type& lhs, enum_type rhs) { \
+constexpr enum_type& operator&=(enum_type& lhs, enum_type rhs)   \
+{                                                                       \
     lhs = lhs & rhs;                                                    \
     return lhs;                                                         \
 }                                                                       \
-inline constexpr enum_type& operator|=(enum_type& lhs, enum_type rhs) { \
+constexpr enum_type& operator|=(enum_type& lhs, enum_type rhs)   \
+{                                                                       \
     lhs = lhs | rhs;                                                    \
     return lhs;                                                         \
+}                                                                       \
+constexpr bool test_flags(enum_type flags, enum_type test)       \
+{                                                                       \
+    return (static_cast<std::underlying_type_t<enum_type>>(flags) &     \
+        static_cast<std::underlying_type_t<enum_type>>(test)) != 0;     \
 }

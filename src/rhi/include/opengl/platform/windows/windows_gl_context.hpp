@@ -6,49 +6,28 @@
 #include "platform/windows/windows_minimal_api.hpp"
 // place this header after the windows header.
 #include "gl/gl.h"
-
 #include "platform/windows/windows_platform_traits.hpp"
 #include "platform_gl_context.hpp"
+#include "surface_format.hpp"
 
 namespace atlas
 {
 
-class WindowsOpenGL32
+enum class EWindowsGLFormatFlags : uint8
 {
-public:
-    WindowsOpenGL32();
-    ~WindowsOpenGL32();
+    DirectRendering = 1 << 0,
+    Overlay         = 1 << 1,
+    RenderToPixmap  = 1 << 2,
+    AccumBuffer     = 1 << 3,
+};
 
-    NODISCARD bool is_valid() const
-    {
-        return !!dll_handle_;
-    }
+ENUM_BIT_MASK(EWindowsGLFormatFlags);
 
-    // WGL
-    HGLRC (WINAPI * WglCreateContext)(HDC dc);
-    BOOL (WINAPI * WglDeleteContext)(HGLRC context);
-    HGLRC (WINAPI * WglGetCurrentContext)();
-    HDC (WINAPI * WglGetCurrentDC)();
-    PROC (WINAPI * WglGetProcAddress)(LPCSTR name);
-    BOOL (WINAPI * WglMakeCurrent)(HDC dc, HGLRC context);
-    BOOL (WINAPI * WglShareLists)(HGLRC context1, HGLRC context2);
-
-    // GL1+GLES2 common
-    GLenum (APIENTRY * GlGetError)();
-    void (APIENTRY * GlGetIntegerv)(GLenum pname, GLint* params);
-    const GLubyte * (APIENTRY * GlGetString)(GLenum name);
-
-    void* resolve_gl_symbol(StringView symbol) const
-    {
-        return dll_handle_ ? PlatformTraits::get_exported_symbol(dll_handle_, String(symbol)) : nullptr;
-    }
-private:
-    // For Mesa llvmpipe shipped with a name other than opengl32.dll
-    BOOL (WINAPI * WglSwapBuffers)(HDC dc);
-    BOOL (WINAPI * WglSetPixelFormat)(HDC dc, int pf, const PIXELFORMATDESCRIPTOR *pfd);
-    int (WINAPI * WglDescribePixelFormat)(HDC dc, int pf, UINT size, PIXELFORMATDESCRIPTOR *pfd);
-
-    void* dll_handle_{ nullptr };
+// Additional format information for Windows.
+struct WindowsOpenGLAdditionalFormat
+{
+    EWindowsGLFormatFlags format_flags = EWindowsGLFormatFlags::DirectRendering;
+    uint8 pixmap_depth = 0; // for RenderToPixmap
 };
 
 class WindowGLStaticContext
@@ -133,12 +112,24 @@ class WindowsGLContext : public PlatformGLContext
     };
 
 public:
-    WindowsGLContext();
+    WindowsGLContext(const SurfaceFormat& request_format, const WindowsOpenGLAdditionalFormat& additional = {});
     ~WindowsGLContext() override;
+
+    NODISCARD bool is_sharing() const override
+    {
+        return false;
+    }
+
+    NODISCARD bool valid() const override
+    {
+        return !!render_context_;
+    }
 
     bool make_current(ApplicationWindow& window) override;
 
     bool swap_buffers(ApplicationWindow& window) override;
+
+    void done_current() override;
 
 private:
     ContextInfo* find_context(HWND hwnd);
