@@ -16,7 +16,7 @@ class CORE_API DelegateHandle
 public:
     static DelegateHandle create()
     {
-        DelegateHandle handle(next_id_.fetch_add(1));
+        DelegateHandle handle(next_id_.fetch_add(1, std::memory_order_relaxed));
         return handle;
     }
 
