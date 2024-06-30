@@ -22,6 +22,8 @@ public:
     virtual bool swap_buffers(ApplicationWindow& window) = 0;
 
     virtual void done_current() = 0;
+
+    NODISCARD virtual void* get_proc_address(StringView fn_name) const = 0;
 };
 
 }// namespace atlas

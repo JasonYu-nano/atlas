@@ -3,12 +3,11 @@
 
 #pragma once
 
-#include "platform/windows/windows_minimal_api.hpp"
-// place this header after the windows header.
-#include "gl/gl.h"
+#include "opengl_types.hpp"
 #include "platform/windows/windows_platform_traits.hpp"
 #include "platform_gl_context.hpp"
 #include "surface_format.hpp"
+#include "rhi_log.hpp"
 
 namespace atlas
 {
@@ -30,7 +29,7 @@ struct WindowsOpenGLAdditionalFormat
     uint8 pixmap_depth = 0; // for RenderToPixmap
 };
 
-class WindowGLStaticContext
+class RHI_API WindowGLStaticContext
 {
 public:
     typedef HGLRC (WINAPI * FnWglCreateContext)(HDC dc);
@@ -86,6 +85,11 @@ public:
 
     FnWglSetPixelFormat wgl_set_pixel_format_;
     FnWglDescribePixelFormat wgl_describe_pixel_format_;
+
+    void* resolve_symbol(StringView symbol) const
+    {
+        return dll_handle_ ? PlatformTraits::get_exported_symbol(dll_handle_, String(symbol)) : nullptr;
+    }
 private:
     // GL1+GLES2 common
     FnGlGetError gl_get_error_;
@@ -93,11 +97,6 @@ private:
     FnGlGetString gl_get_string_;
     // For Mesa llvmpipe shipped with a name other than opengl32.dll
     FnWglSwapBuffers wgl_swap_buffers_;
-
-    void* resolve_symbol(StringView symbol) const
-    {
-        return dll_handle_ ? PlatformTraits::get_exported_symbol(dll_handle_, String(symbol)) : nullptr;
-    }
 
     void* dll_handle_{ nullptr };
 };
@@ -130,6 +129,17 @@ public:
     bool swap_buffers(ApplicationWindow& window) override;
 
     void done_current() override;
+
+    NODISCARD void* get_proc_address(StringView fn_name) const override
+    {
+        void* address = static_context_.wgl_get_proc_address_(fn_name.data());
+        if (address == nullptr)
+        {
+            address = static_context_.resolve_symbol(fn_name.data());
+        }
+        CLOG_WARN(address == nullptr, rhi, "Failed to get proc address of {0}", fn_name);
+        return static_context_.wgl_get_proc_address_(fn_name.data());
+    }
 
 private:
     ContextInfo* find_context(HWND hwnd);

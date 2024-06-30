@@ -18,9 +18,6 @@ public:
     void shutdown() override;
 
     void tick(float delta_time) override;
-
-private:
-    class OpenGLContext* ctx_{ nullptr };
 };
 
 } // namespace atlas

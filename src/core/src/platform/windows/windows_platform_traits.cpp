@@ -25,12 +25,12 @@ void* WindowsPlatformTraits::load_library(const Path& path)
 void WindowsPlatformTraits::free_library(void* module_handle)
 {
     ASSERT(module_handle);
-    ::FreeLibrary((HMODULE)module_handle);
+    ::FreeLibrary(static_cast<HMODULE>(module_handle));
 }
 
 void* WindowsPlatformTraits::get_exported_symbol(void* handle, const String& symbol_name)
 {
-    return ::GetProcAddress((HMODULE)handle, symbol_name.data());
+    return ::GetProcAddress(static_cast<HMODULE>(handle), symbol_name.data());
 }
 
 void WindowsPlatformTraits::set_thread_name(void* thread_handle, const String& name)

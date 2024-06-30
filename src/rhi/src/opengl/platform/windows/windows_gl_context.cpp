@@ -6,7 +6,6 @@
 #include "application_module.hpp"
 #include "misc/on_scope_exit.hpp"
 #include "module/module_manager.hpp"
-#include "rhi_log.hpp"
 
 namespace atlas
 {
@@ -357,10 +356,7 @@ bool WindowsGLContext::make_current(ApplicationWindow& window)
     size_t idx = window_contexts_.add({hwnd, hdc, render_context_});
     const ContextInfo& info = window_contexts_[idx];
     const bool result = static_context_.wgl_make_current_(info.hdc, render_context_);
-    if (!result)
-    {
-        LOG_ERROR(rhi, "OpenGL error: {0}", static_context_.get_gl_error());
-    }
+    CLOG_ERROR(!result, rhi, "OpenGL error: {0}", static_context_.get_gl_error());
     return result;
 }
 

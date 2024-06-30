@@ -4,11 +4,16 @@
 #pragma once
 
 #include "core_def.hpp"
+#include "opengl_types.hpp"
+#include "opengl_types.hpp"
+#include "string/string.hpp"
 
 namespace atlas
 {
 
 class PlatformGLContext;
+
+class OpenGLFunctions;
 
 class RHI_API OpenGLContext
 {
@@ -25,8 +30,18 @@ public:
 
     void swap_buffers(class ApplicationWindow& window);
 
+    void* get_proc_address(StringView fn_name) const;
+
+    NODISCARD OpenGLFunctions* functions() const
+    {
+        return glfn_;
+    }
+
+    static OpenGLContext* current_context();
+
 private:
     PlatformGLContext* platform_context_{ nullptr };
+    OpenGLFunctions* glfn_{ nullptr };
 };
 
 }// namespace atlas
