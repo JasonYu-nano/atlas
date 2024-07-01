@@ -38,7 +38,7 @@ static void* resolve_symbol(const OpenGLContext& context, StringView fn_name)
     return function;
 }
 
-#define GLFN_FUNCTION_NAMES(ret, name, args) "gl"#name"\0"
+#define GLFN_FUNCTION_NAMES(ret, name, param, arg) "gl"#name"\0"
 
 OpenGLFunctions::OpenGLFunctions(const OpenGLContext& context)
 {

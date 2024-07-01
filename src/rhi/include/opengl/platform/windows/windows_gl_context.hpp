@@ -138,7 +138,7 @@ public:
             address = static_context_.resolve_symbol(fn_name.data());
         }
         CLOG_WARN(address == nullptr, rhi, "Failed to get proc address of {0}", fn_name);
-        return static_context_.wgl_get_proc_address_(fn_name.data());
+        return address;
     }
 
 private:

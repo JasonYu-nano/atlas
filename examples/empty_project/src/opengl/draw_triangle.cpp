@@ -33,8 +33,8 @@ void DrawTriangle::initialize()
         if (ctx_->make_current(*key))
         {
             unsigned int vertex_buffer_object;
-            // glGenBuffers(1, &vertex_buffer_object);
-            // glBindBuffer()
+            // ctx_->functions()->glGenBuffers(1, &vertex_buffer_object);
+            //ctx_->functions()->glBindBuffer();
         }
     }
 }

@@ -3,7 +3,6 @@
 
 #include "opengl_context.hpp"
 #include "platform_gl_context.hpp"
-#include "opengl_functions.hpp"
 
 #if PLATFORM_WINDOWS
 #include "platform/windows/windows_gl_context.hpp"
@@ -25,7 +24,6 @@ void OpenGLContext::create()
     }
 
     platform_context_ = new PlatformGLContextImpl(SurfaceFormat::default_format());
-    glfn_ = new OpenGLFunctions(*this);
 }
 
 void OpenGLContext::destroy()
@@ -57,6 +55,16 @@ void OpenGLContext::swap_buffers(ApplicationWindow& window)
 void* OpenGLContext::get_proc_address(StringView fn_name) const
 {
     return platform_context_ ? platform_context_->get_proc_address(fn_name) : nullptr;
+}
+
+OpenGLFunctions* OpenGLContext::functions() const
+{
+    if (!glfn_)
+    {
+        ASSERT(platform_context_);
+        glfn_ = glfn_ = new OpenGLFunctions(*this);
+    }
+    return glfn_;
 }
 
 OpenGLContext* OpenGLContext::current_context()
