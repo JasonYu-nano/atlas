@@ -3,6 +3,7 @@
 
 #include "opengl_context.hpp"
 #include "platform_gl_context.hpp"
+#include "platform_gl_implementation.hpp"
 
 #if PLATFORM_WINDOWS
 #include "platform/windows/windows_gl_context.hpp"
@@ -23,7 +24,7 @@ void OpenGLContext::create()
         destroy();
     }
 
-    platform_context_ = new PlatformGLContextImpl(SurfaceFormat::default_format());
+    platform_context_ = PlatformGLImplementation::create_platform_gl_context(SurfaceFormat::default_format());
 }
 
 void OpenGLContext::destroy()

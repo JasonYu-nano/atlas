@@ -22,6 +22,8 @@ public:
     static void set_thread_name(void* thread_handle, const String& name);
 
     static void* get_this_thread_handle();
+
+    static ESystemMsgBoxReturnType show_message_box(ESystemMsgBoxType type, const String& caption, const String& message);
 };
 
 using PlatformTraits = WindowsPlatformTraits;

@@ -41,8 +41,9 @@ public:
     typedef BOOL (WINAPI * FnWglShareLists)(HGLRC context1, HGLRC context2);
 
     typedef BOOL (WINAPI * FnWglSwapBuffers)(HDC dc);
-    typedef BOOL (WINAPI * FnWglSetPixelFormat)(HDC dc, int pf, const PIXELFORMATDESCRIPTOR *pfd);
-    typedef int (WINAPI * FnWglDescribePixelFormat)(HDC dc, int pf, UINT size, PIXELFORMATDESCRIPTOR *pfd);
+    typedef BOOL (WINAPI * FnWglChoosePixelFormat)(HDC hdc, const PIXELFORMATDESCRIPTOR *pfd);
+    typedef BOOL (WINAPI * FnWglSetPixelFormat)(HDC dc, int32 pf, const PIXELFORMATDESCRIPTOR *pfd);
+    typedef int (WINAPI * FnWglDescribePixelFormat)(HDC dc, int32 pf, UINT size, PIXELFORMATDESCRIPTOR *pfd);
 
     typedef GLenum (APIENTRY * FnGlGetError)();
     typedef void (APIENTRY * FnGlGetIntegerv)(GLenum pname, GLint* params);
@@ -54,7 +55,7 @@ public:
         uint32 nMaxFormats, int32* piFormats, UINT *nNumFormats);
     typedef HGLRC (APIENTRY * FnWglCreateContextAttribsARB)(HDC, HGLRC, const int32*);
     typedef BOOL (APIENTRY * FnWglSwapInternalExt)(int32 interval);
-    typedef int32 (APIENTRY * FnWglGetSwapInternalExt)(void);
+    typedef int32 (APIENTRY * FnWglGetSwapInternalExt)();
     typedef const char* (APIENTRY * FnWglGetExtensionsStringARB)(HDC);
 
     WindowGLStaticContext();
@@ -81,10 +82,14 @@ public:
     FnWglChoosePixelFormatARB wgl_choose_pixel_format_arb_;
     FnWglCreateContextAttribsARB wgl_create_context_attribs_arb_;
     FnWglSwapInternalExt wgl_swap_internal_ext_;
+    FnWglGetSwapInternalExt wgl_get_swap_internal_ext_;
     FnWglGetExtensionsStringARB wgl_get_extensions_string_arb_;
 
-    FnWglSetPixelFormat wgl_set_pixel_format_;
-    FnWglDescribePixelFormat wgl_describe_pixel_format_;
+    // @note do not call wgl version below directly as this might brake internalstate of opengl32.dll.
+    // FnWglChoosePixelFormat wgl_choose_pixel_format_;
+    // FnWglSetPixelFormat wgl_set_pixel_format_;
+    // FnWglDescribePixelFormat wgl_describe_pixel_format_;
+    // FnWglSwapBuffers wgl_swap_buffers_;
 
     void* resolve_symbol(StringView symbol) const
     {
@@ -95,14 +100,13 @@ private:
     FnGlGetError gl_get_error_;
     FnGlGetIntegerv gl_get_integerv_;
     FnGlGetString gl_get_string_;
-    // For Mesa llvmpipe shipped with a name other than opengl32.dll
-    FnWglSwapBuffers wgl_swap_buffers_;
 
     void* dll_handle_{ nullptr };
 };
 
 class WindowsGLContext : public PlatformGLContext
 {
+public:
     struct ContextInfo
     {
         HWND hwnd;
@@ -110,8 +114,7 @@ class WindowsGLContext : public PlatformGLContext
         HGLRC ctx;
     };
 
-public:
-    WindowsGLContext(const SurfaceFormat& request_format, const WindowsOpenGLAdditionalFormat& additional = {});
+    WindowsGLContext(WindowGLStaticContext& static_context, const SurfaceFormat& request_format, const WindowsOpenGLAdditionalFormat& additional = {});
     ~WindowsGLContext() override;
 
     NODISCARD bool is_sharing() const override
@@ -132,10 +135,10 @@ public:
 
     NODISCARD void* get_proc_address(StringView fn_name) const override
     {
-        void* address = static_context_.wgl_get_proc_address_(fn_name.data());
+        void* address = static_context_->wgl_get_proc_address_(fn_name.data());
         if (address == nullptr)
         {
-            address = static_context_.resolve_symbol(fn_name.data());
+            address = static_context_->resolve_symbol(fn_name.data());
         }
         CLOG_WARN(address == nullptr, rhi, "Failed to get proc address of {0}", fn_name);
         return address;
@@ -144,8 +147,7 @@ public:
 private:
     ContextInfo* find_context(HWND hwnd);
 
-    static inline WindowGLStaticContext static_context_;
-
+    WindowGLStaticContext* static_context_;
     HGLRC render_context_{ nullptr };
     int32 pixel_format_{ 0 };
     PIXELFORMATDESCRIPTOR obtained_pixel_format_descriptor_;

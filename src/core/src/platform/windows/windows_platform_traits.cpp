@@ -50,4 +50,25 @@ void* WindowsPlatformTraits::get_this_thread_handle()
     return ::GetCurrentThread();
 }
 
+ESystemMsgBoxReturnType WindowsPlatformTraits::show_message_box(ESystemMsgBoxType type, const String& caption, const String& message)
+{
+    switch (type)
+    {
+        case ESystemMsgBoxType::Ok:
+        {
+            MessageBox(nullptr, message.to_wide().data(), caption.to_wide().data(), MB_OK);
+            return ESystemMsgBoxReturnType::Ok;
+        }
+        case ESystemMsgBoxType::YesNo:
+        {
+            int32 ret = MessageBox(nullptr, message.to_wide().data(), caption.to_wide().data(), MB_YESNO);
+            return ret == IDYES ? ESystemMsgBoxReturnType::Yes : ESystemMsgBoxReturnType::No;
+        }
+        default:
+            std::unreachable();
+    }
+
+    return ESystemMsgBoxReturnType::Ok;
+}
+
 } // namespace atlas
