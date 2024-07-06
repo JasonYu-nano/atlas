@@ -6,7 +6,7 @@
 #include <thread>
 
 #include "core_def.hpp"
-#include "misc/stop_token.hpp"
+#include "utility/stop_token.hpp"
 #include "platform/windows/windows_platform_traits.hpp"
 
 namespace atlas

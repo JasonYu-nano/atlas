@@ -9,7 +9,7 @@
 
 #include "core_log.hpp"
 #include "misc/delegate_fwd.hpp"
-#include "misc/stop_token.hpp"
+#include "utility/stop_token.hpp"
 
 
 namespace atlas
