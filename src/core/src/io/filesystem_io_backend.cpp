@@ -8,7 +8,7 @@
 
 #include "async/schedule_on.hpp"
 #include "log/logger.hpp"
-#include "misc/on_scope_exit.hpp"
+#include "utility/on_scope_exit.hpp"
 
 namespace atlas
 {

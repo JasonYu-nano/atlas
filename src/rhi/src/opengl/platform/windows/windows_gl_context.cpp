@@ -4,7 +4,7 @@
 #include "platform/windows/windows_gl_context.hpp"
 
 #include "application_module.hpp"
-#include "misc/on_scope_exit.hpp"
+#include "utility/on_scope_exit.hpp"
 #include "module/module_manager.hpp"
 #include "rhi_error_code.hpp"
 

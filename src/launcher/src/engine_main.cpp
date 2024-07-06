@@ -3,7 +3,7 @@
 
 #include "engine_main.hpp"
 #include "game_engine.hpp"
-#include "misc/on_scope_exit.hpp"
+#include "utility/on_scope_exit.hpp"
 
 namespace atlas
 {
