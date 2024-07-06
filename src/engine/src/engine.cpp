@@ -9,7 +9,7 @@
 #include "project.hpp"
 #include "async/thread.hpp"
 #include "misc/cmd_options.hpp"
-#include "misc/json.hpp"
+#include "utility/json.hpp"
 
 namespace atlas
 {
