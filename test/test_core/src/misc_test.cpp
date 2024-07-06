@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 
 #include "utility/delegate_fwd.hpp"
-#include "misc/cmd_options.hpp"
+#include "utility/cmd_options.hpp"
 #include "file_system/directory.hpp"
 #include "io/llio.hpp"
 

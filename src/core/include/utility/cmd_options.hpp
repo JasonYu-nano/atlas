@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "core_log.hpp"
-#include "string/string.hpp"
-#include "container/array.hpp"
+#include "../core_log.hpp"
+#include "../string/string.hpp"
+#include "../container/array.hpp"
 
 namespace atlas
 {
