@@ -6,7 +6,7 @@
 #include <atomic>
 #include <memory>
 
-#include "container/array.hpp"
+#include "../container/array.hpp"
 
 namespace atlas
 {

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "core_def.hpp"
-#include "misc/delegate_fwd.hpp"
+#include "utility/delegate_fwd.hpp"
 #include "string/string.hpp"
 #include "math/rect.hpp"
 

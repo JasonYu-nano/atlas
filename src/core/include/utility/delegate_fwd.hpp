@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "misc/delegate.hpp"
+#include "utility/delegate.hpp"
 
 #define DECLARE_DELEGATE(alias)                                                                                                                                                                         using alias = atlas::Delegate<void>
 #define DECLARE_DELEGATE_ONE_PARAM(alias, type1, name1)                                                                                                                                                 using alias = atlas::Delegate<void, type1>

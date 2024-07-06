@@ -4,7 +4,7 @@
 #pragma once
 
 #include "tickable/tick_task.hpp"
-#include "misc/delegate_fwd.hpp"
+#include "utility/delegate_fwd.hpp"
 
 namespace atlas
 {
