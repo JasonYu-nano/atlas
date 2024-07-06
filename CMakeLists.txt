@@ -8,11 +8,12 @@ set(CMAKE_CXX_STANDARD 23)
 set(DOTNET_SDK_VERSION "net7.0")
 
 # compile option
-option(SHARED           "build with dynamic link"                   ON)
-option(UNICODE          "build with UNICODE string"                 ON)
-option(WITH_EDITOR      "build with game editor"                    ON)
-option(WITH_TEST        "build with unit test"                      OFF)
-option(WITH_BENCHMARK   "build with benchmark"                      OFF)
+option(SHARED               "build with dynamic link"                   ON)
+option(UNICODE              "build with UNICODE string"                 ON)
+option(WITH_EDITOR          "build with game editor"                    ON)
+option(WITH_TEST            "build with unit test"                      OFF)
+option(WITH_BENCHMARK       "build with benchmark"                      OFF)
+option(WITH_CRASH_HANDLER   "build with crash handler"                  OFF)
 
 if(SHARED)
     add_compile_definitions(AE_SHARED)
@@ -24,7 +25,11 @@ endif()
 
 if(WITH_EDITOR)
     add_compile_definitions(WITH_EDITOR=1)
-endif ()
+endif()
+
+if (WITH_CRASH_HANDLER)
+    add_compile_definitions(WITH_CRASH_HANDLER=1)
+endif()
 
 if (MSVC)
     if (SHARED)

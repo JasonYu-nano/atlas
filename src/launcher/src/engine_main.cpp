@@ -10,6 +10,10 @@ namespace atlas
 
 int EngineMain(int argc, char* argv[])
 {
+#if WITH_CRASH_HANDLER
+    PlatformTraits::setup_crash_handler();
+#endif
+
     g_engine = new GameEngine();
 
     // make sure can always call engine shutdown on program terminated.

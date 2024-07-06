@@ -24,6 +24,8 @@ public:
     static void* get_this_thread_handle();
 
     static ESystemMsgBoxReturnType show_message_box(ESystemMsgBoxType type, const String& caption, const String& message);
+
+    static void setup_crash_handler();
 };
 
 using PlatformTraits = WindowsPlatformTraits;

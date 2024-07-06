@@ -60,12 +60,14 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
     if (offset >= size)
     {
         LOG_WARN(core, "File offset over file size");
+        guard.call_now();
         co_return read;
     }
 
     size_t actual_read_size = read_size == INDEX_NONE ? size : math::min(read_size, size - offset);
     if (actual_read_size <= 0)
     {
+        guard.call_now();
         co_return read;
     }
 
@@ -73,6 +75,7 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
     if (buffer.max_size() - old_size < actual_read_size)
     {
         LOG_WARN(core, "IO buffer is not enough.");
+        guard.call_now();
         co_return read;
     }
 
@@ -96,6 +99,7 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
         }
     }
 
+    guard.call_now();
     co_return read;
 }
 

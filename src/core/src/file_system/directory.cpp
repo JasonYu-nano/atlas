@@ -7,6 +7,18 @@
 namespace atlas
 {
 
+bool Directory::make_dir(const Path& path)
+{
+    std::error_code ec;
+    return std::filesystem::create_directory(path, ec);
+}
+
+bool Directory::make_dir_tree(const Path& path)
+{
+    std::error_code ec;
+    return std::filesystem::create_directories(path, ec);
+}
+
 Path Directory::get_engine_directory()
 {
     static Path directory = PlatformTraits::get_engine_directory().normalize();
@@ -26,8 +38,15 @@ Path Directory::get_module_directory(const Path& search_path)
 Path Directory::get_engine_plugins_directory()
 {
     Path engine_root = get_engine_directory();
-    Path dir = engine_root / "plugins\\";
+    Path dir = engine_root / "plugins" / separator;
     return dir;
 }
 
+Path Directory::get_engine_save_directory()
+{
+    Path engine_root = get_engine_directory();
+    Path dir = engine_root / "save" / separator;
+    return dir;
 }
+
+}// namespace atlas

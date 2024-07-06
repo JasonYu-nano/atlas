@@ -11,6 +11,8 @@ namespace atlas
 class CORE_API Directory
 {
 public:
+    static bool make_dir(const Path& path);
+    static bool make_dir_tree(const Path& path);
     /**
      * @brief Gets root directory of engine.
      * @return
@@ -31,6 +33,11 @@ public:
      * @return
      */
     static Path get_engine_plugins_directory();
+    /**
+     * @brief Gets directory of engine save.
+     * @return
+     */
+    static Path get_engine_save_directory();
 };
 
 }

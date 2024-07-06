@@ -44,3 +44,4 @@
 **/bin/
 **/cmake-build-**/
 /test/test_core/test.txt
+**/crash_dump/

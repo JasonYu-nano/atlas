@@ -35,6 +35,7 @@ public:
     static void set_thread_name(void* thread_handle, const String& name) VIRTUAL_IMPL(core)
     static void* get_this_thread_handle() VIRTUAL_IMPL(core, return nullptr;)
     static ESystemMsgBoxReturnType show_message_box(ESystemMsgBoxType type, const String& caption, const String& message) VIRTUAL_IMPL(core, return ESystemMsgBoxReturnType::No;)
+    static void setup_crash_handler() VIRTUAL_IMPL(core)
 
     GenericPlatformTraits() = delete;
 };

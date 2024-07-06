@@ -203,6 +203,7 @@ public:
     void unhandled_exception()
     {
         LOG_CRITICAL(core, "Fatal exception in coroutine");
+        std::terminate();
     }
 
     template<typename TaskType>

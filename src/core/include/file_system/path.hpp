@@ -21,6 +21,14 @@ struct IsSeparator
     }
 };
 
+struct CORE_API SeparatorT
+{
+    struct Tag {};
+    constexpr explicit SeparatorT(Tag) {}
+};
+
+inline constexpr SeparatorT separator{SeparatorT::Tag{}};
+
 /**
  * @brief Objects of type path represent paths on a filesystem.
  * Only syntactic aspects of paths are handled: the pathname may represent a non-existing path
@@ -65,6 +73,12 @@ public:
     {
         Path result = *this;
         result /= other;
+        return result;
+    }
+    Path operator/ (SeparatorT) const
+    {
+        Path result = *this;
+        result /= separator;
         return result;
     }
     /**
@@ -127,6 +141,22 @@ public:
         }
 
         text_.append(StringView(other_root_end, other_last - other_root_end));
+        return *this;
+    }
+    /**
+     * @brief Appends separator to the path.
+     * @return
+     */
+    Path& operator/= (SeparatorT)
+    {
+        const_pointer my_first = text_.data();
+        const_pointer my_last = my_first + text_.size();
+
+        if (!is_separator_(*my_last))
+        {
+            text_.append(preferred_separator_);
+        }
+
         return *this;
     }
     /**
@@ -244,6 +274,14 @@ public:
     NODISCARD bool is_relative() const
     {
         return !is_absolute();
+    }
+    /**
+     * @brief Checks if the path is exists in file system.
+     * @return
+     */
+    NODISCARD bool exists() const
+    {
+        return std::filesystem::exists(*this);
     }
     /**
      * @brief Replaces separator to preferred separator.
