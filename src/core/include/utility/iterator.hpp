@@ -5,7 +5,7 @@
 
 #include <iterator>
 
-#include "core_def.hpp"
+#include "../core_def.hpp"
 
 namespace atlas
 {

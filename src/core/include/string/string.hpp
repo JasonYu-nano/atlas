@@ -16,7 +16,7 @@
 #include "memory/allocator.hpp"
 #include "string/locale.hpp"
 #include "string/unicode.hpp"
-#include "misc/iterator.hpp"
+#include "utility/iterator.hpp"
 #include "math/atlas_math.hpp"
 #include "core_macro.hpp"
 
