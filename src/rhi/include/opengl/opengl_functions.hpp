@@ -170,6 +170,10 @@ F(void, VertexAttrib4fv, (GLuint indx, const GLfloat* values), (indx, values)) \
 F(void, VertexAttribPointer, (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr), (indx, size, type, normalized, stride, ptr)) \
 F(void, ClearDepth, (GLdouble depth), (depth)) \
 F(void, DepthRange, (GLdouble zNear, GLdouble zFar), (zNear, zFar)) \
+F(void, BindVertexArray, (GLuint array), (array)) \
+F(void, DeleteVertexArrays, (GLsizei n, const GLuint *arrays), (n, arrays)) \
+F(void, GenVertexArrays, (GLsizei n, GLuint *arrays), (n, arrays)) \
+F(void, PolygonMode, (GLenum face, GLenum mode), (face, mode)) \
 
 #pragma endregion foreach_gl_functions
 

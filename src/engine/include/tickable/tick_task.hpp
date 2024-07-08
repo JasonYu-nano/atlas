@@ -20,15 +20,14 @@ public:
      * @param delta_time
      */
     virtual void execute(float delta_time) = 0;
-
     /**
-     * @brief Determines whether the tick can be called from an asynchronous thread.
+     * Determines whether the tick can be called from an asynchronous thread.
      */
-    bool allowed_parallel_{ false };
+    virtual bool allowed_parallel() = 0;
     /**
      * @brief Determines whether the tick can be called when game paused.
      */
-    bool allowed_tick_when_pause_{ false };
+    virtual bool allowed_tick_when_pause() = 0;
 protected:
     virtual void register_self() = 0;
     virtual void unregister_self() = 0;

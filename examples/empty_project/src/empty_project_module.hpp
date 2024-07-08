@@ -20,8 +20,10 @@ public:
         LOG_INFO(project, "project module startup")
         draw_triangle_.initialize();
     }
+
     void shutdown() override
     {
+        draw_triangle_.deinitialize();
         LOG_INFO(project, "project module Shutdown")
     }
 

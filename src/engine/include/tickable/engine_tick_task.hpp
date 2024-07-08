@@ -20,13 +20,22 @@ class ENGINE_API EngineTickTask : public TickTask
 public:
     explicit EngineTickTask(const OnEngineTick& delegate) : base(), tick_delegate_(delegate)
     {
-        allowed_tick_when_pause_ = true;
         EngineTickTask::register_self();
     }
 
     ~EngineTickTask() override
     {
         EngineTickTask::unregister_self();
+    }
+
+    bool allowed_parallel() override
+    {
+        return false;
+    }
+
+    bool allowed_tick_when_pause() override
+    {
+        return true;
     }
 
     void execute(float delta_time) override
