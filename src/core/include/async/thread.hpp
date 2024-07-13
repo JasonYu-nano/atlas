@@ -7,7 +7,7 @@
 
 #include "core_def.hpp"
 #include "utility/stop_token.hpp"
-#include "platform/windows/windows_platform_traits.hpp"
+#include "platform/platform_fwd.hpp"
 
 namespace atlas
 {

@@ -13,28 +13,6 @@
 namespace atlas
 {
 
-void IOTaskWorker::operator()(StopToken stop_token)
-{
-    while (!stop_token.stop_requested())
-    {
-        void* address = producer_->request_queue_.pop(thread_id_, false);
-        if (!address)
-        {
-            continue;
-        }
-
-        auto handle = std::coroutine_handle<>::from_address(address);
-        handle.resume();
-    }
-
-    LOG_INFO(core, "IO worker {0} terminated", thread_id_);
-}
-
-void FilesystemIOBackend::schedule(std::coroutine_handle<> handle, EIOPriority priority)
-{
-    request_queue_.push(handle.address(), static_cast<uint32>(priority));
-}
-
 Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t read_size, size_t offset, EIOPriority priority)
 {
     size_t read = 0;
@@ -132,7 +110,7 @@ Task<size_t> FilesystemIOBackend::async_write(Path file, IOBufferView buffer, bo
 
 uint32 FilesystemIOBackend::get_io_worker_count()
 {
-    return 4; //TODO: Configurations will be supported in the future
+    return 4;//TODO: Configurations will be supported in the future
 }
 
 }// namespace atlas

@@ -1,10 +1,10 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
-#include "gtest/gtest.h"
-
 #include "async/schedule_on.hpp"
+#include "async/static_thread_pool.hpp"
 #include "async/task.hpp"
+#include "gtest/gtest.h"
 
 namespace atlas
 {
@@ -35,7 +35,7 @@ Task<int32> async_get_id(int32 v)
     co_return v;
 }
 
-TEST(AsyncTest, CoroTest)
+TEST(AsyncTest, Coroutine)
 {
     debug("before async_get_id\n");
     Task<int32> t = launch(async_get_id(1));
@@ -46,7 +46,7 @@ TEST(AsyncTest, CoroTest)
     });
 }
 
-TEST(AsyncTest, CancellationPropagationTest)
+TEST(AsyncTest, TaskCancellationPropagation)
 {
     StopSource source;
     StopToken token = source.get_token();
@@ -60,7 +60,7 @@ TEST(AsyncTest, CancellationPropagationTest)
     }(), token);
 }
 
-TEST(AsyncTest, CancellationTest)
+TEST(AsyncTest, CancellationTask)
 {
     StopSource source;
     auto task = launch([&]() -> Task<> {
@@ -80,6 +80,32 @@ TEST(AsyncTest, CancellationTest)
 
     source.request_stop();
     task.wait();
+}
+
+TEST(AsyncTest, StaticThreadPool)
+{
+    StaticThreadPool<2> thread_pool(2);
+
+    std::condition_variable cv, cv_task;
+    std::mutex mutex, mutex_task;
+    int32 i = 0;
+
+    thread_pool.push_task(1, [&]() {
+        std::unique_lock lock(mutex_task);
+        cv_task.wait(lock);
+        i += 1;
+        cv.notify_all();
+    });
+
+    thread_pool.push_task(0, [&]() {
+        std::this_thread::sleep_for(2ms);
+        i += 2;
+        cv_task.notify_all();
+    });
+
+    std::unique_lock lock(mutex);
+    cv.wait(lock);
+    EXPECT_TRUE(i == 3);
 }
 
 }// namespace atlas
