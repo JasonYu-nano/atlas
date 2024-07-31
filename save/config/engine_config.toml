@@ -1,0 +1,2 @@
+[io]
+filesystem_io_worker_count = 2

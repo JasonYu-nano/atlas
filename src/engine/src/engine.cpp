@@ -1,13 +1,12 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
-#include <fstream>
-
 #include "engine.hpp"
-#include "tickable/tickable_object.hpp"
 
-#include "project.hpp"
 #include "async/thread.hpp"
+#include "configuration/config_manager.hpp"
+#include "project.hpp"
+#include "tickable/tickable_object.hpp"
 #include "utility/cmd_options.hpp"
 #include "utility/json.hpp"
 
@@ -23,6 +22,8 @@ void Engine::startup(int argc, char** argv)
     this_thread::set_name("game thread");
 
     CommandParser::parse_command_line_options(argc, argv);
+
+    ConfigManager::get().flush_config();
 
     current_time_ = duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
 

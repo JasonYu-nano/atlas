@@ -37,6 +37,8 @@ public:
     static ESystemMsgBoxReturnType show_message_box(ESystemMsgBoxType type, const String& caption, const String& message) VIRTUAL_IMPL(core, return ESystemMsgBoxReturnType::No;)
     static void setup_crash_handler() VIRTUAL_IMPL(core)
 
+    static inline const char* alias_name_ = "unknown";
+
     GenericPlatformTraits() = delete;
 };
 

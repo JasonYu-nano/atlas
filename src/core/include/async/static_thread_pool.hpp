@@ -3,13 +3,12 @@
 
 #pragma once
 
-#include <thread>
 #include <queue>
 
+#include "async/thread.hpp"
 #include "container/array.hpp"
 #include "core_def.hpp"
 #include "platform/platform_fwd.hpp"
-#include "utility/stop_token.hpp"
 
 namespace atlas
 {
@@ -78,19 +77,22 @@ public:
 
     void push_task(const task_type& task) requires (NumOfQueues == 1)
     {
-        emplace_task(1, task);
+        emplace_task(0, task);
     }
 
     void push_task(task_type&& task) requires (NumOfQueues == 1)
     {
-        emplace_task(1, std::move(task));
+        emplace_task(0, std::move(task));
     }
 
     template<typename... Args>
     void emplace_task(uint32 queue_index, Args&&... args)
     {
         ASSERT(queue_index< NumOfQueues && !threads_.is_empty());
-        priority_queue_[queue_index].emplace(std::forward<Args>(args)...);
+        {
+            std::lock_guard lock(mutex_);
+            priority_queue_[queue_index].emplace(std::forward<Args>(args)...);
+        }
         awake_signal_.notify_one();
     }
 
@@ -101,7 +103,10 @@ public:
             return false;
         }
 
-        stop_source_.request_stop();
+        {
+            std::lock_guard lock(mutex_);
+            stop_source_.request_stop();
+        }
         awake_signal_.notify_all(); // wake up all work thread
         return true;
     }
@@ -129,9 +134,14 @@ private:
         String thread_name = String::format("{}-{}", work_thread_name, current);
 
         threads_.emplace([this, thread_name](StopToken stoken) {
-            while (!stoken.stop_requested())
+            while (true)
             {
                 std::unique_lock lock(mutex_);
+                if (stoken.stop_requested())
+                {
+                    break;
+                }
+
                 std::optional<task_type> task = pop_task();
                 if (!task)
                 {

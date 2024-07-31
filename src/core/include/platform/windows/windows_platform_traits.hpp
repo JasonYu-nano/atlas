@@ -26,6 +26,8 @@ public:
     static ESystemMsgBoxReturnType show_message_box(ESystemMsgBoxType type, const String& caption, const String& message);
 
     static void setup_crash_handler();
+
+    static inline const char* alias_name_ = "windows";
 };
 
 using PlatformTraits = WindowsPlatformTraits;

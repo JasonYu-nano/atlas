@@ -219,7 +219,7 @@ TEST(MiscTest, IOTest)
             EXPECT_TRUE(write == 5);
 
             auto read_task = launch(llio.async_read(file));
-            auto&& b =  read_task.get_result();
+            auto&& b = read_task.get_result();
             EXPECT_TRUE(b.size() == 5);
         });
         task.start();

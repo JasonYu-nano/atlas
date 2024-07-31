@@ -7,11 +7,16 @@
 #include "io/filesystem_io_backend.hpp"
 
 #include "async/schedule_on.hpp"
+#include "configuration/config_manager.hpp"
 #include "log/logger.hpp"
 #include "utility/on_scope_exit.hpp"
 
 namespace atlas
 {
+
+/** Num of io worker. */
+uint32 g_io_worker_count = 2;
+ConfigVariableRefRegister tmp("io", "filesystem_io_worker_count", g_io_worker_count);
 
 Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t read_size, size_t offset, EIOPriority priority)
 {
@@ -110,7 +115,7 @@ Task<size_t> FilesystemIOBackend::async_write(Path file, IOBufferView buffer, bo
 
 uint32 FilesystemIOBackend::get_io_worker_count()
 {
-    return 4;//TODO: Configurations will be supported in the future
+    return g_io_worker_count;
 }
 
 }// namespace atlas
