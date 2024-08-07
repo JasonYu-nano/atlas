@@ -96,12 +96,16 @@ endif ()
 
 if (ABT_EXIST)
     execute_process(
-            COMMAND ${ATLAS_BUILD_TOOL_DIRECTORY}/AtlasBuildTool
-            RESULT_VARIABLE EXIT_CODE
+            COMMAND gradlew.bat :atlas_builder:run
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            RESULTS_VARIABLE EXIT_CODE
+            OUTPUT_VARIABLE OUTPUT
     )
 
     if (EXIT_CODE)
-        message(FATAL_ERROR "Atlas: some errors occurred while running atlas build tool")
+        message(FATAL_ERROR "Atlas: some errors occurred while running atlas builder. msg: ${EXIT_CODE}")
+    else ()
+        message("${OUTPUT}")
     endif ()
 else ()
     message(FATAL_ERROR "Atlas: can't find atlas build tool in ${ATLAS_BUILD_TOOL_DIRECTORY}. please make sure tools are built first")

@@ -31,6 +31,10 @@
 *.out
 *.app
 
+# Kotlin
+.gradle
+.kotlin
+
 # User
 [Bb]uild/
 [Ss]aved/
@@ -45,3 +49,5 @@
 **/cmake-build-**/
 /test/test_core/test.txt
 **/crash_dump/
+# Ignore Gradle build output directory
+build
