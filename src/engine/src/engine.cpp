@@ -6,6 +6,8 @@
 #include "async/thread.hpp"
 #include "configuration/config_manager.hpp"
 #include "project.hpp"
+#include "texture/texture_2d.hpp"
+#include "texture/texture_format_rgb8.hpp"
 #include "tickable/tickable_object.hpp"
 #include "utility/cmd_options.hpp"
 #include "utility/json.hpp"

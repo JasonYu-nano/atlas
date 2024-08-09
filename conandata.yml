@@ -8,3 +8,4 @@ requirements:
   - "benchmark/1.8.3"
   - "tomlplusplus/3.4.0"
   - "nlohmann_json/3.11.3"
+  - "libpng/1.6.40"

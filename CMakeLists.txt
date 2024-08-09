@@ -80,35 +80,24 @@ include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
 
 ## run build tool
-set(ABT_EXIST 0)
 
-set(ATLAS_BUILD_TOOL_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/${DOTNET_SDK_VERSION})
-
-if (${PLATFORM_WINDOWS})
-    if (EXISTS ${ATLAS_BUILD_TOOL_DIRECTORY}/AtlasBuildTool.exe)
-        set(ABT_EXIST 1)
-    endif ()
-elseif (${PLATFORM_APPLE})
-    if (EXISTS ${ATLAS_BUILD_TOOL_DIRECTORY}/AtlasBuildTool)
-        set(ABT_EXIST 1)
-    endif ()
+if (WIN32)
+    set(RUN_GRADLE gradlew.bat)
+else ()
+    set(RUN_GRADLE gradlew)
 endif ()
 
-if (ABT_EXIST)
-    execute_process(
-            COMMAND gradlew.bat :atlas_builder:run
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            RESULTS_VARIABLE EXIT_CODE
-            OUTPUT_VARIABLE OUTPUT
-    )
+execute_process(
+        COMMAND ${RUN_GRADLE} :atlas_builder:run
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        RESULTS_VARIABLE EXIT_CODE
+        OUTPUT_VARIABLE OUTPUT
+)
 
-    if (EXIT_CODE)
-        message(FATAL_ERROR "Atlas: some errors occurred while running atlas builder. msg: ${EXIT_CODE}")
-    else ()
-        message("${OUTPUT}")
-    endif ()
+if (EXIT_CODE)
+    message(FATAL_ERROR "Atlas: some errors occurred while running atlas builder. msg: ${EXIT_CODE}")
 else ()
-    message(FATAL_ERROR "Atlas: can't find atlas build tool in ${ATLAS_BUILD_TOOL_DIRECTORY}. please make sure tools are built first")
+    message("${OUTPUT}")
 endif ()
 
 add_subdirectory(src)
