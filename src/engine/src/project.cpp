@@ -14,20 +14,18 @@ namespace atlas
 Project Project::parse(const Path& project_file)
 {
     Project proj;
-    std::ifstream f(project_file.to_os_path());
-    Json json_object = Json::parse(f);
-    if (!json_object.contains("name"))
+
+    String project_name = project_file.normalize().to_string();
+    project_name.remove(project_suffix_);
+    size_t index = project_name.last_index_of(&Path::preferred_separator_);
+    if (index != INDEX_NONE)
     {
-        return proj;
+        project_name.remove(0, index + 1);
+        proj.name_ = project_name;
+
+        ModuleManager::add_module_search_path(proj.name_, project_file.parent_path());
+        proj.module_ = ModuleManager::load(proj.name_);
     }
-
-    auto jo_name = json_object["name"];
-    auto name = jo_name.get<std::string>();
-
-    proj.name_ = StringName(StringView(name));
-
-    ModuleManager::add_module_search_path(proj.name_, project_file.parent_path());
-    proj.module_ = ModuleManager::load(proj.name_);
 
     return proj;
 }

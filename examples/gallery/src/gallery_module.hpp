@@ -13,7 +13,7 @@ namespace atlas
 
 DEFINE_LOGGER(project);
 
-class EMPTY_PROJECT_API EmptyProjectModule : public IModule
+class GALLERY_API GalleryModule : public IModule
 {
 public:
     void startup() override

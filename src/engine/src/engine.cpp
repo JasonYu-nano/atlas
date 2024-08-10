@@ -71,7 +71,7 @@ void Engine::load_project()
     Path path = *project_path;
     path = path.normalize();
 
-    if (path.extension().to_string() != ".aproj")
+    if (!path.to_string().ends_with(".project.json"))
     {
         return;
     }

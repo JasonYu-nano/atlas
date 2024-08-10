@@ -435,7 +435,7 @@ public:
      * @return A new lowercase string.
      */
     NODISCARD String to_lower(const std::locale& locale = locale::default_locale()) const;
-    NODISCARD std::string ToStdString() const
+    NODISCARD std::string to_std_string() const
     {
         return { data(), length() };
     }
