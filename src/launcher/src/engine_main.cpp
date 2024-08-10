@@ -2,6 +2,8 @@
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
 #include "engine_main.hpp"
+
+#include "check.hpp"
 #include "game_engine.hpp"
 #include "utility/on_scope_exit.hpp"
 
@@ -15,6 +17,7 @@ int EngineMain(int argc, char* argv[])
 #endif
 
     g_engine = new GameEngine();
+    CHECK(g_engine, "");
 
     // make sure can always call engine shutdown on program terminated.
     auto guard = on_scope_exit([]{

@@ -3,8 +3,14 @@
 
 #pragma once
 
-#include "nlohmann/json.hpp"
+namespace atlas
+{
 
-using Json = nlohmann::json;
+class SerializeSample
+{
+public:
+    void initialize();
+    void deinitialize();
+};
 
-using EJsonValueType = nlohmann::detail::value_t;
+}// namespace atlas

@@ -15,7 +15,7 @@ Project Project::parse(const Path& project_file)
 {
     Project proj;
     std::ifstream f(project_file.to_os_path());
-    json json_object = json::parse(f);
+    Json json_object = Json::parse(f);
     if (!json_object.contains("name"))
     {
         return proj;

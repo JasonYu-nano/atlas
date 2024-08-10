@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <new>
-
 #include "memory/system_new_delete_object.hpp"
 
 namespace atlas
