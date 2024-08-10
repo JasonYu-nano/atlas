@@ -25,6 +25,14 @@ Functions f; \
 
 #pragma region foreach_gl_functions
 
+#define GLES_3_0 1
+
+#if GLES_3_0
+#define GLES_3_0_FUNCTIONS(...) __VA_ARGS__
+#else
+#define GLES_3_0_FUNCTIONS(...)
+#endif
+
 #define FOREACH_GL_FUNCTIONS(F) \
 F(void, BindTexture, (GLenum target, GLuint texture), (target, texture)) \
 F(void, BlendFunc, (GLenum sfactor, GLenum dfactor), (sfactor, dfactor)) \
@@ -170,10 +178,12 @@ F(void, VertexAttrib4fv, (GLuint indx, const GLfloat* values), (indx, values)) \
 F(void, VertexAttribPointer, (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr), (indx, size, type, normalized, stride, ptr)) \
 F(void, ClearDepth, (GLdouble depth), (depth)) \
 F(void, DepthRange, (GLdouble zNear, GLdouble zFar), (zNear, zFar)) \
+GLES_3_0_FUNCTIONS( \
 F(void, BindVertexArray, (GLuint array), (array)) \
 F(void, DeleteVertexArrays, (GLsizei n, const GLuint *arrays), (n, arrays)) \
 F(void, GenVertexArrays, (GLsizei n, GLuint *arrays), (n, arrays)) \
 F(void, PolygonMode, (GLenum face, GLenum mode), (face, mode)) \
+) \
 
 #pragma endregion foreach_gl_functions
 

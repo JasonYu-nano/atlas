@@ -40,10 +40,10 @@ void DrawTriangle::initialize()
             }
 
             float vertices[] = {
-                0.5f, 0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
-                -0.5f, 0.5f, 0.0f
+                0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+                0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+                -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+                -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f,
             };
 
             uint32 indices[] = {
@@ -62,8 +62,11 @@ void DrawTriangle::initialize()
             ctx_->functions()->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_object_);
             ctx_->functions()->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-            ctx_->functions()->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+            ctx_->functions()->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
             ctx_->functions()->glEnableVertexAttribArray(0);
+
+            ctx_->functions()->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+            ctx_->functions()->glEnableVertexAttribArray(1);
 
             ctx_->functions()->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             ctx_->functions()->glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -81,12 +84,18 @@ void DrawTriangle::tick(float delta_time)
 
     // draw our first triangle
     ctx_->functions()->glUseProgram(shader_program_);
+
+    // auto current_time = duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+    // float green_value = sin(static_cast<float>(current_time.count())) / 2.0f + 0.5f;
+    // int vertexColorLocation = ctx_->functions()->glGetUniformLocation(shader_program_, "our_color");
+    // ctx_->functions()->glUniform4f(vertexColorLocation, 0.0f, green_value, 0.0f, 1.0f);
+
     ctx_->functions()->glBindVertexArray(vertext_array_object_); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
     // glDrawArrays(GL_TRIANGLES, 0, 3);
     ctx_->functions()->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_object_);
     ctx_->functions()->glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    ctx_->functions()->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //ctx_->functions()->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     ctx_->swap_buffers(*current_window_);
 }
@@ -107,10 +116,14 @@ bool DrawTriangle::setup_shaders(uint32& shader_program)
     char log_info[512];
 
     const char *vertexShaderSource = R"(#version 330 core
-                layout (location = 0) in vec3 aPos;
+                layout (location = 0) in vec3 pos3;
+                layout (location = 1) in vec3 color3;
+
+                out vec3 user_color;
                 void main()
                 {
-                   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+                    gl_Position = vec4(pos3, 1.0);
+                    user_color = color3;
                 })";
 
     uint32 vertex_shader;
@@ -133,11 +146,13 @@ bool DrawTriangle::setup_shaders(uint32& shader_program)
     }
 
     const char* fragment_shader_source = R"(#version 330 core
-                out vec4 FragColor;
-
+                in vec3 user_color;
+                out vec4 frag_color;
+                uniform vec4 our_color;
                 void main()
                 {
-                    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+                    //frag_color = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+                    frag_color = vec4(user_color, 1.0);
                 } )";
 
     uint32 fragment_shader;
