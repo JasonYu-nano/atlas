@@ -280,6 +280,15 @@ public:
         }
     }
 
+    void wait()
+    {
+        std::unique_lock lock(mutex_);
+        if (!value_.has_value())
+        {
+            completion_.wait(lock);
+        }
+    }
+
     T& get_result()
     {
         std::unique_lock lock(mutex_);
@@ -451,12 +460,18 @@ public:
     Task& operator=(Task&) = delete;
 
     ~Task() = default;
-
+    /**
+    * @brief Waits task complete.
+    */
+    void wait()
+    {
+        co_handle().promise().wait();
+    }
     /**
      * @brief Wait task completes, then return the coroutine result.
      * @return
      */
-    T& get_result()
+    NODISCARD T& get_result()
     {
         return co_handle().promise().get_result();
     }

@@ -20,6 +20,10 @@ public:
     virtual ~ITextureFormat() = default;
 
     NODISCARD virtual ETextureFormat format_type() const = 0;
+
+    virtual void serialize(WriteStream& ws) const {}
+
+    virtual void deserialize(ReadStream& rs) {}
 };
 
 }// namespace atlas

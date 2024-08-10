@@ -9,6 +9,8 @@
 #include "texture/texture_2d.hpp"
 #include "texture/texture_format_rgb8.hpp"
 #include "tickable/tickable_object.hpp"
+#include "serialize/binary_archive.hpp"
+#include "serialize/json_archive.hpp"
 #include "utility/cmd_options.hpp"
 #include "utility/json.hpp"
 
@@ -71,7 +73,7 @@ void Engine::load_project()
     Path path = *project_path;
     path = path.normalize();
 
-    if (path.extension().to_string() != ".aproj")
+    if (!path.to_string().ends_with(".project.json"))
     {
         return;
     }

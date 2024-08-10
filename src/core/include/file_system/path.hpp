@@ -463,7 +463,7 @@ public:
     {
         if constexpr (std::is_same_v<std_path::value_type, char>)
         {
-            return {text_.ToStdString() };
+            return {text_.to_std_string() };
         }
         else if constexpr (std::is_same_v<std_path::value_type, wchar_t>)
         {

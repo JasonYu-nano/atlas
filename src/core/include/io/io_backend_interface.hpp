@@ -17,7 +17,7 @@ public:
 
     virtual Task<size_t> async_read(Path file, IOBuffer& buffer, size_t read_size, size_t offset, EIOPriority priority) = 0;
 
-    virtual Task<size_t> async_write(Path file, IOBufferView buffer, bool append, EIOPriority priority) = 0;
+    virtual Task<size_t> async_write(Path file, IOBuffer buffer, bool append, EIOPriority priority) = 0;
 };
 
 }// namespace atlas

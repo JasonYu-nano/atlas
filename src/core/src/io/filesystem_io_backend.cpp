@@ -86,7 +86,7 @@ Task<size_t> FilesystemIOBackend::async_read(Path file, IOBuffer& buffer, size_t
     co_return read;
 }
 
-Task<size_t> FilesystemIOBackend::async_write(Path file, IOBufferView buffer, bool append, EIOPriority priority)
+Task<size_t> FilesystemIOBackend::async_write(Path file, IOBuffer buffer, bool append, EIOPriority priority)
 {
     size_t write = 0;
     if (!std::filesystem::exists(file))

@@ -7,6 +7,7 @@
 #include <cassert>
 #endif
 
+// Ensure that the expression is true at debug mode. Equivalent to std assert.
 #if DEBUG
 #define ASSERT(expression) assert(expression)
 #else

@@ -1,1 +1,1 @@
-add_subdirectory(empty_project)
+add_subdirectory(gallery)

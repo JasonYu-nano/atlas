@@ -18,7 +18,11 @@ public:
     {
         return !!module_;
     }
+
+    static inline const char* project_suffix_ = ".project.json";
+
 private:
+
     StringName name_;
     class IModule* module_{ nullptr };
 };

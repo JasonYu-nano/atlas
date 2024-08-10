@@ -49,5 +49,7 @@
 **/cmake-build-**/
 /test/test_core/test.txt
 **/crash_dump/
+**/temp/
+
 # Ignore Gradle build output directory
 build

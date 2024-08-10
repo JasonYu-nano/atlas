@@ -33,6 +33,7 @@ public:
      */
     Task<IOBuffer> async_read(Path file, EIOPriority priority = EIOPriority::Normal)
     {
+        ASSERT(io_backend_);
         IOBuffer buffer;
         co_await io_backend_->async_read(std::move(file), buffer, INDEX_NONE, 0, priority);
         co_return buffer;
@@ -46,6 +47,7 @@ public:
      */
     Task<IOBuffer> async_read(Path file, size_t read_size, EIOPriority priority = EIOPriority::Normal)
     {
+        ASSERT(io_backend_);
         IOBuffer buffer;
         co_await io_backend_->async_read(std::move(file), buffer, read_size, 0, priority);
         co_return buffer;
@@ -60,6 +62,7 @@ public:
      */
     Task<IOBuffer> async_read(Path file, size_t offset, size_t read_size = INDEX_NONE, EIOPriority priority = EIOPriority::Normal)
     {
+        ASSERT(io_backend_);
         IOBuffer buffer;
         co_await io_backend_->async_read(std::move(file), buffer, read_size, offset, priority);
         co_return buffer;
@@ -74,6 +77,7 @@ public:
      */
     Task<size_t> async_read(Path file, IOBuffer& buffer, EIOPriority priority = EIOPriority::Normal)
     {
+        ASSERT(io_backend_);
         return io_backend_->async_read(std::move(file), buffer, INDEX_NONE, 0, priority);
     }
     /** Asynchronously reads the file and appends to the given buffer.
@@ -86,6 +90,7 @@ public:
      */
     Task<size_t> async_read(Path file, IOBuffer& buffer, size_t read_size, EIOPriority priority = EIOPriority::Normal)
     {
+        ASSERT(io_backend_);
         return io_backend_->async_read(std::move(file), buffer, read_size, 0, priority);
     }
     /** Asynchronously reads the file and appends to the given buffer.
@@ -99,6 +104,7 @@ public:
      */
     Task<size_t> async_read(Path file, IOBuffer& buffer, size_t offset, size_t read_size = INDEX_NONE, EIOPriority priority = EIOPriority::Normal)
     {
+        ASSERT(io_backend_);
         return io_backend_->async_read(std::move(file), buffer, read_size, offset, priority);
     }
     /** Asynchronously writes the given buffer to file.
@@ -109,9 +115,10 @@ public:
      * @param priority
      * @return
      */
-    Task<size_t> async_write(Path file, IOBuffer buffer, bool append = false, EIOPriority priority = EIOPriority::Normal)
+    Task<size_t> async_write(Path file, const IOBuffer& buffer, bool append = false, EIOPriority priority = EIOPriority::Normal)
     {
-        return io_backend_->async_write(std::move(file), buffer, append, priority);
+        ASSERT(io_backend_);
+        return io_backend_->async_write(std::move(file), IOBuffer(buffer), append, priority);
     }
 
 private:

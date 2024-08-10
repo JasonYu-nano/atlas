@@ -5,4 +5,6 @@
 
 #include "nlohmann/json.hpp"
 
-using nlohmann::json;
+using Json = nlohmann::json;
+
+using EJsonValueType = nlohmann::detail::value_t;
