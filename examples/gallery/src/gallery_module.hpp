@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "asset/serialize_sample.hpp"
+#include "asset/serialize_example.hpp"
 #include "log/logger.hpp"
 #include "module/module_interface.hpp"
 #include "opengl/draw_triangle.hpp"
@@ -20,19 +20,19 @@ public:
     {
         LOG_INFO(project, "project module startup")
         draw_triangle_.initialize();
-        serialize_sample_.initialize();
+        serialize_example_.initialize();
     }
 
     void shutdown() override
     {
         draw_triangle_.deinitialize();
-        serialize_sample_.deinitialize();
+        serialize_example_.deinitialize();
         LOG_INFO(project, "project module Shutdown")
     }
 
 private:
     DrawTriangle draw_triangle_;
-    SerializeSample serialize_sample_;
+    SerializeExample serialize_example_;
 };
 
 }// namespace atlas

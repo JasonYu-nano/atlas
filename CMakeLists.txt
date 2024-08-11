@@ -5,7 +5,13 @@ project(atlas LANGUAGES CXX)
 enable_language(C)
 
 set(CMAKE_CXX_STANDARD 23)
-set(DOTNET_SDK_VERSION "net7.0")
+
+include(${CMAKE_SOURCE_DIR}/cmake/detect_platform.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/pre_check.cmake)
+
+DO_CHECK()
 
 # compile option
 option(SHARED               "build with dynamic link"                   ON)
@@ -74,10 +80,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
 
 ## set absolute path
 set(ATLAS_TOOL_DIRECTORY ${CMAKE_SOURCE_DIR}/tools)
-
-include(${CMAKE_SOURCE_DIR}/cmake/detect_platform.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
 
 ## run build tool
 
