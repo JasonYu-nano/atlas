@@ -266,7 +266,7 @@ public:
      * @param elem
      * @return Index to the new element
      */
-    size_type add(const param_type elem) { return emplace(elem); }
+    size_type add(const_reference elem) { return emplace(elem); }
     /**
      * @brief Moves a new element to the end of the array, possibly reallocating the whole array to fit.
      * @param elem
@@ -278,7 +278,7 @@ public:
      * @param elem
      * @return Index to the element
      */
-    size_type add_unique(const param_type elem)
+    size_type add_unique(const_reference elem)
     {
         size_type index = find(elem);
         return index != INDEX_NONE ? index : emplace(elem);

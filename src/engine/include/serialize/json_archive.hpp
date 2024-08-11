@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "io/io_types.hpp"
 #include "stream.hpp"
 #include "utility/json.hpp"
 
@@ -92,9 +91,14 @@ public:
         return operator<<(value.to_string());
     }
 
-    NODISCARD IOBuffer get_stream_buffer() const
+    NODISCARD IOBuffer get_buffer() const override
     {
         return IOBuffer(json_.dump());
+    }
+
+    NODISCARD const Json& get_json() const
+    {
+        return json_;
     }
 
 private:
@@ -166,11 +170,41 @@ public:
         return *this;
     }
 
-    ReadStream& operator>> (bool& value) override;
+    ReadStream& operator>> (bool& value) override
+    {
+        if (json_.is_array() && cursor_ < json_.size())
+        {
+            Json& jobject = json_.at(cursor_);
+            if (jobject.is_boolean())
+            {
+                value = jobject.get<bool>();
+            }
+        }
+        ++cursor_;
+        return *this;
+    }
 
-    ReadStream& operator>> (String& value) override;
+    ReadStream& operator>> (String& value) override
+    {
+        if (json_.is_array() && cursor_ < json_.size())
+        {
+            Json& jobject = json_.at(cursor_);
+            if (jobject.is_string())
+            {
+                value = jobject.get<std::string>().data();
+            }
+        }
+        ++cursor_;
+        return *this;
+    }
 
-    ReadStream& operator>> (StringName& value) override;
+    ReadStream& operator>> (StringName& value) override
+    {
+        String str;
+        operator>>(str);
+        value = str;
+        return *this;
+    }
 
 private:
     template<typename T> requires (std::is_integral_v<T>)
@@ -181,7 +215,14 @@ private:
             Json& jobject = json_.at(cursor_);
             if (jobject.is_number_integer())
             {
-                value = math::cast_checked<T>(jobject.get<int64>());
+                if constexpr (std::is_unsigned_v<T>)
+                {
+                    value = math::cast_checked<T>(jobject.get<uint64>());
+                }
+                else
+                {
+                    value = math::cast_checked<T>(jobject.get<int64>());
+                }
             }
         }
         ++cursor_;

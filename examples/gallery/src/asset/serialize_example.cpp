@@ -5,14 +5,27 @@
 
 #include "asset/serialize_example.hpp"
 #include "engine.hpp"
+#include "serialize/binary_archive.hpp"
+#include "serialize/json_archive.hpp"
 
 namespace atlas
 {
 
 void SerializeExample::initialize()
 {
+    serialize_to_json();
+    serialize_to_binary();
+}
+
+void SerializeExample::deinitialize()
+{
+
+}
+
+void SerializeExample::serialize_to_json()
+{
     JsonArchiveWriter writer;
-    MyStruct a{125};
+    MyStruct a{};
     serialize(writer, a);
 
     auto save_dir = Directory::get_engine_directory() / "examples" / "gallery"/ "temp";
@@ -29,20 +42,32 @@ void SerializeExample::initialize()
     }
 
     ASSERT(g_engine);
-    auto task = launch(g_engine->get_llio().async_write(save_file, writer.get_stream_buffer()));
+    auto task = launch(g_engine->get_llio().async_write(save_file, writer.get_buffer()));
     task.wait();
 
     std::ifstream f(save_file.to_os_path());
     JsonArchiveReader reader(Json::parse(f));
 
     MyStruct b{};
+    std::memset(&b, 0, sizeof(MyStruct));
     deserialize(reader, b);
-    CHECK(b.i8 == 125, "Deserialize SampleStruct failed.");
+    CHECK(b == a, "Deserialize MyStruct failed.");
 }
 
-void SerializeExample::deinitialize()
+void SerializeExample::serialize_to_binary()
 {
+    BinaryArchiveWriter writer;
+    MyStruct a{};
+    serialize(writer, a);
 
+
+    BinaryArchiveReader reader(writer.get_buffer());
+
+    MyStruct b{};
+    std::memset(&b, 0, sizeof(MyStruct));
+    deserialize(reader, b);
+
+    CHECK(b == a, "Deserialize MyStruct failed.");
 }
 
 }// namespace atlas

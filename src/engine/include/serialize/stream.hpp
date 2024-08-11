@@ -4,6 +4,7 @@
 #pragma once
 
 #include "core_def.hpp"
+#include "io/io_types.hpp"
 #include "string/string.hpp"
 #include "string/string_name.hpp"
 
@@ -22,7 +23,7 @@ public:
      * @brief Returns io buffer.
      * @return
      */
-    NODISCARD virtual IOBuffer get_stream_buffer() const = 0;
+    NODISCARD virtual IOBuffer get_buffer() const = 0;
 
     virtual WriteStream& operator<< (int8 value) { return *this; }
     virtual WriteStream& operator<< (uint8 value) { return *this; }
