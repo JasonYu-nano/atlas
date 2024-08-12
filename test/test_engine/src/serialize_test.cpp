@@ -18,6 +18,8 @@ struct MyStruct
     uint32 ui32 = 0xffffffff;
     int64 i64 = -55667788;
     uint64 ui64 = std::numeric_limits<uint64>::max();
+    float f = std::numeric_limits<float>::lowest();
+    double d = std::numeric_limits<double>::max();
     bool boolean = false;
     String str = "SomeString";
     StringName name = "StringName";
@@ -25,19 +27,19 @@ struct MyStruct
     friend void serialize(WriteStream& ws, const MyStruct& v)
     {
         ws << v.i8 << v.ui8 << v.i16 << v.ui16 << v.i32 << v.ui32
-        << v.i64 << v.ui64 << v.boolean << v.str << v.name;
+        << v.i64 << v.ui64 << v.f << v.d << v.boolean << v.str << v.name;
     }
 
     friend void deserialize(ReadStream& rs, MyStruct& v)
     {
         rs >> v.i8 >> v.ui8 >> v.i16 >> v.ui16 >> v.i32 >> v.ui32
-        >> v.i64 >> v.ui64 >> v.boolean >> v.str >> v.name;
+        >> v.i64 >> v.ui64 >> v.f >> v.d >> v.boolean >> v.str >> v.name;
     }
 
     bool operator==(const MyStruct& o) const
     {
         return i8 == o.i8 && ui8 == o.ui8 && i16 == o.i16 && ui16 == o.ui16 && i32 == o.i32 && ui32 == o.ui32 &&
-            i64 == o.i64 && ui64 == o.ui64 && boolean == o.boolean && str == o.str && name == o.name;
+            i64 == o.i64 && ui64 == o.ui64 && f == o.f && d == o.d && boolean == o.boolean && str == o.str && name == o.name;
     }
 };
 
