@@ -13,7 +13,6 @@
       "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "cmake/conan_provider.cmake",
         "WITH_TEST": "ON",
         "WITH_CRASH_HANDLER": "ON"
       }
@@ -25,7 +24,6 @@
       "binaryDir": "${sourceDir}/build/debug_optimize",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "cmake/conan_provider.cmake",
         "WITH_TEST": "ON",
         "WITH_CRASH_HANDLER": "ON"
       }
@@ -37,7 +35,6 @@
       "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "cmake/conan_provider.cmake",
         "WITH_TEST": "ON",
         "WITH_CRASH_HANDLER": "ON"
       }

@@ -1,4 +1,5 @@
 function(REQUIRE_JAVA)
+    unset(Java_JAVA_EXECUTABLE CACHE)
     find_package(Java 21 REQUIRED)
 
     message(STATUS "Java version: ${Java_VERSION}")

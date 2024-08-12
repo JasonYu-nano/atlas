@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.26)
+
+include(${CMAKE_SOURCE_DIR}/cmake/pre_check.cmake)
+DO_CHECK()
+
+set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES cmake/conan_provider.cmake)
 project(atlas LANGUAGES CXX)
 
 # for conan package manager
@@ -9,9 +14,6 @@ set(CMAKE_CXX_STANDARD 23)
 include(${CMAKE_SOURCE_DIR}/cmake/detect_platform.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/pre_check.cmake)
-
-DO_CHECK()
 
 # compile option
 option(SHARED               "build with dynamic link"                   ON)
