@@ -14,6 +14,9 @@ class ENGINE_API JsonArchiveWriter : public WriteStream
 public:
     JsonArchiveWriter() :json_(EJsonValueType::array) {}
 
+    template<typename T>
+    WriteStream& operator<< (const T& value) { serialize(*this, value); return *this; }
+
     WriteStream& operator<< (int8 value) override
     {
         json_.push_back(Json(value));
@@ -109,6 +112,9 @@ class ENGINE_API JsonArchiveReader : public ReadStream
 {
 public:
     explicit JsonArchiveReader(const Json& json) :json_(json) {}
+
+    template<typename T>
+    ReadStream& operator>> (T& value) { deserialize(*this, value); return *this; }
 
     ReadStream& operator>> (int8& value) override
     {

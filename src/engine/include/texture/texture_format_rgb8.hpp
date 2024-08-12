@@ -13,6 +13,8 @@ namespace atlas
 class ENGINE_API TFRGB8 final : public ITextureFormat
 {
 public:
+    TFRGB8() = default;
+
     TFRGB8(uint32 width, uint32 height) : width_(width), height_(height)
     {
         data_ = new Color[width * height];
@@ -22,6 +24,33 @@ public:
     {
         delete data_;
         data_ = nullptr;
+    }
+
+    void serialize(WriteStream& ws) const override
+    {
+        ws << width_ << height_;
+        for (uint32 y = 0; y < height_; ++y)
+        {
+            for (uint32 x = 0; x < width_; ++x)
+            {
+                ws << data_[y * width_ + x];
+            }
+        }
+    }
+
+    void deserialize(ReadStream& rs) override
+    {
+        rs >> width_ >> height_;
+        delete data_;
+
+        data_ = new Color[width_ * height_];
+        for (uint32 y = 0; y < height_; ++y)
+        {
+            for (uint32 x = 0; x < width_; ++x)
+            {
+                rs >> data_[y * width_ + x];
+            }
+        }
     }
 
     NODISCARD ETextureFormat format_type() const override

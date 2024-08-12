@@ -8,6 +8,9 @@ namespace atlas
 class ENGINE_API BinaryArchiveWriter : public WriteStream
 {
 public:
+    template<typename T>
+    WriteStream& operator<< (const T& value) { serialize(*this, value); return *this; }
+
     WriteStream& operator<< (int8 value) override
     {
         serialize_numeric(value);
@@ -109,6 +112,9 @@ class ENGINE_API BinaryArchiveReader : public ReadStream
 {
 public:
     explicit BinaryArchiveReader(const IOBuffer& buffer) : buffer_(buffer) {}
+
+    template<typename T>
+    ReadStream& operator>> (T& value) { deserialize(*this, value); return *this; }
 
     ReadStream& operator>> (int8& value) override
     {

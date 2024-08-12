@@ -25,6 +25,9 @@ public:
      */
     NODISCARD virtual IOBuffer get_buffer() const = 0;
 
+    template<typename T>
+    WriteStream& operator<< (const T& value) { serialize(*this, value); return *this; }
+
     virtual WriteStream& operator<< (int8 value) { return *this; }
     virtual WriteStream& operator<< (uint8 value) { return *this; }
     virtual WriteStream& operator<< (int16 value) { return *this; }
@@ -47,6 +50,9 @@ class ENGINE_API ReadStream
 {
 public:
     virtual ~ReadStream() = default;
+
+    template<typename T>
+    ReadStream& operator>> (T& value) { deserialize(*this, value); return *this; }
 
     virtual ReadStream& operator>> (int8& value) { return *this; }
     virtual ReadStream& operator>> (uint8& value) { return *this; }

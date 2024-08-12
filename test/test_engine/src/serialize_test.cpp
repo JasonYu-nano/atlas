@@ -4,6 +4,8 @@
 #include "gtest/gtest.h"
 #include "serialize/binary_archive.hpp"
 #include "serialize/json_archive.hpp"
+#include "texture/texture_2d.hpp"
+#include "texture/texture_format_rgb8.hpp"
 
 namespace atlas::test
 {
@@ -69,6 +71,26 @@ TEST(SerializeTest, BinaryArchive)
     std::memset(&b, 0, sizeof(MyStruct));
     deserialize(reader, b);
     EXPECT_EQ(a, b);
+}
+
+TEST(SerializeTest, Texture2D)
+{
+
+    auto tf = new TFRGB8(10, 10);
+    for (int32 x = 0; x < 10; ++x)
+    {
+        for (int32 y = 0; y < 10; ++y)
+        {
+            tf->set_color(x, y, Color(x*y));
+        }
+    }
+    Texture2D texture(tf);
+
+    BinaryArchiveWriter writer;
+    writer << texture;
+
+    BinaryArchiveReader reader(writer.get_buffer());
+    reader >> texture;
 }
 
 }
