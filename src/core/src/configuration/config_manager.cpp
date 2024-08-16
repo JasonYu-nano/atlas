@@ -1,6 +1,8 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
+#include <fstream>
+
 #include "configuration/config_manager.hpp"
 #include "platform/platform_fwd.hpp"
 

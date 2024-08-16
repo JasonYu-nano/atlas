@@ -9,11 +9,18 @@ public static class DirectoryUtils
 {
     public static readonly string EngineRootDirectory = GetEngineRootDirectory();
     
-    public static readonly string EngineIntermediateDirectory = $"{EngineRootDirectory}/intermediate";
+    public static readonly string EngineIntermediateDirectory = Path.Combine(EngineRootDirectory, "intermediate");
     
-    public static readonly string EngineSourceDirectory = $"{EngineRootDirectory}/src";
+    public static readonly string EngineSourceDirectory = Path.Combine(EngineRootDirectory, "src");
     
-    public static readonly string BuildTargetIntermediateDirectory = $"{EngineIntermediateDirectory}/build_targets";
+    public static readonly string BuildTargetIntermediateDirectory = Path.Combine(EngineIntermediateDirectory, "build_targets");
+    
+    public static readonly string EngineBuildDirectory = Path.Combine(EngineRootDirectory, "build");
+
+    public static string GetEngineBuildDirectory(BuildType buildType)
+    {
+        return Path.Combine(EngineBuildDirectory, "debug"); //TODO:
+    }
 
     private static string GetEngineRootDirectory()
     {

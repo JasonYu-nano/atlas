@@ -5,12 +5,12 @@
 
 #include "async/thread.hpp"
 #include "configuration/config_manager.hpp"
+#include "meta/meta_types.hpp"
+#include "meta/registration.hpp"
 #include "project.hpp"
 #include "texture/texture_2d.hpp"
 #include "texture/texture_format_rgb8.hpp"
 #include "tickable/tickable_object.hpp"
-#include "serialize/binary_archive.hpp"
-#include "serialize/json_archive.hpp"
 #include "utility/cmd_options.hpp"
 #include "utility/json.hpp"
 
@@ -24,6 +24,8 @@ DEFINE_COMMAND_OPTION(String, project, "p", "The path of the project to start")
 void Engine::startup(int argc, char** argv)
 {
     this_thread::set_name("game thread");
+
+    Registration::register_meta_types(); //TODO: Initialize in background.
 
     CommandParser::parse_command_line_options(argc, argv);
 

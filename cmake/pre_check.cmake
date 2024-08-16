@@ -10,5 +10,5 @@ function(REQUIRE_JAVA)
 endfunction()
 
 macro(DO_CHECK)
-    REQUIRE_JAVA()
+#    REQUIRE_JAVA()
 endmacro()

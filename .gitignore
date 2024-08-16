@@ -50,6 +50,7 @@
 /test/test_core/test.txt
 **/crash_dump/
 **/temp/
+**/vcpkg_installed/
 
 # Ignore Gradle build output directory
 build

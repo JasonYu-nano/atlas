@@ -1,13 +1,16 @@
-find_package(spdlog REQUIRED)
-find_package(Boost COMPONENTS locale REQUIRED)
-find_package(tomlplusplus REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(boost_locale REQUIRED CONFIG)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(tomlplusplus REQUIRED IMPORTED_TARGET tomlplusplus)
+
 find_package(nlohmann_json REQUIRED)
 
 add_atlas_library(
         TARGET core
         PUBLIC_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
         PRIVATE_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
-        PUBLIC_LINK_LIB spdlog::spdlog Boost::locale tomlplusplus::tomlplusplus nlohmann_json::nlohmann_json
+        PUBLIC_LINK_LIB spdlog::spdlog Boost::locale PkgConfig::tomlplusplus nlohmann_json::nlohmann_json
         PLATFORM_CODE_DIRS "include/platform" "src/platform"
 )
 

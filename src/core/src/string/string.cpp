@@ -175,15 +175,18 @@ void String::construct(value_type ch, size_type count)
 
 void String::construct(const String& right, size_type offset, size_type size)
 {
-    ASSERT(right.is_valid_index(offset));
-    size_type actual_size = math::clamp<size_type>(size, 0, right.length() - offset);
-    if (actual_size > 0)
+    if (!right.is_empty())
     {
-        auto right_ptr = right.data() + offset;
-        reserve(actual_size);
-        char_traits::copy(data(), right_ptr, actual_size);
+        ASSERT(right.is_valid_index(offset));
+        size_type actual_size = math::clamp<size_type>(size, 0, right.length() - offset);
+        if (actual_size > 0)
+        {
+            auto right_ptr = right.data() + offset;
+            reserve(actual_size);
+            char_traits::copy(data(), right_ptr, actual_size);
+        }
+        eos(actual_size);
     }
-    eos(actual_size);
 }
 
 void String::move_construct(String& right, String::size_type offset, String::size_type size)

@@ -82,5 +82,78 @@ constexpr To cast_checked(From v)
     return static_cast<To>(v);
 }
 
+/**
+ * @brief Map int8 to uint8. -1 -> 1; 1 -> 2; -2 -> 3; 2 -> 4 etc...
+ * @param n
+ * @return
+ */
+inline uint8 zigzag_encode8(int8 n)
+{
+    return (n << 1) ^ (n >> 7);
+}
+/**
+ * @brief Map uint8 to int8. 1 -> -1; 2 -> 1; 3 -> -2; 4 -> 2 etc...
+ * @param n
+ * @return
+ */
+inline int8 zigzag_decode8(uint8 n)
+{
+    return (n >> 1) ^ -static_cast<int8>(n & 1);
+}
+/**
+ * @brief Map int16 to uint16. -1 -> 1; 1 -> 2; -2 -> 3; 2 -> 4 etc...
+ * @param n
+ * @return
+ */
+inline uint16 zigzag_encode16(int16 n)
+{
+    return (n << 1) ^ (n >> 15);
+}
+/**
+ * @brief Map uint16 to int16. 1 -> -1; 2 -> 1; 3 -> -2; 4 -> 2 etc...
+ * @param n
+ * @return
+ */
+inline int16 zigzag_decode16(uint16 n)
+{
+    return (n >> 1) ^ -static_cast<int16>(n & 1);
+}
+/**
+ * @brief Map int32 to uint32. -1 -> 1; 1 -> 2; -2 -> 3; 2 -> 4 etc...
+ * @param n
+ * @return
+ */
+inline uint32 zigzag_encode32(int32 n)
+{
+    return (n << 1) ^ (n >> 31);
+}
+/**
+ * @brief Map uint32 to int32. 1 -> -1; 2 -> 1; 3 -> -2; 4 -> 2 etc...
+ * @param n
+ * @return
+ */
+inline int32 zigzag_decode32(uint32 n)
+{
+    return (n >> 1) ^ -static_cast<int32>(n & 1);
+}
+/**
+ * @brief Map int64 to uint64. -1 -> 1; 1 -> 2; -2 -> 3; 2 -> 4 etc...
+ * @param n
+ * @return
+ */
+inline uint64 zigzag_encode64(int64 n)
+{
+    return (n << 1) ^ (n >> 63);
+}
+/**
+ * @brief Map uint64 to int64. 1 -> -1; 2 -> 1; 3 -> -2; 4 -> 2 etc...
+ * @param n
+ * @return
+ */
+inline int64 zigzag_decode64(uint64 n)
+{
+    return (n >> 1) ^ -static_cast<int64>(n & 1);
+}
+
 } // namespace math
 } // namespace atlas

@@ -1,19 +1,18 @@
 cmake_minimum_required(VERSION 3.26)
 
 include(${CMAKE_SOURCE_DIR}/cmake/pre_check.cmake)
+include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 DO_CHECK()
 
-set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES cmake/conan_provider.cmake)
 project(atlas LANGUAGES CXX)
-
-# for conan package manager
-enable_language(C)
 
 set(CMAKE_CXX_STANDARD 23)
 
+# include cmake file
 include(${CMAKE_SOURCE_DIR}/cmake/detect_platform.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/import_asan.cmake)
 
 # compile option
 option(SHARED               "build with dynamic link"                   ON)
@@ -21,7 +20,14 @@ option(UNICODE              "build with UNICODE string"                 ON)
 option(WITH_EDITOR          "build with game editor"                    ON)
 option(WITH_TEST            "build with unit test"                      OFF)
 option(WITH_BENCHMARK       "build with benchmark"                      OFF)
-option(WITH_CRASH_HANDLER   "build with crash handler"                  OFF)
+option(ASAN_ENABLED         "enable address sanitizer"                  OFF)
+
+# redirect output directory
+set(CMAKE_DEBUG_POSTFIX "d")
+set(ENGINE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
 
 if(SHARED)
     add_compile_definitions(AE_SHARED)
@@ -54,6 +60,12 @@ if (MSVC)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
     add_compile_definitions(_HAS_EXCEPTIONS=0)
+
+    if(ASAN_ENABLED)
+        IMPORT_ASAN()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fsanitize=address")
+        add_compile_definitions(_DISABLE_VECTOR_ANNOTATION)
+    endif()
 else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions")
 endif ()
@@ -73,32 +85,31 @@ if(WIN32)
     add_compile_definitions(_WIN32)
 endif()
 
-# set output
-set(CMAKE_DEBUG_POSTFIX "d")
-set(ENGINE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
-
 ## set absolute path
 set(ATLAS_TOOL_DIRECTORY ${CMAKE_SOURCE_DIR}/tools)
 
 ## run build tool
 
-if (WIN32)
-    set(RUN_GRADLE gradlew.bat)
-else ()
-    set(RUN_GRADLE gradlew)
-endif ()
+set(EXECUTABLE_PATHS "")
+
+file(GLOB_RECURSE SUB_PATH LIST_DIRECTORIES true "${CMAKE_SOURCE_DIR}/tools/AtlasBuilder/bin/Release/*")
+foreach(PATH ${SUB_PATH})
+    if(IS_DIRECTORY ${PATH})
+        list(APPEND EXECUTABLE_PATHS ${PATH})
+    endif()
+endforeach()
+
+find_program(ATLAS_BUILDER NAMES AtlasBuilder PATHS ${EXECUTABLE_PATHS} NO_DEFAULT_PATH REQUIRED)
 
 execute_process(
-        COMMAND ${RUN_GRADLE} :atlas_builder:run
+        COMMAND ${ATLAS_BUILDER} --package_manager=Vcpkg
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         RESULTS_VARIABLE EXIT_CODE
         OUTPUT_VARIABLE OUTPUT
 )
 
 if (EXIT_CODE)
+    message("${OUTPUT}")
     message(FATAL_ERROR "Atlas: some errors occurred while running atlas builder. msg: ${EXIT_CODE}")
 else ()
     message("${OUTPUT}")

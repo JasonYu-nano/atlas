@@ -40,6 +40,7 @@ macro(_add_include_dirs)
             target_include_directories(${ARG_TARGET} PRIVATE ${INCLUDE_DIR})
         endforeach ()
     endif ()
+    target_include_directories(${ARG_TARGET} PUBLIC "${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}")
 endmacro()
 
 macro(_add_dependency)
@@ -160,13 +161,14 @@ macro(add_atlas_library)
     else ()
         file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp)
     endif ()
+    file(GLOB_RECURSE GENERATED_FILES "${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/*")
 
     _exclude_platform_files(MODULE_FILES)
 
     if(SHARED)
-        add_library(${ARG_TARGET} SHARED ${MODULE_FILES})
+        add_library(${ARG_TARGET} SHARED ${MODULE_FILES} ${GENERATED_FILES})
     else()
-        add_library(${ARG_TARGET} STATIC ${MODULE_FILES})
+        add_library(${ARG_TARGET} STATIC ${MODULE_FILES} ${GENERATED_FILES})
     endif()
 
     _add_target_properties()
@@ -189,10 +191,11 @@ macro(add_atlas_executable)
     else ()
         file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp)
     endif ()
+    file(GLOB_RECURSE GENERATED_FILES "${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}/*")
 
     _exclude_platform_files(MODULE_FILES)
 
-    add_executable(${ARG_TARGET} ${MODULE_FILES})
+    add_executable(${ARG_TARGET} ${MODULE_FILES} ${GENERATED_FILES})
 
     _add_target_properties()
     _add_compile_definitions()
@@ -235,9 +238,9 @@ macro(add_atlas_project)
     endif()
 
     set_target_properties(${ARG_TARGET} PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY ${BUILD_DIR}/out/lib
-        RUNTIME_OUTPUT_DIRECTORY ${BUILD_DIR}/out/bin
-        LIBRARY_OUTPUT_DIRECTORY ${BUILD_DIR}/out/bin
+            ARCHIVE_OUTPUT_DIRECTORY ${BUILD_DIR}/out/lib
+            RUNTIME_OUTPUT_DIRECTORY ${BUILD_DIR}/out/bin
+            LIBRARY_OUTPUT_DIRECTORY ${BUILD_DIR}/out/bin
     )
 
     _setup_ide()

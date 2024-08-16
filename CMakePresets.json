@@ -14,7 +14,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "WITH_TEST": "ON",
-        "WITH_CRASH_HANDLER": "ON"
+        "WITH_CRASH_HANDLER": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     },
     {
@@ -25,7 +26,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "WITH_TEST": "ON",
-        "WITH_CRASH_HANDLER": "ON"
+        "WITH_CRASH_HANDLER": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     },
     {
@@ -36,7 +38,9 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "WITH_TEST": "ON",
-        "WITH_CRASH_HANDLER": "ON"
+        "WITH_CRASH_HANDLER": "ON",
+        "ASAN_ENABLED": "OFF",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     }
   ]

@@ -3,17 +3,20 @@
 
 #pragma once
 
-#include "core_def.hpp"
 #include "serialize/stream.hpp"
 #include "texture_format_rgb8.hpp"
 #include "texture_format_types.hpp"
+#include "texture_2d.gen.hpp"
 
 namespace atlas
 {
 
-class ENGINE_API Texture2D
+class ENGINE_API META() Texture2D
 {
+    GEN_META_CODE(Texture2D)
 public:
+    Texture2D() = default;
+
     explicit Texture2D(ITextureFormat* texture) : texture_(texture) {}
 
     ~Texture2D()
@@ -46,6 +49,7 @@ public:
     }
 
 private:
+    META()
     ITextureFormat* texture_{ nullptr };
 };
 

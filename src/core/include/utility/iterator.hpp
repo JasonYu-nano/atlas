@@ -48,7 +48,7 @@ public:
     bool            operator>=  (const ConstPointerIterator& right) const { return it_ >= right.it_; }
     difference_type operator-   (const ConstPointerIterator& right) const { return it_ - right.it_; }
 
-    pointer GetPointer() { return std::to_address(it_); }
+    pointer get_pointer() { return std::to_address(it_); }
 
 protected:
     pointer it_;

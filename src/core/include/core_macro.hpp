@@ -48,7 +48,20 @@ constexpr enum_type& operator|=(enum_type& lhs, enum_type rhs)          \
 constexpr bool test_flags(enum_type flags, enum_type test)              \
 {                                                                       \
     return (static_cast<std::underlying_type_t<enum_type>>(flags) &     \
-        static_cast<std::underlying_type_t<enum_type>>(test)) != 0;     \
+        static_cast<std::underlying_type_t<enum_type>>(test))           \
+        == static_cast<std::underlying_type_t<enum_type>>(test);        \
 }
 
 #define VIRTUAL_IMPL(log_category, ...) { LOG_ERROR(log_category, "Virtual function not implemented!"); __VA_ARGS__ }
+
+#ifdef __clang__
+#define OFFSET_OF(type, field)	__builtin_offsetof(type, field)
+#else
+#define OFFSET_OF(type, field) offsetof(type, field)
+#endif
+
+#if defined(ATLAS_BUILDER)
+#define META(...) [[clang::annotate(#__VA_ARGS__)]]
+#else
+#define META(...)
+#endif
