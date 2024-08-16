@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "stream.hpp"
 #include "utility/json.hpp"
+#include "utility/stream.hpp"
 
 namespace atlas
 {

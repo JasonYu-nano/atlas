@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "serialize/stream.hpp"
+#include "utility/stream.hpp"
 
 namespace atlas
 {

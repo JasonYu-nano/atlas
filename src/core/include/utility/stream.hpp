@@ -14,7 +14,7 @@ namespace atlas
 /**
  * @brief The abstract write stream used for serialization. Any struct or class can be serialized by implementing `friend void serialize(WriteStream&, const T&)`
  */
-class ENGINE_API WriteStream
+class CORE_API WriteStream
 {
 public:
     virtual ~WriteStream() = default;
@@ -46,7 +46,7 @@ public:
 /**
  * @brief The abstract read stream used for deserialization. Any struct or class can be deserialized by implementing `friend void deserialize(ReadStream&, T&)`
  */
-class ENGINE_API ReadStream
+class CORE_API ReadStream
 {
 public:
     virtual ~ReadStream() = default;

@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include "core_def.hpp"
-#include "serialize/stream.hpp"
+#include "utility/stream.hpp"
 #include "texture_format_rgb8.hpp"
 #include "texture_format_types.hpp"
 
