@@ -21,22 +21,4 @@ MetaClass* MetaClass::base_class() const
     return nullptr;
 }
 
-void MetaClass::construct(void* memory) const
-{
-}
-
-void MetaClass::destruct(void* memory) const
-{
-}
-
-Property* MetaClass::get_property(StringName name) const
-{
-    return nullptr;
-}
-
-Method* MetaClass::get_method(StringName name) const
-{
-    return nullptr;
-}
-
 }// namespace atlas
