@@ -171,7 +171,7 @@ public:
     public:
         PropertyReg(StringName name, uint16 offset)
         {
-            property_ = new StringProperty(offset); //TODO:
+            property_ = new StringProperty(offset);
             property_->name_ = name;
         }
     };
