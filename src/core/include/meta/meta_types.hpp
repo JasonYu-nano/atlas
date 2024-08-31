@@ -159,4 +159,12 @@ ParamPack pack_arguments(const Args&... args)
     return package;
 }
 
+// #define META(...)
+
+#if defined(ATLAS_BUILDER)
+#define META(...) [[clang::annotate(#__VA_ARGS__)]]
+#else
+#define META(...)
+#endif
+
 }// namespace atlas

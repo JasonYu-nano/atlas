@@ -18,14 +18,39 @@ enum class EMyEnum : uint32
     Two,
 };
 
-struct MyStruct
+struct META() BaseStruct {};
+
+struct TEST_CORE_API META(DisplayName = "My Struct") MyStruct
 {
+    META()
     bool b = false;
-    int32 id = 0;
+
+    META()
+    int32 id {0};
+
+    META()
     float f = 0.0f;
+
+    META()
     EMyEnum enumerator = EMyEnum::None;
+
+    META()
     String str = "";
+
+    META()
     StringName name = "";
+
+    META()
+    static int32 get_static_id() { return 10; }
+
+    META()
+    int32 get_id() { return id; }
+
+    META()
+    static auto add(int32 a, int32 b) -> double
+    {
+        return static_cast<double>(a) + b;
+    }
 
     static void get_static_id(void* instance, ParamPack& param_pack, void* result)
     {

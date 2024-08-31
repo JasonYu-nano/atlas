@@ -6,7 +6,6 @@ namespace AtlasBuildTool.CMake;
 public static class CMakeTypes
 {
     public const string EditorOnly = "EDITOR_ONLY";
-    public const string SkipMoc = "SKIP_MOC";
     public const string TestTarget = "TEST_TARGET";
     public const string GameTarget = "GAME_TARGET";
     public const string Target = "TARGET";
@@ -19,7 +18,7 @@ public static class CMakeTypes
     public const string DependencyTargets = "DEPENDENCY_TARGETS";
     public const string PlatformCodeDirs = "PLATFORM_CODE_DIRS";
 
-    public static readonly string[] Options = { EditorOnly, SkipMoc, TestTarget, GameTarget };
+    public static readonly string[] Options = { EditorOnly, TestTarget, GameTarget };
     public static readonly string[] OneValueArgs = { Target };
     public static readonly string[] MultiValueArgs =
     {

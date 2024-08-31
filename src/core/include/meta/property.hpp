@@ -219,7 +219,7 @@ public:
         return INDEX_NONE;
     }
 
-    NODISCARD void set_value(void* structure_ptr, int64 new_value) const
+    void set_value(void* structure_ptr, int64 new_value) const
     {
         CHECK(underlying_property_, "EnumProperty lose underlying property");
         if (structure_ptr)

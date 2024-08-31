@@ -52,6 +52,12 @@ public class DefinitionsGenerator
             tasks.Add(WriteDefinitionFile(writeFile, content));
         }
 
+        {
+            var content = GetNoExportDefinitionFileContent(_buildTargetAssembly.NameToBuildTargets.Values.ToArray());
+            string writeFile = $"{intermediateDirectory}/no_export_definitions.hpp";
+            tasks.Add(WriteDefinitionFile(writeFile, content));
+        }
+
         await Task.WhenAll(tasks.ToArray());
     }
 
@@ -107,6 +113,16 @@ public class DefinitionsGenerator
             stringBuilder.AppendLine($"#define {linkTarget.TargetName.ToUpper()}_API DLL_IMPORT");
         }
 
+        return stringBuilder.ToString();
+    }
+
+    private string GetNoExportDefinitionFileContent(BuildTargetBase[] buildTargets)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        foreach (var target in buildTargets)
+        {
+            stringBuilder.AppendLine($"#define {target.TargetName.ToUpper()}_API");
+        }
         return stringBuilder.ToString();
     }
 

@@ -1,15 +1,20 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
+using System.Diagnostics;
+using System.Reflection;
 using AtlasBuildTool.CMake;
+using ToolCore.Utils;
 
 namespace AtlasBuildTool.BuildTarget;
 
 public class BuildTargetAssembly
 {
-    public Dictionary<string, BuildTargetBase> NameToBuildTargets { get; } = new Dictionary<string, BuildTargetBase>();
+    public Dictionary<string, BuildTargetBase> NameToBuildTargets { get; } = new();
+    public Dictionary<string, ThirdPartyPackage> NameToThirdPartyPackages { get; } = new();
+    private List<MethodInfo> _packageFinders = [];
     
-    public void initialize(string topLevelDirectory)
+    public void Initialize(string topLevelDirectory)
     {
         if (!Directory.Exists(topLevelDirectory))
         {
@@ -21,7 +26,7 @@ public class BuildTargetAssembly
         BuildDependency();
     }
 
-    public void deinitialize()
+    public void Deinitialize()
     {
         NameToBuildTargets.Clear();
     }
@@ -33,6 +38,8 @@ public class BuildTargetAssembly
 
     private void BuildDependency()
     {
+        List<string> packageNames = new();
+        
         foreach (var nameToBuildTarget in NameToBuildTargets)
         {
             BuildTargetBase buildTarget = nameToBuildTarget.Value;
@@ -46,6 +53,10 @@ public class BuildTargetAssembly
                         {
                             buildTarget.PublicLinkBuildTargets.Add(target);
                         }
+                    }
+                    else
+                    {
+                        packageNames.AddUnique(linkName);
                     }
                 }
             }
@@ -61,9 +72,15 @@ public class BuildTargetAssembly
                             buildTarget.PrivateLinkBuildTargets.Add(target);
                         }
                     }
+                    else
+                    {
+                        packageNames.AddUnique(linkName);
+                    }
                 }
             }
         }
+
+        ResolveThirdPartyPackages(packageNames);
     }
 
     private void InitializeBuildTargetsInDirectory(in string directory)
@@ -88,6 +105,44 @@ public class BuildTargetAssembly
         foreach (var subDirectory in Directory.EnumerateDirectories(directory))
         {
             InitializeBuildTargetsInDirectory(subDirectory);
+        }
+    }
+
+    private void ResolveThirdPartyPackages(List<string> packageNames)
+    {
+        if (_packageFinders.Count <= 0)
+        {
+            var interfaceType = typeof(IPackageFinder);
+            var assembly = Assembly.GetExecutingAssembly();
+            var implementingTypes = assembly.GetTypes()
+                .Where(t => interfaceType.IsAssignableFrom(t) && t is { IsClass: true, IsAbstract: false });
+            
+            foreach (var type in implementingTypes)
+            {
+                var finder = type.GetMethod("FindPackage", BindingFlags.Public | BindingFlags.Static);
+                Debug.Assert(finder != null);
+                _packageFinders.Add(finder);
+            }
+        }
+
+        int idx = 0;
+        while (packageNames.Count > idx)
+        {
+            var packageName = packageNames[idx];
+            foreach (var finder in _packageFinders)
+            {
+                var package = finder.Invoke(null, [packageName]);
+                if (package is ThirdPartyPackage thirdPartyPackage)
+                {
+                    NameToThirdPartyPackages.Add(packageName, thirdPartyPackage);
+                    foreach (var dep in thirdPartyPackage.Dependencies)
+                    {
+                        packageNames.AddUnique(dep);
+                    }
+                    break;
+                }
+            }
+            ++idx;
         }
     }
 
