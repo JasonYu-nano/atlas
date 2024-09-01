@@ -11,7 +11,7 @@ namespace atlas::test
 using namespace atlas;
 using namespace atlas::test;
 
-enum class EMyEnum : uint32
+enum class META() EMyEnum : uint32
 {
     None,
     One,
@@ -20,7 +20,7 @@ enum class EMyEnum : uint32
 
 struct META() BaseStruct {};
 
-struct TEST_CORE_API META(DisplayName = "My Struct") MyStruct
+struct TEST_CORE_API META(Serializable, ToolTip = "Only for test", MaxSize = 1) MyStruct
 {
     META()
     bool b = false;

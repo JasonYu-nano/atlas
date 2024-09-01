@@ -13,6 +13,12 @@ class CORE_API Registration
     class ClassRegBase
     {
     public:
+        ClassRegBase& set_flags(EMetaFlag flags)
+        {
+            class_->flags_ = flags;
+            return *this;
+        }
+
         ClassRegBase& set_meta(StringName class_name, int32 value)
         {
 #if WITH_EDITOR
@@ -93,11 +99,10 @@ public:
     class ClassReg : public ClassRegBase
     {
     public:
-        ClassReg(StringName class_name, EMetaFlag flags)
+        explicit  ClassReg(StringName class_name)
         {
             class_ = new MetaClass(sizeof(T), new TypeConstructor<T>());
             class_->name_ = class_name;
-            class_->flags_ = flags;
         }
     };
 

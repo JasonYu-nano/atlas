@@ -1,8 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AtlasBuildTool", "AtlasBuildTool\AtlasBuildTool.csproj", "{29F81424-6048-435F-98DB-54F10D5FDDA7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AtlasBuilder", "AtlasBuilder\AtlasBuilder.csproj", "{29F81424-6048-435F-98DB-54F10D5FDDA7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToolCore", "ToolCore\ToolCore.csproj", "{1ECF8624-0B39-420F-B440-5984FB8C95BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CppAst", "CppAst\CppAst.csproj", "{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,5 +21,11 @@ Global
 		{1ECF8624-0B39-420F-B440-5984FB8C95BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1ECF8624-0B39-420F-B440-5984FB8C95BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1ECF8624-0B39-420F-B440-5984FB8C95BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.RelWithDebInfo|Any CPU.ActiveCfg = Debug|Any CPU
+		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.RelWithDebInfo|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal
