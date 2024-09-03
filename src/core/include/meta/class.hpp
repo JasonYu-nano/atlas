@@ -79,7 +79,9 @@ public:
 private:
     EMetaClassFlag flags_{ EMetaClassFlag::None };
     uint32 size_{ 0 };
+    MetaClass* base_{ nullptr };
     Constructor* constructor_{ nullptr };
+    Array<MetaClass*> interfaces_{};
     Array<Property*> properties_{};
     Array<Method*> methods_{};
 };

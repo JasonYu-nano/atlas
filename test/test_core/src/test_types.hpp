@@ -18,12 +18,19 @@ enum class META() EMyEnum : uint32
     Two,
 };
 
+struct META() ITestInterface
+{
+    virtual int32 get_id() const = 0;
+
+    bool b_;
+};
+
 struct META() BaseStruct
 {
     GEN_CLASS_BODY(BaseStruct)
 };
 
-struct TEST_CORE_API META(Serializable, ToolTip = "Only for test", MaxSize = 1) MyStruct
+struct TEST_CORE_API META(Serializable, ToolTip = "Only for test", MaxSize = 1) MyStruct : BaseStruct, ITestInterface
 {
     GEN_CLASS_BODY(MyStruct)
 
@@ -46,7 +53,7 @@ struct TEST_CORE_API META(Serializable, ToolTip = "Only for test", MaxSize = 1) 
     StringName name = "";
 
     META()
-    int32 get_id() const { return id; }
+    int32 get_id() const override { return id; }
 
     META()
     static auto add(int32 a, double b) -> double

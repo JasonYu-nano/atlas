@@ -12,7 +12,7 @@ namespace AtlasBuilder;
 
 static class AtlasBuilder
 {
-    public static DateTime StartTime { get; set; }
+    public static DateTime StartTime { get; private set; }
     public static int Main(string[] args)
     {
         StartTime = DateTime.Now;
@@ -23,16 +23,14 @@ static class AtlasBuilder
         {
             buildTargetAssembly.Initialize(DirectoryUtils.EngineRootDirectory);
             var defGen = new DefinitionsGenerator(buildTargetAssembly);
-            var task = defGen.Generate();
-            task.Wait();
+            defGen.Generate().Wait();
             
             var endTime = DateTime.Now;
             var timeSpan = endTime - StartTime;
             Console.WriteLine($"DefinitionsGenerator finished in {timeSpan.TotalSeconds} seconds");
 
             var metaGen = new MetaGenerator(buildTargetAssembly);
-            var result = metaGen.Generate();
-            result.Wait();
+            metaGen.Generate().Wait();
         }
         catch (Exception e)
         {

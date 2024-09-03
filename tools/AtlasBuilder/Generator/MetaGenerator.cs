@@ -9,9 +9,9 @@ using ToolCore.Utils;
 
 namespace AtlasBuilder.Generator;
 
-using MetaUnitStorage = Dictionary<string, CppTypeDeclaration>;
+using MetaTypeStorage = Dictionary<string, CppTypeDeclaration>;
 
-public class MetaTypeVerifyException(CppType type, CppDeclaration declaration) : Exception
+public class MetaTypeException(CppType type, CppDeclaration declaration) : Exception
 {
     public CppType Type { get; } = type;
     public CppDeclaration Declaration { get; } = declaration;
@@ -22,12 +22,12 @@ public class MetaTypeVerifyException(CppType type, CppDeclaration declaration) :
     }
 }
 
+public class MetaDeclarationException(string message) : Exception(message);
+
 [GeneratorVersion("0.0.1")]
 public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 {
-    private readonly BuildTargetAssembly _buildTargetAssembly = buildTargetAssembly;
-    
-    private MetaUnitStorage _metaTypeStorage = new();
+    private MetaTypeStorage _metaTypeStorage = new();
 
     public async Task Generate()
     {
@@ -59,7 +59,7 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
     private async Task<CppCompilation?> Parse()
     {
         List<Task<IEnumerable<string>>> tasks = new();
-        foreach (var buildTarget in _buildTargetAssembly.NameToBuildTargets.Values)
+        foreach (var buildTarget in buildTargetAssembly.NameToBuildTargets.Values)
         {
             async Task<IEnumerable<string>> Fn()
             {
@@ -108,13 +108,13 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
             "-Wno-microsoft-include"
         ]);
             
-        foreach (var nameToBuildTarget in _buildTargetAssembly.NameToBuildTargets)
+        foreach (var nameToBuildTarget in buildTargetAssembly.NameToBuildTargets)
         {
             options.IncludeFolders.Add(Path.Combine(nameToBuildTarget.Value.RootDirectory, "include"));
             options.IncludeFolders.Add(Path.Combine(DirectoryUtils.BuildTargetIntermediateDirectory, nameToBuildTarget.Value.TargetName));
         }
 
-        foreach (var nameToPackage in _buildTargetAssembly.NameToThirdPartyPackages)
+        foreach (var nameToPackage in buildTargetAssembly.NameToThirdPartyPackages)
         {
             options.IncludeFolders.AddRange(nameToPackage.Value.IncludeDirs);
             options.AdditionalArguments.AddRange(nameToPackage.Value.Definitions);
@@ -251,7 +251,7 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
     /// <summary>
     /// Verify that all meta-types are legitimate.
     /// </summary>
-    /// <exception cref="T:AtlasBuilder.Generator.MetaTypeVerifyException"><see cref="_metaTypeStorage"/> contains illegal meta-types. </exception>
+    /// <exception cref="T:AtlasBuilder.Generator.MetaTypeException"><see cref="_metaTypeStorage"/> contains illegal meta-types. </exception>
     private void VerifyMetaType()
     {
         foreach (var mt in _metaTypeStorage.Values)
@@ -294,7 +294,7 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
         {
             var fileName = Path.GetFileNameWithoutExtension(pair.Key);
             BuildTargetBase? ownerTarget = null;
-            foreach (var target in _buildTargetAssembly.NameToBuildTargets.Values)
+            foreach (var target in buildTargetAssembly.NameToBuildTargets.Values)
             {
                 if (pair.Key.StartsWith(target.RootDirectory))
                 {
@@ -379,7 +379,7 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
         {
             if (type is CppClass cppClass)
             {
-                cppClass.GenerateSourceCode(sb);
+                cppClass.GenerateSourceCode(sb, _metaTypeStorage);
                 sb.AppendLine();
             }
             else if (type is CppEnum cppEnum)
@@ -433,7 +433,7 @@ public static class CppClassExtension
         }
     }
     
-    public static void GenerateSourceCode(this CppClass cppClass, StringBuilder sb)
+    public static void GenerateSourceCode(this CppClass cppClass, StringBuilder sb, MetaTypeStorage storage)
     {
         sb.AppendLine($$"""
                    static MetaClass* private_get_meta_class_{{cppClass.Name}}()
@@ -442,6 +442,23 @@ public static class CppClassExtension
                    """);
 
         CodeGenUtils.AddMetaData<MetaClassFlag>(sb, 1, cppClass.MetaAttributes);
+        
+        foreach (var baseType in cppClass.BaseTypes)
+        {
+            if (baseType.Type is CppClass baseClass)
+            {
+                if (!baseClass.IsInterface())
+                {
+                    sb.AppendTabs(1);
+                    sb.AppendLine($".set_parent(meta_class_of<{baseClass.FullName}>())");
+                }
+                else if (storage.ContainsKey(baseClass.FullName))
+                {
+                    sb.AppendTabs(1);
+                    sb.AppendLine($".add_interface(meta_class_of<{baseClass.FullName}>())");
+                }
+            }
+        }
 
         foreach (var field in cppClass.Fields)
         {
@@ -470,8 +487,43 @@ public static class CppClassExtension
                       """);
     }
     
-    public static void Verify(this CppClass cppClass, MetaUnitStorage storage)
+    public static void Verify(this CppClass cppClass, MetaTypeStorage storage)
     {
+        if (cppClass.ClassKind == CppClassKind.Union)
+        {
+            throw new MetaDeclarationException("Cannot mark union as meta class");
+        }
+        
+        if (cppClass.Parent is not CppNamespace or CppCompilation)
+        {
+            throw new MetaDeclarationException("Meta classes can only be declared in namespaces (including global namespaces).");
+        }
+
+        bool hasBaseClass = false;
+        foreach (var baseType in cppClass.BaseTypes)
+        {
+            if (baseType.Type is not CppClass baseClass)
+            {
+                throw new MetaDeclarationException("The base class of meta class should also mark as meta class.");
+            }
+
+            // Inheritance from interfaces that are not marked as meta is allowed.
+            if (!baseClass.IsInterface())
+            {
+                if (hasBaseClass)
+                {
+                    throw new MetaDeclarationException("Multiple inheritance is not allowed in meta class.");    
+                }
+
+                if (!storage.ContainsKey(baseClass.FullName))
+                {
+                    throw new MetaDeclarationException("The base class of meta class should also mark as meta class.");
+                }
+
+                hasBaseClass = true;
+            }
+        }
+        
         foreach (var field in cppClass.Fields)
         {
             field.Verify(storage);
@@ -482,6 +534,11 @@ public static class CppClassExtension
             fn.Verify(storage);
         }
     }
+
+    public static bool IsInterface(this CppClass cppClass)
+    {
+        return cppClass.IsAbstract && cppClass.Fields.Count <= 0;
+    }
 }
 
 public static class CppEnumExtension
@@ -491,7 +548,7 @@ public static class CppEnumExtension
         return "";
     }
     
-    public static void Verify(this CppEnum cppEnum, MetaUnitStorage storage)
+    public static void Verify(this CppEnum cppEnum, MetaTypeStorage storage)
     {
     }
 }
@@ -524,11 +581,21 @@ public static class CppFieldExtension
         sb.AppendLine(".get())");
     }
     
-    public static void Verify(this CppField cppField, MetaUnitStorage storage)
+    public static void Verify(this CppField cppField, MetaTypeStorage storage)
     {
+        if (cppField.StorageQualifier != CppStorageQualifier.None)
+        {
+            throw new MetaDeclarationException("Cannot mark static field as property");
+        }
+
+        if (cppField.Parent is not CppClass)
+        {
+            throw new MetaDeclarationException("Property can only be declared in class or struct");
+        }
+
         if (!CppTypeUtils.IsValidType(cppField.Type, storage))
         {
-            throw new MetaTypeVerifyException(cppField.Type, cppField);
+            throw new MetaTypeException(cppField.Type, cppField);
         }
     }
 }
@@ -633,18 +700,18 @@ public static class CppFunctionExtension
     {
     }
     
-    public static void Verify(this CppFunction cppFunction, MetaUnitStorage storage)
+    public static void Verify(this CppFunction cppFunction, MetaTypeStorage storage)
     {
         if (!CppTypeUtils.IsValidType(cppFunction.ReturnType, storage))
         {
-            throw new MetaTypeVerifyException(cppFunction.ReturnType, cppFunction);
+            throw new MetaTypeException(cppFunction.ReturnType, cppFunction);
         }
 
         foreach (var parameter in cppFunction.Parameters)
         {
             if (!CppTypeUtils.IsValidType(parameter.Type, storage))
             {
-                throw new MetaTypeVerifyException(parameter.Type, cppFunction);
+                throw new MetaTypeException(parameter.Type, cppFunction);
             }
         }
     }
@@ -696,7 +763,7 @@ static class CppTypeUtils
     /// <param name="type"></param>
     /// <param name="storage"></param>
     /// <returns></returns>
-    public static bool IsValidType(CppType type, MetaUnitStorage storage)
+    public static bool IsValidType(CppType type, MetaTypeStorage storage)
     {
         if (type is CppTypedef typedef)
         {

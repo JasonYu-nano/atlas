@@ -48,6 +48,18 @@ class CORE_API Registration
             return *this;
         }
 
+        ClassRegBase& set_parent(MetaClass* parent)
+        {
+            class_->base_ = parent;
+            return *this;
+        }
+
+        ClassRegBase& add_interface(MetaClass* interface)
+        {
+            class_->interfaces_.add(interface);
+            return *this;
+        }
+
         MetaClass* get() const
         {
             return class_;
@@ -106,7 +118,7 @@ public:
     class ClassReg : public ClassRegBase
     {
     public:
-        explicit  ClassReg(StringName class_name)
+        explicit ClassReg(StringName class_name)
         {
             class_ = new MetaClass(sizeof(T), new TypeConstructor<T>());
             class_->name_ = class_name;
