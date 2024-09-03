@@ -36,14 +36,6 @@ enum class EMetaCastFlag : uint32
 };
 ENUM_BIT_MASK(EMetaCastFlag);
 
-enum class EMetaFlag : uint32
-{
-    None            = 0,
-    Serializable    = 1 << 0,
-};
-
-ENUM_BIT_MASK(EMetaFlag);
-
 class CORE_API MetaType
 {
 public:
@@ -77,11 +69,6 @@ public:
     NODISCARD virtual EMetaCastFlag cast_flags() const
     {
         return get_cast_flags();
-    }
-
-    NODISCARD bool has_flag(EMetaFlag flag) const
-    {
-        return test_flags(flags_, flag);
     }
 
     NODISCARD StringName name() const
@@ -123,9 +110,6 @@ public:
 #endif
 
 protected:
-    void set_meta_flags(EMetaFlag flags) { flags_ = flags;  }
-
-    EMetaFlag flags_{ EMetaFlag::None };
     StringName name_;
 #if WITH_EDITOR
     Map<StringName, variant_type>* meta_data_{ nullptr };
@@ -165,6 +149,21 @@ ParamPack pack_arguments(const Args&... args)
 #define META(...) [[clang::annotate(#__VA_ARGS__)]]
 #else
 #define META(...)
+#endif
+
+#define FILE_PATH 1
+
+#define FILE_ID_INTERNAL(path, class_name) path##_##class_name
+#define FILE_ID_COMBINE(path, class_name) FILE_ID_INTERNAL(path, class_name)
+#define FILE_ID(class_name) FILE_ID_COMBINE(FILE_PATH, class_name)
+
+#define CLASS_BODY_INTERNAL(fileId) CLASS_BODY_##fileId
+#define CLASS_BODY_COMBINE(fileId) CLASS_BODY_INTERNAL(fileId)
+
+#if !defined(ATLAS_BUILDER)
+#define GEN_CLASS_BODY(class_name) CLASS_BODY_COMBINE(FILE_ID(class_name))()
+#else
+#define GEN_CLASS_BODY(class_name)
 #endif
 
 }// namespace atlas

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "async/task.hpp"
 #include "meta/class.hpp"
 
 namespace atlas
@@ -13,7 +14,7 @@ class CORE_API Registration
     class ClassRegBase
     {
     public:
-        ClassRegBase& set_flags(EMetaFlag flags)
+        ClassRegBase& set_flags(EMetaClassFlag flags)
         {
             class_->flags_ = flags;
             return *this;
@@ -62,6 +63,12 @@ class CORE_API Registration
         PropertyRegBase& set_name(StringName name)
         {
             property_->name_ = name;
+            return *this;
+        }
+
+        PropertyRegBase& set_flags(EPropertyFlag flags)
+        {
+            property_->flags_ = flags;
             return *this;
         }
 
@@ -190,9 +197,9 @@ public:
             method_->name_ = name;
         }
 
-        MethodReg& add_method_flags(EMethodFlag flags)
+        MethodReg& set_flags(EMethodFlag flags)
         {
-            method_->method_flags_ = flags;
+            method_->flags_ = flags;
             return *this;
         }
 
@@ -216,6 +223,23 @@ public:
     private:
         Method* method_{ nullptr };
     };
+
+    explicit Registration(std::function<void()> fn)
+    {
+        deffer_register_array_.add(fn);
+    }
+
+    static void register_meta_types()
+    {
+        for (const auto& fn : deffer_register_array_)
+        {
+            fn();
+        }
+        deffer_register_array_.clear();
+    }
+
+private:
+    static inline Array<std::function<void()>> deffer_register_array_;
 };
 
 }// namespace atlas

@@ -18,11 +18,16 @@ enum class META() EMyEnum : uint32
     Two,
 };
 
-struct META() BaseStruct {};
+struct META() BaseStruct
+{
+    GEN_CLASS_BODY(BaseStruct)
+};
 
 struct TEST_CORE_API META(Serializable, ToolTip = "Only for test", MaxSize = 1) MyStruct
 {
-    META()
+    GEN_CLASS_BODY(MyStruct)
+
+    META(Serializable)
     bool b = false;
 
     META()
@@ -31,7 +36,7 @@ struct TEST_CORE_API META(Serializable, ToolTip = "Only for test", MaxSize = 1) 
     META()
     float f = 0.0f;
 
-    META()
+    META(Serializable)
     EMyEnum enumerator = EMyEnum::None;
 
     META()
@@ -41,37 +46,19 @@ struct TEST_CORE_API META(Serializable, ToolTip = "Only for test", MaxSize = 1) 
     StringName name = "";
 
     META()
-    static int32 get_static_id() { return 10; }
+    int32 get_id() const { return id; }
 
     META()
-    int32 get_id() { return id; }
-
-    META()
-    static auto add(int32 a, int32 b) -> double
+    static auto add(int32 a, double b) -> double
     {
         return static_cast<double>(a) + b;
-    }
-
-    static void get_static_id(void* instance, ParamPack& param_pack, void* result)
-    {
-        *static_cast<int32*>(result) = 10;
-    }
-
-    static void get_id(void* instance, ParamPack& param_pack, void* result)
-    {
-        *static_cast<int32*>(result) = static_cast<MyStruct*>(instance)->id;
     }
 
     static void add(void* instance, ParamPack& packed_params, void* result)
     {
         int32& a = *reinterpret_cast<int32*>(packed_params[0]);
         double& b = *reinterpret_cast<double*>(packed_params[1]);
-        *static_cast<double*>(result) = static_cast<double>(a) + b;
-    }
-
-    NODISCARD MetaClass* meta_class() const
-    {
-        return meta_class_of<MyStruct>();
+        *static_cast<double*>(result) = static_cast<MyStruct*>(instance)->add(a, b);
     }
 };
 

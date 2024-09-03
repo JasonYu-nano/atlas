@@ -12,10 +12,11 @@ namespace AtlasBuilder;
 
 static class AtlasBuilder
 {
+    public static DateTime StartTime { get; set; }
     public static int Main(string[] args)
     {
-        var startTime = DateTime.Now;
-        Console.WriteLine($"-----------------{startTime:yyyy-MM-dd HH:mm:ss}-----------------");
+        StartTime = DateTime.Now;
+        Console.WriteLine($"-----------------{StartTime:yyyy-MM-dd HH:mm:ss}-----------------");
         Console.WriteLine("start running atlas build tool");
         BuildTargetAssembly buildTargetAssembly = new BuildTargetAssembly();
         try
@@ -26,7 +27,7 @@ static class AtlasBuilder
             task.Wait();
             
             var endTime = DateTime.Now;
-            var timeSpan = endTime - startTime;
+            var timeSpan = endTime - StartTime;
             Console.WriteLine($"DefinitionsGenerator finished in {timeSpan.TotalSeconds} seconds");
 
             var metaGen = new MetaGenerator(buildTargetAssembly);
@@ -41,7 +42,7 @@ static class AtlasBuilder
         {
             buildTargetAssembly.Deinitialize();
             var endTime = DateTime.Now;
-            var timeSpan = endTime - startTime;
+            var timeSpan = endTime - StartTime;
             Console.WriteLine($"atlas build tool finished running in {timeSpan.TotalSeconds} seconds");
         }
 

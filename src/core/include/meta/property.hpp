@@ -9,15 +9,31 @@
 namespace atlas
 {
 
+enum class EPropertyFlag : uint32
+{
+    None            = 0,
+    Public          = 1 << 0,
+    Protected       = 1 << 1,
+    Private         = 1 << 2,
+    Serializable    = 1 << 3,
+};
+
+ENUM_BIT_MASK(EPropertyFlag);
+
 class CORE_API Property : public MetaType
 {
     DECLARE_META_CAST_FLAG(EMetaCastFlag::Property, MetaType)
 public:
     NODISCARD virtual uint16 property_offset() const = 0;
 
+    NODISCARD bool has_flag(EPropertyFlag flag) const
+    {
+        return test_flags(flags_, flag);
+    }
+
     void serialize(WriteStream& stream, void* data) const
     {
-        if (has_flag(EMetaFlag::Serializable))
+        if (has_flag(EPropertyFlag::Serializable))
         {
             serialize_impl(stream, data);
         }
@@ -25,7 +41,7 @@ public:
 
     void deserialize(ReadStream& stream, void* data)
     {
-        if (has_flag(EMetaFlag::Serializable))
+        if (has_flag(EPropertyFlag::Serializable))
         {
 
         }
@@ -33,6 +49,8 @@ public:
 
 protected:
     virtual void serialize_impl(WriteStream& stream, void* data) const {};
+
+    EPropertyFlag flags_{ EPropertyFlag::None };
 };
 
 template<typename T>

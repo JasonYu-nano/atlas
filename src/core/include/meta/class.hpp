@@ -12,6 +12,14 @@
 namespace atlas
 {
 
+enum class EMetaClassFlag : uint32
+{
+    None            = 0,
+    Serializable    = 1 << 0,
+};
+
+ENUM_BIT_MASK(EMetaClassFlag);
+
 /**
  * @brief The meta-type of class and struct.
  * Use T::get_class() or instance.meta_class() for get metaclass.
@@ -34,6 +42,11 @@ public:
     }
 
     NODISCARD MetaClass* base_class() const;
+
+    NODISCARD bool has_flag(EMetaClassFlag flag) const
+    {
+        return test_flags(flags_, flag);
+    }
 
     void construct(void* memory) const
     {
@@ -64,6 +77,7 @@ public:
     }
 
 private:
+    EMetaClassFlag flags_{ EMetaClassFlag::None };
     uint32 size_{ 0 };
     Constructor* constructor_{ nullptr };
     Array<Property*> properties_{};

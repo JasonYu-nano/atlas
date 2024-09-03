@@ -118,7 +118,6 @@ namespace CppAst
             {
                 translationFlags |= CXTranslationUnit_Flags.CXTranslationUnit_DetailedPreprocessingRecord;
             }
-            translationFlags |= CXTranslationUnit_Flags.CXTranslationUnit_DetailedPreprocessingRecord;
 
             var argumentsArray = arguments.ToArray();
 

@@ -18,12 +18,6 @@ TEST(MetaTest, Method)
         EXPECT_EQ(result, 20);
     }
     {
-        auto method = meta_class->get_method("get_static_id");
-        int32 result;
-        method->invoke( param_pack_null, &result);
-        EXPECT_EQ(result, 10);
-    }
-    {
         auto method = meta_class->get_method("add");
         double result;
         auto pack = pack_arguments(5, 7.2);
