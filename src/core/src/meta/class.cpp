@@ -53,7 +53,7 @@ UnorderedSet<MetaClass*> MetaClass::get_children(bool recursion) const
     {
         if (!recursion)
         {
-            for (auto i : children_)
+            for (auto i : *children_)
             {
                 ret.insert(i);
             }
@@ -68,7 +68,7 @@ UnorderedSet<MetaClass*> MetaClass::get_children(bool recursion) const
                 cls.remove_at(cls.size() - 1);
                 if (!!last->children_)
                 {
-                    for (auto i : last->children_)
+                    for (auto i : *last->children_)
                     {
                         ret.insert(i);
                         cls.emplace(i);

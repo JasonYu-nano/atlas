@@ -79,6 +79,12 @@ TEST(MetaTest, Class)
         EXPECT_TRUE(MetaClass::find_class("MyStruct") == meta_class);
     }
     {
+        auto base = meta_class->base_class();
+        EXPECT_TRUE(base);
+        auto children = base->get_children(true);
+        EXPECT_TRUE(children.size() == 1);
+    }
+    {
         EXPECT_TRUE(meta_class->is_derived_from(meta_class_of<BaseStruct>()));
         EXPECT_TRUE(meta_class->has_implement_interface(meta_class_of<ITestInterface>()));
         EXPECT_FALSE(meta_class_of<ITestInterface>()->has_implement_interface(meta_class_of<ITestInterface>()));

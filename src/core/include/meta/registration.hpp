@@ -54,18 +54,14 @@ class CORE_API Registration
         {
             ASSERT(parent);
             class_->base_ = parent;
-            return *this;
-        }
 
-        ClassRegBase& add_child(MetaClass* child)
-        {
-            ASSERT(child);
-            if (!!class_->children_)
+            if (!parent->children_)
             {
-                class_->children_ = new UnorderedSet<MetaClass*>();
+                parent->children_ = new UnorderedSet<MetaClass*>();
             }
-            ASSERT(class_->children_);
-            class_->children_->insert(child);
+            ASSERT(parent->children_);
+            parent->children_->insert(class_);
+
             return *this;
         }
 
