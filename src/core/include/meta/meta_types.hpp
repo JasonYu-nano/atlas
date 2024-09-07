@@ -22,14 +22,14 @@ enum class EMetaCastFlag : uint32
     Class                       = 1 << 0,
     Enum                        = 1 << 1,
     Method                      = 1 << 2,
-    Property                    = 1 << 3,
-    BooleanProperty             = 1 << 4,
-    NumericProperty             = 1 << 5,
-    IntegralProperty            = 1 << 6,
-    UnsignedIntegralProperty    = 1 << 7,
-    FloatPointProperty          = 1 << 8,
-    EnumProperty                = 1 << 9,
-    EnumFieldProperty           = 1 << 10,
+    EnumField                   = 1 << 3,
+    Property                    = 1 << 4,
+    BooleanProperty             = 1 << 5,
+    NumericProperty             = 1 << 6,
+    IntegralProperty            = 1 << 7,
+    UnsignedIntegralProperty    = 1 << 8,
+    FloatPointProperty          = 1 << 9,
+    EnumProperty                = 1 << 10,
     StringProperty              = 1 << 11,
     StringNameProperty          = 1 << 12,
     ArrayProperty               = 1 << 13,
@@ -94,7 +94,7 @@ public:
     {
         if (!meta_data_)
         {
-            meta_data_= new Map<StringName, variant_type>();
+            meta_data_= new UnorderedMap<StringName, variant_type>();
         }
         meta_data_->insert(key, variant_type{value});
     }
@@ -103,7 +103,7 @@ public:
     {
         if (!meta_data_)
         {
-            meta_data_= new Map<StringName, variant_type>();
+            meta_data_= new UnorderedMap<StringName, variant_type>();
         }
         meta_data_->insert(key, variant_type{String(value)});
     }
@@ -112,7 +112,7 @@ public:
 protected:
     StringName name_;
 #if WITH_EDITOR
-    Map<StringName, variant_type>* meta_data_{ nullptr };
+    UnorderedMap<StringName, variant_type>* meta_data_{ nullptr };
 #endif
 };
 
@@ -142,8 +142,6 @@ ParamPack pack_arguments(const Args&... args)
     (package.emplace(const_cast<Args*>(&args)), ...);
     return package;
 }
-
-// #define META(...)
 
 #if defined(ATLAS_BUILDER)
 #define META(...) [[clang::annotate(#__VA_ARGS__)]]

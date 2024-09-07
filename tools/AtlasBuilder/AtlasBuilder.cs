@@ -15,9 +15,10 @@ static class AtlasBuilder
     public static DateTime StartTime { get; private set; }
     public static int Main(string[] args)
     {
+        var errorCode = 0;
         StartTime = DateTime.Now;
         Console.WriteLine($"-----------------{StartTime:yyyy-MM-dd HH:mm:ss}-----------------");
-        Console.WriteLine("start running atlas build tool");
+        Console.WriteLine("Start running atlas builder");
         BuildTargetAssembly buildTargetAssembly = new BuildTargetAssembly();
         try
         {
@@ -35,16 +36,17 @@ static class AtlasBuilder
         catch (Exception e)
         {
             Console.WriteLine(e);
+            errorCode = 1;
         }
         finally
         {
             buildTargetAssembly.Deinitialize();
             var endTime = DateTime.Now;
             var timeSpan = endTime - StartTime;
-            Console.WriteLine($"atlas build tool finished running in {timeSpan.TotalSeconds} seconds");
+            Console.WriteLine($"Atlas builder finished running in {timeSpan.TotalSeconds} seconds");
         }
 
-        return 0;
+        return errorCode;
     }
 }
 

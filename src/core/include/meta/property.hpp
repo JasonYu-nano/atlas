@@ -20,6 +20,17 @@ enum class EPropertyFlag : uint32
 
 ENUM_BIT_MASK(EPropertyFlag);
 
+class CORE_API EnumField : public MetaType
+{
+    DECLARE_META_CAST_FLAG(EMetaCastFlag::EnumField, MetaType)
+public:
+    EnumField(int64 value) : value_(value) {}
+
+    NODISCARD int64 value() const {return value_;}
+private:
+    int64 value_{ 0 };
+};
+
 class CORE_API Property : public MetaType
 {
     DECLARE_META_CAST_FLAG(EMetaCastFlag::Property, MetaType)
@@ -255,20 +266,6 @@ public:
 private:
     NumericProperty* underlying_property_;
     class MetaEnum* enumerator_{ nullptr };
-};
-
-class CORE_API EnumFieldProperty : public Property
-{
-    DECLARE_META_CAST_FLAG(EMetaCastFlag::EnumFieldProperty, Property)
-public:
-    EnumFieldProperty(uint16 offset) {}
-    NODISCARD uint16 property_offset() const override
-    {
-        return 0;
-    }
-    NODISCARD int64 value() const {return value_;}
-private:
-    int64 value_{ 0 };
 };
 
 class CORE_API StringProperty : public TemplateProperty<String>

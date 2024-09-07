@@ -152,12 +152,17 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
     private IEnumerable<string> GetPendingParseHeader(BuildTargetBase buildTarget)
     {
         // If there is an update to the current version of the generator, force all files to be regenerated！
-        var forceReparse = true;
-        var record = GetLastGenRecord();
-        if (record != null && record.GeneratorVersion == GetGeneratorVersion())
-        {
-            forceReparse = false;
-        }
+        #if DEBUG
+            var forceReparse = true;
+            CodeGenRecord? record = null;
+        #else
+            var forceReparse = true;
+            var record = GetLastGenRecord();
+            if (record != null && record.GeneratorVersion == GetGeneratorVersion())
+            {
+                forceReparse = false;
+            }
+        #endif
         
         var headers = Directory.GetFiles(buildTarget.RootDirectory, "*.hpp", SearchOption.AllDirectories);
         return headers.Where(header =>
@@ -353,6 +358,8 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
             }
             else if (type is CppEnum cppEnum)
             {
+                cppEnum.GenerateHeaderCode(sb);
+                sb.AppendLine();
             }
         }
         
@@ -384,7 +391,7 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
             }
             else if (type is CppEnum cppEnum)
             {
-                cppEnum.GenerateSourceCode();
+                cppEnum.GenerateSourceCode(sb);
                 sb.AppendLine();
             }
         }
@@ -441,7 +448,16 @@ public static class CppClassExtension
                        return Registration::ClassReg<{{cppClass.FullName}}>("{{cppClass.Name}}")
                    """);
 
-        CodeGenUtils.AddMetaData<MetaClassFlag>(sb, 1, cppClass.MetaAttributes);
+        List<string> flags = new();
+        if (cppClass.IsAbstract)
+        {
+            flags.Add("Abstract");
+        }
+        if (cppClass.IsInterface())
+        {
+            flags.Add("Interface");
+        }
+        CodeGenUtils.AddMetaData<MetaClassFlag>(sb, 1, cppClass.MetaAttributes, flags);
         
         foreach (var baseType in cppClass.BaseTypes)
         {
@@ -543,9 +559,57 @@ public static class CppClassExtension
 
 public static class CppEnumExtension
 {
-    public static string GenerateSourceCode(this CppEnum cppClass)
+    public static void GenerateHeaderCode(this CppEnum cppEnum, StringBuilder sb)
     {
-        return "";
+        if (cppEnum.Parent is CppNamespace ns)
+        {
+            if (cppEnum.IsScoped)
+            {
+                sb.AppendLine($$"""
+                                namespace {{ns.FullParentName}}::{{ns.Name}}{ enum class {{cppEnum.Name}} : {{cppEnum.IntegerType.GetPrettyName()}}; }
+                                template<> atlas::MetaEnum* meta_enum_of<{{cppEnum.FullName}}>();
+                                """);
+            }
+            else
+            {
+                sb.AppendLine($$"""
+                                namespace {{ns.FullParentName}}::{{ns.Name}}{ enum {{cppEnum.Name}}; }
+                                template<> atlas::MetaEnum* meta_enum_of<{{cppEnum.FullName}}>();
+                                """);
+            }
+        }
+    }
+
+    public static void GenerateSourceCode(this CppEnum cppEnum, StringBuilder sb)
+    {
+        sb.AppendLine($$"""
+                        static MetaEnum* private_get_meta_enum_{{cppEnum.Name}}()
+                        {
+                            return Registration::EnumReg<{{cppEnum.FullName}}>("{{cppEnum.Name}}")
+                        """);
+        
+        CodeGenUtils.AddMetaData<MetaClassFlag>(sb, 1, cppEnum.MetaAttributes);
+
+        foreach (var item in cppEnum.Items)
+        {
+            item.GenerateSourceCode(sb, 1);
+        }
+        
+        sb.AppendLine($$"""
+                            .get();
+                        }
+
+                        template<>
+                        MetaEnum* meta_enum_of<{{cppEnum.FullName}}>()
+                        {
+                            static MetaEnum* e = private_get_meta_enum_{{cppEnum.Name}}();
+                            return e;
+                        }
+
+                        static Registration auto_register_{{cppEnum.Name}}([]{
+                            meta_enum_of<{{cppEnum.FullName}}>();
+                        });
+                        """);
     }
     
     public static void Verify(this CppEnum cppEnum, MetaTypeStorage storage)
@@ -733,6 +797,19 @@ public static class CppParameterExtension
     {
         sb.AppendTabs(numTabs);
         sb.AppendLine($".add_parameter(Registration::PropertyReg<{cppParameter.Type.GetPrettyName()}>(\"{cppParameter.Name}\", 0).get())");
+    }
+}
+
+public static class CppEnumItemExtension
+{
+    public static void GenerateSourceCode(this CppEnumItem cppEnumItem, StringBuilder sb, int numTabs)
+    {
+        sb.AppendTabs(numTabs);
+        sb.AppendLine($".add_field(Registration::EnumFieldReg(\"{cppEnumItem.Name}\", {cppEnumItem.Value})");
+        
+        CodeGenUtils.AddMetaData<EnumFieldFlag>(sb, numTabs + 1, cppEnumItem.MetaAttributes);
+        sb.AppendTabs(numTabs + 1);
+        sb.AppendLine(".get())");
     }
 }
 

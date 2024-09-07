@@ -13,16 +13,14 @@ using namespace atlas::test;
 
 enum class META() EMyEnum : uint32
 {
-    None,
-    One,
+    None    META(),
+    One     META(ToolTip="Enum One"),
     Two,
 };
 
 struct META() ITestInterface
 {
     virtual int32 get_id() const = 0;
-
-    bool b_;
 };
 
 struct META() BaseStruct
@@ -30,42 +28,40 @@ struct META() BaseStruct
     GEN_CLASS_BODY(BaseStruct)
 };
 
-struct TEST_CORE_API META(Serializable, ToolTip = "Only for test", MaxSize = 1) MyStruct : BaseStruct, ITestInterface
+struct TEST_CORE_API META(ToolTip = "Only for test", MaxSize = 1) MyStruct : public BaseStruct, public ITestInterface
 {
     GEN_CLASS_BODY(MyStruct)
 
-    META(Serializable)
-    bool b = false;
+    MyStruct() = default;
 
-    META()
-    int32 id {0};
-
-    META()
-    float f = 0.0f;
+    MyStruct(bool b, int32 id, float f, EMyEnum e = EMyEnum::None, String s = "", StringName sn = "") :
+        b_(b), id_(id), f_(f), enumerator_(e), str_(std::move(s)), name_(sn) {}
 
     META(Serializable)
-    EMyEnum enumerator = EMyEnum::None;
+    bool b_ = false;
 
     META()
-    String str = "";
+    int32 id_ {0};
 
     META()
-    StringName name = "";
+    float f_ = 0.0f;
+
+    META(Serializable)
+    EMyEnum enumerator_ = EMyEnum::None;
 
     META()
-    int32 get_id() const override { return id; }
+    String str_ = "";
+
+    META()
+    StringName name_ = "";
+
+    META()
+    int32 get_id() const override { return id_; }
 
     META()
     static auto add(int32 a, double b) -> double
     {
         return static_cast<double>(a) + b;
-    }
-
-    static void add(void* instance, ParamPack& packed_params, void* result)
-    {
-        int32& a = *reinterpret_cast<int32*>(packed_params[0]);
-        double& b = *reinterpret_cast<double*>(packed_params[1]);
-        *static_cast<double*>(result) = static_cast<MyStruct*>(instance)->add(a, b);
     }
 };
 

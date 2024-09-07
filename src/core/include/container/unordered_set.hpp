@@ -113,6 +113,14 @@ public:
         return table_.capacity();
     }
     /**
+     * @brief Returns true if the set is empty and contains no elements.
+     * @return
+     */
+    NODISCARD bool empty() const
+    {
+        return table_.empty();
+    }
+    /**
      * @brief Reserves memory such that the set can contain at least number elements.
      * @param new_capacity
      */

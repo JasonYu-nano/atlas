@@ -96,9 +96,10 @@ public static class CodeGenUtils
         {
             var type = typeof(TE);
             var enumNames = type.GetEnumNames();
-            if (!additionalFlags.All(f => enumNames.Contains(f)))
+            var invalidFlags = additionalFlags.TakeWhile(f => !enumNames.Contains(f));
+            if (invalidFlags.Any())
             {
-                throw new Exception("META() declaration contains an invalid flag.");
+                throw new Exception($"META() declaration contains invalid flag: {string.Join(",",invalidFlags)}");
             }
             sb.AppendTabs(numTabs);
             sb.AppendLine($".set_flags({MakeFlagSequence($"E{type.Name}", additionalFlags)})");
