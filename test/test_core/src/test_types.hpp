@@ -18,24 +18,35 @@ enum class META() EMyEnum : uint32
     Two,
 };
 
-struct META() ITestInterface
+class META() ITestInterface
 {
     virtual int32 get_id() const = 0;
 };
 
-struct META() BaseStruct
+class META() BaseClass
 {
-    GEN_CLASS_BODY(BaseStruct)
+    GEN_CLASS_BODY(BaseClass)
+
+    int32 zzz;
 };
 
-struct TEST_CORE_API META(ToolTip = "Only for test", MaxSize = 1) MyStruct : public BaseStruct, public ITestInterface
+class TEST_CORE_API META(ToolTip = "Only for test", MaxSize = 1) MyClass : public BaseClass, public ITestInterface
 {
-    GEN_CLASS_BODY(MyStruct)
+    GEN_CLASS_BODY(MyClass)
+public:
+    MyClass() = default;
 
-    MyStruct() = default;
-
-    MyStruct(bool b, int32 id, float f, EMyEnum e = EMyEnum::None, String s = "", StringName sn = "") :
+    MyClass(bool b, int32 id, float f, EMyEnum e = EMyEnum::None, String s = "", StringName sn = "") :
         b_(b), id_(id), f_(f), enumerator_(e), str_(std::move(s)), name_(sn) {}
+
+    META()
+    int32 get_id() const override { return id_; }
+
+    META()
+    static auto add(int32 a, double b) -> double
+    {
+        return static_cast<double>(a) + b;
+    }
 
     META(Serializable)
     bool b_ = false;
@@ -54,15 +65,6 @@ struct TEST_CORE_API META(ToolTip = "Only for test", MaxSize = 1) MyStruct : pub
 
     META()
     StringName name_ = "";
-
-    META()
-    int32 get_id() const override { return id_; }
-
-    META()
-    static auto add(int32 a, double b) -> double
-    {
-        return static_cast<double>(a) + b;
-    }
 };
 
 }// namespace atlas::test

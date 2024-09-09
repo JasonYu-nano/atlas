@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.IO.MemoryMappedFiles;
 using System.Text;
 using System.Text.RegularExpressions;
 using AtlasBuilder.BuildTarget;
@@ -24,7 +23,7 @@ public class MetaTypeException(CppType type, CppDeclaration declaration) : Excep
 
 public class MetaDeclarationException(string message) : Exception(message);
 
-[GeneratorVersion("0.0.1")]
+[GeneratorVersion("0.0.2")]
 public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 {
     private MetaTypeStorage _metaTypeStorage = new();
@@ -428,14 +427,26 @@ public static class CppClassExtension
                              namespace {{ns.FullParentName}}::{{ns.Name}}{ {{keywords}} {{cppClass.Name}}; }
                              template<> atlas::MetaClass* meta_class_of<{{cppClass.FullName}}>();
                              
+                             struct PrivateCodeGen_{{cppClass.Name}}
+                             {
+                                 static atlas::MetaClass* get_meta_class();
+                             };
+                             
                              #define CLASS_BODY_{{CodeGenUtils.MakeUnderlineStylePath(file)}}_{{cppClass.Name}}() \
                              public: \
+                             friend class PrivateCodeGen_{{cppClass.Name}}; \
                              NODISCARD MetaClass* meta_class() const { return meta_class_of<{{cppClass.FullName}}>(); } \
+                             private: \
                              """);
 
             foreach (var fn in cppClass.Functions)
             {
                 fn.GenerateHeaderCode(sb);
+            }
+
+            if (cppClass.ClassKind == CppClassKind.Struct)
+            {
+                sb.AppendLine("public: \\");
             }
         }
     }
@@ -443,7 +454,7 @@ public static class CppClassExtension
     public static void GenerateSourceCode(this CppClass cppClass, StringBuilder sb, MetaTypeStorage storage)
     {
         sb.AppendLine($$"""
-                   static MetaClass* private_get_meta_class_{{cppClass.Name}}()
+                   MetaClass* PrivateCodeGen_{{cppClass.Name}}::get_meta_class()
                    {
                        return Registration::ClassReg<{{cppClass.FullName}}>("{{cppClass.Name}}")
                    """);
@@ -493,7 +504,7 @@ public static class CppClassExtension
                       template<>
                       MetaClass* meta_class_of<{{cppClass.FullName}}>()
                       {
-                          static MetaClass* m = private_get_meta_class_{{cppClass.Name}}();
+                          static MetaClass* m = PrivateCodeGen_{{cppClass.Name}}::get_meta_class();
                           return m;
                       }
                       
