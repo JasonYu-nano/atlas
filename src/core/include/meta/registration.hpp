@@ -46,11 +46,11 @@ class CORE_API Registration
         ClassRegBase& add_method(Method* method)
         {
             ASSERT(method);
-            class_->methods_.add(method);
+            class_->methods_.insert(method->name(), method);
             return *this;
         }
 
-        ClassRegBase& set_parent(MetaClass* parent)
+        ClassRegBase& set_base(MetaClass* parent)
         {
             ASSERT(parent);
             class_->base_ = parent;
@@ -69,6 +69,14 @@ class CORE_API Registration
         {
             ASSERT(interface);
             class_->interfaces_.add(interface);
+
+            if (!interface->children_)
+            {
+                interface->children_ = new UnorderedSet<MetaClass*>();
+            }
+            ASSERT(interface->children_);
+            interface->children_->insert(class_);
+
             return *this;
         }
 
@@ -286,8 +294,22 @@ public:
     public:
         PropertyReg(StringName name, uint16 offset)
         {
-            static_assert(std::is_enum_v<T>);
-            property_ = new EnumProperty(meta_cast<NumericProperty>(PropertyReg<std::underlying_type_t<T>>("", offset).get()));
+            auto e = meta_enum_of<T>();
+            ASSERT(e != nullptr);
+            property_ = new EnumProperty(meta_cast<NumericProperty>(PropertyReg<std::underlying_type_t<T>>("", offset).get()), e);
+            property_->name_ = name;
+        }
+    };
+
+    template<typename T>
+    class PropertyReg<T, false, false, true> : public PropertyRegBase
+    {
+    public:
+        PropertyReg(StringName name, uint16 offset)
+        {
+            auto cls = meta_class_of<T>();
+            ASSERT(cls != nullptr);
+            property_ = new ClassProperty(offset, cls);
             property_->name_ = name;
         }
     };

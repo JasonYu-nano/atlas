@@ -23,7 +23,7 @@ public class MetaTypeException(CppType type, CppDeclaration declaration) : Excep
 
 public class MetaDeclarationException(string message) : Exception(message);
 
-[GeneratorVersion("0.0.2")]
+[GeneratorVersion("0.0.3")]
 public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 {
     private MetaTypeStorage _metaTypeStorage = new();
@@ -271,7 +271,7 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
         }
     }
 
-    private async Task GenerateMetaCode()
+    private Task GenerateMetaCode()
     {
         Dictionary<string, List<CppTypeDeclaration>> fileToTypes = new();
         foreach (var mt in _metaTypeStorage.Values)
@@ -315,19 +315,25 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
             {
                 var content = GenerateHeaderCode(pair.Key, pair.Value);
                 var outFile = Path.Combine(DirectoryUtils.BuildTargetIntermediateDirectory, ownerTarget.TargetName, $"{fileName}.gen.hpp");
-                await using StreamWriter sourceStream = new StreamWriter(outFile, false, Encoding.UTF8);
-                tasks.Add(sourceStream.WriteAsync(content.ToCharArray(), 0, content.Length));
+                tasks.Add(Task.Run(async () =>
+                {
+                    await using var sourceStream = new StreamWriter(outFile, false, Encoding.UTF8);
+                    await sourceStream.WriteAsync(content.ToCharArray(), 0, content.Length);
+                }));
             }
             
             {
                 var content = GenerateSourceCode(pair.Key, pair.Value);
                 var outFile = Path.Combine(DirectoryUtils.BuildTargetIntermediateDirectory, ownerTarget.TargetName, $"{fileName}.gen.cpp");
-                await using StreamWriter sourceStream = new StreamWriter(outFile, false, Encoding.UTF8);
-                tasks.Add(sourceStream.WriteAsync(content.ToCharArray(), 0, content.Length));
+                tasks.Add(Task.Run(async () =>
+                {
+                    await using var sourceStream = new StreamWriter(outFile, false, Encoding.UTF8);
+                    await sourceStream.WriteAsync(content.ToCharArray(), 0, content.Length);
+                }));
             }
         }
         
-        Task.WaitAll(tasks.ToArray());
+        return Task.WhenAll(tasks.ToArray());
     }
 
     private string GenerateHeaderCode(string file, List<CppTypeDeclaration> types)
@@ -435,7 +441,7 @@ public static class CppClassExtension
                              #define CLASS_BODY_{{CodeGenUtils.MakeUnderlineStylePath(file)}}_{{cppClass.Name}}() \
                              public: \
                              friend class PrivateCodeGen_{{cppClass.Name}}; \
-                             NODISCARD MetaClass* meta_class() const { return meta_class_of<{{cppClass.FullName}}>(); } \
+                             NODISCARD virtual MetaClass* meta_class() const { return meta_class_of<{{cppClass.FullName}}>(); } \
                              private: \
                              """);
 
@@ -477,7 +483,7 @@ public static class CppClassExtension
                 if (!baseClass.IsInterface())
                 {
                     sb.AppendTabs(1);
-                    sb.AppendLine($".set_parent(meta_class_of<{baseClass.FullName}>())");
+                    sb.AppendLine($".set_base(meta_class_of<{baseClass.FullName}>())");
                 }
                 else if (storage.ContainsKey(baseClass.FullName))
                 {
@@ -679,7 +685,6 @@ public static class CppFunctionExtension
 {
     public static void GenerateHeaderCode(this CppFunction cppFunction, StringBuilder sb)
     {
-        //TODO: Move implement to cpp
         sb.AppendLine($$"""
                        static void {{cppFunction.Name}}_meta_gen_proxy(void* instance, ParamPack& packed_params, void* result) { \
                        """);
@@ -697,28 +702,40 @@ public static class CppFunctionExtension
             if (cppFunction.IsStatic)
             {
                 sb.Append($"""
-                           *static_cast<{cppFunction.ReturnType.GetPrettyName()}*>(result) = {cppFunction.Name}(
+                           *static_cast<{cppFunction.ReturnType.RemoveCVRef().GetPrettyName()}*>(result) = 
                            """);
             }
             else
             {
                 sb.Append($"""
-                           *static_cast<{cppFunction.ReturnType.GetPrettyName()}*>(result) = static_cast<{((CppClass)cppFunction.Parent).FullName}*>(instance)->{cppFunction.Name}(
+                           *static_cast<{cppFunction.ReturnType.RemoveCVRef().GetPrettyName()}*>(result) = 
                            """);
             }
+        }
+        if (cppFunction.IsStatic)
+        {
+            sb.Append($"""
+                       {cppFunction.Name}(
+                       """);
+        }
+        else
+        {
+            sb.Append($"""
+                       static_cast<{((CppClass)cppFunction.Parent).FullName}*>(instance)->{cppFunction.Name}(
+                       """);
+        }
 
-            var first = true;
-            foreach (var parameter in cppFunction.Parameters)
+        var first = true;
+        foreach (var parameter in cppFunction.Parameters)
+        {
+            if (first)
             {
-                if (first)
-                {
-                    sb.Append($"{parameter.Name}");
-                    first = false;
-                }
-                else
-                {
-                    sb.Append($", {parameter.Name}");
-                }
+                sb.Append($"{parameter.Name}");
+                first = false;
+            }
+            else
+            {
+                sb.Append($", {parameter.Name}");
             }
         }
 
@@ -764,15 +781,11 @@ public static class CppFunctionExtension
         if (cppFunction.ReturnType.FullName != "void")
         {
             sb.AppendTabs(childNumTabs);
-            sb.AppendLine($""".add_ret_type(Registration::PropertyReg<{cppFunction.ReturnType.GetPrettyName()}>("", 0).get())""");
+            sb.AppendLine($""".add_ret_type(Registration::PropertyReg<{cppFunction.ReturnType.GetUnderlyingType().GetPrettyName()}>("", 0).get())""");
         }
         
         sb.AppendTabs(childNumTabs);
         sb.AppendLine(".get())");
-    }
-    
-    public static void GenerateProxyMethodImpl(this CppFunction cppFunction, StringBuilder sb)
-    {
     }
     
     public static void Verify(this CppFunction cppFunction, MetaTypeStorage storage)
@@ -853,7 +866,8 @@ static class CppTypeUtils
     /// <returns></returns>
     public static bool IsValidType(CppType type, MetaTypeStorage storage)
     {
-        if (type is CppTypedef typedef)
+        var underlyingType = type.GetUnderlyingType();
+        if (underlyingType is CppTypedef typedef)
         {
             if (BasicTypes.Contains(typedef.Name))
             {
@@ -862,7 +876,18 @@ static class CppTypeUtils
             
             return storage.ContainsKey(typedef.ElementType.FullName);
         }
-        return BasicTypes.Contains(type.FullName) || storage.ContainsKey(type.FullName);
+
+        if (BasicTypes.Contains(underlyingType.FullName))
+        {
+            return true;
+        }
+
+        if (storage.ContainsKey(underlyingType.FullName))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public static string GetPrettyName(this CppType type)
@@ -874,9 +899,58 @@ static class CppTypeUtils
 
         if (type is CppClass cppClass)
         {
-            return cppClass.Name;
+            return cppClass.FullName;
         }
         
         return type.FullName;
+    }
+
+    /// <summary>
+    /// Removes const,volatile,reference from type.
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static CppType GetUnderlyingType(this CppType type)
+    {
+        while (true)
+        {
+            switch (type.TypeKind)
+            {
+                case CppTypeKind.Pointer:
+                case CppTypeKind.Qualified:
+                case CppTypeKind.Reference:
+                {
+                    type = ((CppTypeWithElementType)type).ElementType;
+                    continue;
+                }
+
+                default:
+                    return type;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Removes const,volatile,reference from type.
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static CppType RemoveCVRef(this CppType type)
+    {
+        while (true)
+        {
+            switch (type.TypeKind)
+            {
+                case CppTypeKind.Qualified:
+                case CppTypeKind.Reference:
+                {
+                    type = ((CppTypeWithElementType)type).ElementType;
+                    continue;
+                }
+
+                default:
+                    return type;
+            }
+        }
     }
 }

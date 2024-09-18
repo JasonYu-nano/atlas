@@ -32,7 +32,8 @@ enum class EMetaCastFlag : uint32
     EnumProperty                = 1 << 10,
     StringProperty              = 1 << 11,
     StringNameProperty          = 1 << 12,
-    ArrayProperty               = 1 << 13,
+    ClassProperty               = 1 << 13,
+    ArrayProperty               = 1 << 14,
 };
 ENUM_BIT_MASK(EMetaCastFlag);
 

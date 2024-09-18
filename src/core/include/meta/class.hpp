@@ -42,6 +42,114 @@ enum class EEnumUnderlyingType : uint8
 };
 
 /**
+ * @brief Const Iterator for meta class.
+ */
+class CORE_API ConstMetaClassIterator
+{
+protected:
+    using class_map_type                = UnorderedMap<StringName, std::unique_ptr<MetaClass>>;
+    using map_iterator_type             = class_map_type::iterator;
+public:
+    using value_type                    = MetaClass;
+    using pointer                       = const MetaClass*;
+    using reference                     = const value_type&;
+
+    explicit ConstMetaClassIterator(class_map_type& class_map) : meta_class_map_(class_map), it_(class_map.begin()) {}
+    ConstMetaClassIterator(const ConstMetaClassIterator& right) = default;
+
+    reference                   operator*   () const { return *it_->second.get(); }
+    pointer                     operator->  () const { return it_->second.get(); }
+
+    operator bool                           () const { return it_ != meta_class_map_.end(); }
+    bool                        operator==  (const ConstMetaClassIterator& right) const { return &meta_class_map_ == &right.meta_class_map_ && it_ == right.it_; }
+    bool                        operator!=  (const ConstMetaClassIterator& right) const { return &meta_class_map_ != &right.meta_class_map_ || it_ != right.it_; }
+    ConstMetaClassIterator&     operator++  () { ++it_; return *this; }
+    ConstMetaClassIterator      operator++  (int32) { ConstMetaClassIterator temp = *this; ++(*this); return temp; }
+
+protected:
+    class_map_type& meta_class_map_;
+    map_iterator_type it_;
+};
+
+/**
+ * @brief Iterator for meta class.
+ */
+class CORE_API MetaClassIterator : public ConstMetaClassIterator
+{
+    using base                          = ConstMetaClassIterator;
+public:
+    using value_type                    = MetaClass;
+    using pointer                       = MetaClass*;
+    using reference                     = value_type&;
+
+    explicit MetaClassIterator(class_map_type& class_map) : base(class_map) {}
+    MetaClassIterator(const MetaClassIterator& right) = default;
+
+    reference                   operator*   () const { return const_cast<reference>(base::operator*()); }
+    pointer                     operator->  () const { return const_cast<pointer>(base::operator->()); }
+
+    operator bool                           () const { return base::operator bool(); }
+    bool                        operator==  (const ConstMetaClassIterator& right) const { return base::operator==(right); }
+    bool                        operator!=  (const ConstMetaClassIterator& right) const { return base::operator!=(right); }
+    MetaClassIterator&          operator++  () { base::operator++(); return *this; }
+    MetaClassIterator           operator++  (int32) { MetaClassIterator temp = *this; ++(*this); return temp; }
+};
+
+/**
+ * Const iterator for properties in meta class.
+ */
+class CORE_API ConstPropertyIterator
+{
+protected:
+    using iterator_type             = Array<Property*>::const_iterator;
+public:
+    using value_type                    = Property;
+    using pointer                       = const value_type*;
+    using reference                     = const value_type&;
+
+    ConstPropertyIterator(const MetaClass& cls, bool exclude_base);
+    ConstPropertyIterator(const ConstPropertyIterator& right) = default;
+
+    reference                   operator*   () const { return **it_; }
+    pointer                     operator->  () const { return *it_.operator->(); }
+
+    operator bool                           () const;
+    bool                        operator==  (const ConstPropertyIterator& right) const { return class_ == right.class_ && it_ == right.it_; }
+    bool                        operator!=  (const ConstPropertyIterator& right) const { return class_ != right.class_ || it_ != right.it_; }
+    ConstPropertyIterator&      operator++  ();
+    ConstPropertyIterator       operator++  (int32) { ConstPropertyIterator temp = *this; ++(*this); return temp; }
+
+protected:
+    const MetaClass* class_;
+    iterator_type it_;
+    bool exclude_base_{ false };
+};
+
+/**
+ * Iterator for properties in meta class.
+ */
+class CORE_API PropertyIterator : public ConstPropertyIterator
+{
+    using base                          = ConstPropertyIterator;
+public:
+    using value_type                    = Property;
+    using pointer                       = value_type*;
+    using reference                     = value_type&;
+
+    explicit PropertyIterator(MetaClass& cls, bool exclude_base) : base(cls, exclude_base) {}
+    PropertyIterator(const PropertyIterator& right) = default;
+
+    reference                   operator*   () const { return const_cast<reference>(base::operator*()); }
+    pointer                     operator->  () const { return const_cast<pointer>(base::operator->()); }
+
+    operator bool                           () const { return base::operator bool(); }
+    bool                        operator==  (const PropertyIterator& right) const { return base::operator==(right); }
+    bool                        operator!=  (const PropertyIterator& right) const { return base::operator!=(right); }
+    PropertyIterator&           operator++  () { base::operator++(); return *this; }
+    PropertyIterator            operator++  (int32) { PropertyIterator temp = *this; ++(*this); return temp; }
+};
+
+/**
  * @brief The meta-type of class and struct.
  * Use meta_class_of<T> or instance.meta_class() for get metaclass.
  */
@@ -50,40 +158,41 @@ class CORE_API MetaClass : public MetaType
     using base = MetaType;
     DECLARE_META_CAST_FLAG(EMetaCastFlag::Class, base)
     friend class Registration;
+    friend class ConstPropertyIterator;
 public:
+    using const_property_iterator = ConstPropertyIterator;
+    using property_iterator = PropertyIterator;
+
+    /**
+     * @brief Finds meta class by class short name
+     * @param name Class short name. Excludes namespace.
+     * @return Null if not found.
+     */
     static MetaClass* find_class(StringName name)
     {
         const auto it = meta_class_map_.find(name);
         return it != meta_class_map_.end() ? it->second.get() : nullptr;
     }
-
-    static void foreach_class(std::function<void(MetaClass*)> fn)
+    /**
+     * @brief Creates class const iterator.
+     * @return
+     */
+    static ConstMetaClassIterator create_const_class_iterator()
     {
-        std::for_each(meta_class_map_.begin(), meta_class_map_.end(), [&fn](auto&& it) {
-            fn(it.second.get());
-        });
+        return ConstMetaClassIterator(meta_class_map_);
+    }
+    /**
+     * @brief
+     * @return Creates class iterator.
+     */
+    static MetaClassIterator create_class_iterator()
+    {
+        return MetaClassIterator(meta_class_map_);
     }
 
     MetaClass(uint32 size, uint32 align, Constructor* constructor) : size_(size), align_(align), constructor_(constructor) {}
 
-    ~MetaClass() override
-    {
-        delete children_;
-        children_ = nullptr;
-
-        delete constructor_;
-        constructor_ = nullptr;
-
-        for (auto prop : properties_)
-        {
-            delete prop;
-        }
-
-        for (auto method : methods_)
-        {
-            delete method;
-        }
-    }
+    ~MetaClass() override;
 
     NODISCARD MetaClass* base_class() const
     {
@@ -108,37 +217,73 @@ public:
         return size_;
     }
 
+    NODISCARD uint32 class_align() const
+    {
+        return align_;
+    }
+    /**
+     * @brief Test whether the class contains the given flag.
+     * @param flag
+     * @return
+     */
     NODISCARD bool has_flag(EMetaClassFlag flag) const
     {
         return test_flags(flags_, flag);
     }
-
+    /**
+     * @brief Construct an instance in the given memory address.
+     * @note The memory space must be larger than the class size.
+     * @param memory
+     */
     void construct(void* memory) const
     {
-        if (constructor_ && !has_flag(EMetaClassFlag::Abstract))
+        if (memory && constructor_ && !has_flag(EMetaClassFlag::Abstract))
         {
             constructor_->construct(memory);
         }
     }
-
+    /**
+     * @brief Destruct an instance pointer by class destructor.
+     * @param ptr
+     */
     void destruct(void* ptr) const
     {
-        if (constructor_)
+        if (ptr && constructor_)
         {
             constructor_->destruct(ptr);
         }
     }
-
-    NODISCARD Property* get_property(StringName name) const
+    /**
+     * @brief Finds a class property by the given name.
+     * @param name Property name
+     * @param exclude_base Do not include property in base class.
+     * @return Null if not found.
+     */
+    NODISCARD Property* find_property(StringName name, bool exclude_base = false) const;
+    /**
+     * @brief Finds a class method by the given name.
+     * @param name Method name
+     * @param exclude_base Do not include method in base class or interfaces.
+     * @return Null if not found.
+     */
+    NODISCARD Method* find_method(StringName name, bool exclude_base = false) const;
+    /**
+     * @brief Creates property const iterator.
+     * @param exclude_base Do not iterate property in base class.
+     * @return
+     */
+    NODISCARD const_property_iterator create_property_iterator(bool exclude_base = false) const
     {
-        size_t idx = properties_.find([=](Property* prop) { return prop->name() == name; });
-        return idx == INDEX_NONE ? nullptr : properties_[idx];
+        return const_property_iterator(*this, exclude_base);
     }
-
-    NODISCARD Method* get_method(StringName name) const
+    /**
+     * @brief Creates property iterator.
+     * @param exclude_base Do not iterate property in base class.
+     * @return
+     */
+    NODISCARD property_iterator create_property_iterator(bool exclude_base = false)
     {
-        size_t idx = methods_.find([=](Method* method) { return method->name() == name; });
-        return idx == INDEX_NONE ? nullptr : methods_[idx];
+        return property_iterator(*this, exclude_base);
     }
 
 private:
@@ -147,12 +292,18 @@ private:
     EMetaClassFlag flags_{ EMetaClassFlag::None };
     uint32 size_{ 0 };
     uint32 align_{ 0 };
+    /** Base class of this class. */
     MetaClass* base_{ nullptr };
+    /** Interfaces of this class. */
+    Array<MetaClass*> interfaces_{};
+    /** Pointer of child class of this class. */
     UnorderedSet<MetaClass*>* children_{ nullptr };
     Constructor* constructor_{ nullptr };
-    Array<MetaClass*> interfaces_{};
     Array<Property*> properties_{};
-    Array<Method*> methods_{};
+    UnorderedMap<StringName, Method*> methods_{};
+    /** Stores methods in a base class or interfaces for quick searching. */
+    mutable UnorderedMap<StringName, Method*> methods_cache_{};
+    mutable std::shared_mutex method_mutex_{};
 };
 
 class CORE_API MetaEnum : public MetaType

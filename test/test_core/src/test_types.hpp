@@ -67,4 +67,83 @@ public:
     StringName name_ = "";
 };
 
+struct META() DateTime
+{
+    GEN_CLASS_BODY(DateTime)
+    DateTime() = default;
+    DateTime(uint16 y, uint8 m, uint8 d) : year(y), month(m), day(d) {}
+
+    META()
+    uint16 year = 0;
+
+    META()
+    uint8 month = 0;
+
+    META()
+    uint8 day = 0;
+};
+
+class META() IAnimal
+{
+    GEN_CLASS_BODY(IAnimal)
+public:
+    META()
+    virtual void make_sound() const = 0;
+};
+
+class META() AnimalBase : public IAnimal
+{
+    GEN_CLASS_BODY(AnimalBase)
+
+public:
+    AnimalBase() = default;
+    AnimalBase(DateTime date, String name) : birth_day_(date), name_(std::move(name)) {}
+
+    META()
+    NODISCARD String get_name() const { return name_; }
+
+    META()
+    NODISCARD const DateTime& get_birth_day() const { return birth_day_; }
+
+private:
+    META()
+    DateTime birth_day_ {};
+
+    META()
+    String name_ {};
+};
+
+class META() Cat : public AnimalBase
+{
+    GEN_CLASS_BODY(Cat);
+
+public:
+    Cat() = default;
+    Cat(DateTime date, String name) : AnimalBase(date, name) {}
+
+    void make_sound() const override
+    {
+        printf("meow meow!\n");
+    }
+
+private:
+    META()
+    bool is_male_{ false };
+};
+
+class META() Dog : public AnimalBase
+{
+    GEN_CLASS_BODY(Dog);
+
+public:
+    void make_sound() const override
+    {
+        printf("bark!\n");
+    }
+
+private:
+    META()
+    bool is_male_{ false };
+};
+
 }// namespace atlas::test

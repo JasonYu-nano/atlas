@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "class.hpp"
 #include "meta/meta_types.hpp"
 #include "utility/stream.hpp"
 
@@ -15,7 +16,10 @@ enum class EPropertyFlag : uint32
     Public          = 1 << 0,
     Protected       = 1 << 1,
     Private         = 1 << 2,
-    Serializable    = 1 << 3,
+    Const           = 1 << 3,
+    Reference       = 1 << 4,
+    RightReference  = 1 << 5,
+    Serializable    = 1 << 6,
 };
 
 ENUM_BIT_MASK(EPropertyFlag);
@@ -218,7 +222,7 @@ class CORE_API EnumProperty : public Property
 {
     DECLARE_META_CAST_FLAG(EMetaCastFlag::EnumProperty, Property)
 public:
-    EnumProperty(NumericProperty* underlying) : underlying_property_(underlying) {}
+    EnumProperty(NumericProperty* underlying, class MetaEnum* enumerator) : underlying_property_(underlying), enumerator_(enumerator) {}
 
     ~EnumProperty() override
     {
@@ -229,6 +233,11 @@ public:
     NODISCARD uint16 property_offset() const override
     {
         return underlying_property_ ? underlying_property_->property_offset() : 0;
+    }
+
+    NODISCARD MetaEnum* get_enum() const
+    {
+        return enumerator_;
     }
 
     NODISCARD int64 get_value(const void* structure_ptr) const
@@ -280,6 +289,32 @@ class CORE_API StringNameProperty : public TemplateProperty<StringName>
     DECLARE_META_CAST_FLAG(EMetaCastFlag::StringNameProperty, Property)
 public:
     StringNameProperty(uint16 offset) : TemplateProperty(offset) {}
+};
+
+class CORE_API ClassProperty : public Property
+{
+    DECLARE_META_CAST_FLAG(EMetaCastFlag::ClassProperty, Property)
+public:
+    ClassProperty(uint16 offset, class MetaClass* cls) : offset_(offset), class_(cls) {}
+
+    NODISCARD uint16 property_offset() const override
+    {
+        return offset_;
+    }
+
+    NODISCARD MetaClass* get_class() const
+    {
+        return class_;
+    }
+
+    NODISCARD const void* get_class_address(const void* structure_ptr)
+    {
+        return reinterpret_cast<const byte*>(structure_ptr) + offset_;
+    }
+
+protected:
+    uint16 offset_{ 0 };
+    MetaClass* class_{ nullptr };
 };
 
 class CORE_API ArrayProperty : public Property

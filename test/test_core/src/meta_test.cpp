@@ -11,14 +11,14 @@ TEST(MetaTest, Method)
 {
     auto meta_class = meta_class_of<MyClass>();
     {
-        auto method = meta_class->get_method("get_id");
+        auto method = meta_class->find_method("get_id");
         MyClass my_class(true, 20, 0.0f);
         int32 result;
         method->invoke(&my_class, param_pack_null, &result);
         EXPECT_EQ(result, 20);
     }
     {
-        auto method = meta_class->get_method("add");
+        auto method = meta_class->find_method("add");
         double result;
         auto pack = pack_arguments(5, 7.2);
         method->invoke( pack, &result);
@@ -31,7 +31,7 @@ TEST(MetaTest, Property)
     auto meta_class = meta_class_of<MyClass>();
     MyClass my_class { true, 20, 5.0f, EMyEnum::Two, "hello" };
     {
-        auto prop = meta_class->get_property("b_");
+        auto prop = meta_class->find_property("b_");
 
         EXPECT_NE(nullptr, meta_cast<BoolProperty>(prop));
         EXPECT_TRUE(meta_cast<BoolProperty>(prop)->get_value(&my_class));
@@ -39,7 +39,7 @@ TEST(MetaTest, Property)
         EXPECT_FALSE(my_class.b_);
     }
     {
-        auto prop = meta_class->get_property("id_");
+        auto prop = meta_class->find_property("id_");
 
         EXPECT_NE(nullptr, meta_cast<IntProperty>(prop));
         EXPECT_EQ(meta_cast<IntProperty>(prop)->get_value(&my_class), 20);
@@ -47,7 +47,7 @@ TEST(MetaTest, Property)
         EXPECT_EQ(my_class.id_, 10);
     }
     {
-        auto prop = meta_class->get_property("f_");
+        auto prop = meta_class->find_property("f_");
 
         EXPECT_NE(nullptr, meta_cast<FloatPointProperty>(prop));
         EXPECT_EQ(meta_cast<FloatPointProperty>(prop)->get_value(&my_class), 5.0);
@@ -55,15 +55,17 @@ TEST(MetaTest, Property)
         EXPECT_EQ(my_class.f_, 2.0);
     }
     {
-        auto prop = meta_class->get_property("enumerator_");
+        auto prop = meta_class->find_property("enumerator_");
 
         EXPECT_NE(nullptr, meta_cast<EnumProperty>(prop));
+        auto enum_prop = meta_cast<EnumProperty>(prop);
+        EXPECT_TRUE(enum_prop->get_enum() == meta_enum_of<EMyEnum>());
         EXPECT_EQ(meta_cast<EnumProperty>(prop)->get_value(&my_class), static_cast<int64>(EMyEnum::Two));
         meta_cast<EnumProperty>(prop)->set_value(&my_class, static_cast<int64>(EMyEnum::One));
         EXPECT_EQ(my_class.enumerator_, EMyEnum::One);
     }
     {
-        auto prop = meta_class->get_property("str_");
+        auto prop = meta_class->find_property("str_");
 
         EXPECT_NE(nullptr, meta_cast<StringProperty>(prop));
         EXPECT_EQ(meta_cast<StringProperty>(prop)->get_value(&my_class), "hello");
@@ -74,28 +76,72 @@ TEST(MetaTest, Property)
 
 TEST(MetaTest, Class)
 {
-    auto meta_class = meta_class_of<MyClass>();
     {
-        EXPECT_TRUE(MetaClass::find_class("MyClass") == meta_class);
+        for (auto it = MetaClass::create_class_iterator(); it; ++it)
+        {
+            printf("Class: %s\n", it->name().to_string().data());
+        }
     }
+
+    auto animal_class = meta_class_of<AnimalBase>();
+    auto children = animal_class->get_children(true);
+
     {
-        auto base = meta_class->base_class();
-        EXPECT_TRUE(base);
-        auto children = base->get_children(true);
-        EXPECT_TRUE(children.size() == 1);
+        for (auto child : children)
+        {
+            auto method = child->find_method("make_sound");
+            EXPECT_TRUE(!!method);
+
+            void* instance = Memory::malloc(child->class_size());
+
+            child->construct(instance);
+
+            method->invoke(instance, param_pack_null, nullptr);
+
+            child->destruct(instance);
+
+            Memory::free(instance);
+        }
     }
+
     {
-        EXPECT_TRUE(meta_class->is_derived_from(meta_class_of<BaseClass>()));
-        EXPECT_TRUE(meta_class->has_implement_interface(meta_class_of<ITestInterface>()));
-        EXPECT_FALSE(meta_class_of<ITestInterface>()->has_implement_interface(meta_class_of<ITestInterface>()));
+        AnimalBase* animal = new Cat({2022, 4, 1}, "pangzi");
+        EXPECT_TRUE(animal->meta_class() == meta_class_of<Cat>());
+        auto cat_class = animal->meta_class();
+
+        auto prop = cat_class->find_property("birth_day_");
+        EXPECT_TRUE(!!prop && prop->is<ClassProperty>());
+
+        auto date_prop = meta_cast<ClassProperty>(prop);
+        auto date_class = date_prop->get_class();
+        EXPECT_TRUE(date_class == meta_class_of<DateTime>());
+
+        {
+            for (auto it = cat_class->create_property_iterator(); it; ++it)
+            {
+                printf("property: %s\n", it->name().to_string().data());
+            }
+        }
+
+        {
+            auto year_prop = date_class->find_property("year");
+            uint64 value = meta_cast<UIntProperty>(year_prop)->get_value(date_prop->get_class_address(animal));
+            EXPECT_EQ(value, 2022);
+        }
+        {
+            auto month_prop = date_class->find_property("month");
+            uint64 value = meta_cast<UIntProperty>(month_prop)->get_value(date_prop->get_class_address(animal));
+            EXPECT_EQ(value, 4);
+        }
+        {
+            auto month_prop = date_class->find_property("day");
+            uint64 value = meta_cast<UIntProperty>(month_prop)->get_value(date_prop->get_class_address(animal));
+            EXPECT_EQ(value, 1);
+        }
+
+        delete animal;
     }
-    {
-        void* buffer = Memory::malloc(meta_class->class_size());
-        meta_class->construct(buffer);
-        EXPECT_EQ(static_cast<MyClass*>(buffer)->f_, 0.0f);
-        meta_class->destruct(buffer);
-        Memory::free(buffer);
-    }
+
 }
 
 TEST(MetaTest, Enum)
