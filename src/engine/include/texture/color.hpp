@@ -4,11 +4,12 @@
 #pragma once
 
 #include "utility/stream.hpp"
+#include "color.gen.hpp"
 
 namespace atlas
 {
 
-struct ENGINE_API Color
+struct ENGINE_API META(Customize) Color
 {
     union
     {

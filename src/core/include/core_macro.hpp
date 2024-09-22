@@ -59,3 +59,9 @@ constexpr bool test_flags(enum_type flags, enum_type test)              \
 #else
 #define OFFSET_OF(type, field) offsetof(type, field)
 #endif
+
+#if defined(ATLAS_BUILDER)
+#define META(...) [[clang::annotate(#__VA_ARGS__)]]
+#else
+#define META(...)
+#endif

@@ -13,11 +13,11 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <OutputPath>../../build/debug/out/</OutputPath>
+      <OutputPath></OutputPath>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <OutputPath>../../build/release/out/</OutputPath>
+      <OutputPath></OutputPath>
     </PropertyGroup>
 
     <PropertyGroup>

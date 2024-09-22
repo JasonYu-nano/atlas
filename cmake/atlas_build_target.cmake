@@ -40,7 +40,7 @@ macro(_add_include_dirs)
             target_include_directories(${ARG_TARGET} PRIVATE ${INCLUDE_DIR})
         endforeach ()
     endif ()
-    target_include_directories(${ARG_TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}")
+    target_include_directories(${ARG_TARGET} PUBLIC "${CMAKE_SOURCE_DIR}/intermediate/build_targets/${ARG_TARGET}")
 endmacro()
 
 macro(_add_dependency)
@@ -238,9 +238,9 @@ macro(add_atlas_project)
     endif()
 
     set_target_properties(${ARG_TARGET} PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY ${BUILD_DIR}/out/lib
-        RUNTIME_OUTPUT_DIRECTORY ${BUILD_DIR}/out/bin
-        LIBRARY_OUTPUT_DIRECTORY ${BUILD_DIR}/out/bin
+            ARCHIVE_OUTPUT_DIRECTORY ${BUILD_DIR}/out/lib
+            RUNTIME_OUTPUT_DIRECTORY ${BUILD_DIR}/out/bin
+            LIBRARY_OUTPUT_DIRECTORY ${BUILD_DIR}/out/bin
     )
 
     _setup_ide()

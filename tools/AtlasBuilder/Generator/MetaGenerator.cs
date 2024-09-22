@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using AtlasBuilder.BuildTarget;
@@ -23,7 +24,7 @@ public class MetaTypeException(CppType type, CppDeclaration declaration) : Excep
 
 public class MetaDeclarationException(string message) : Exception(message);
 
-[GeneratorVersion("0.0.3")]
+[GeneratorVersion("0.0.4")]
 public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 {
     private MetaTypeStorage _metaTypeStorage = new();
@@ -420,6 +421,20 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 
 internal record CodeGenRecord(Version GeneratorVersion, DateTime LastGenTime);
 
+
+public static class CppNamespaceExtension
+{
+    public static string FullName(this CppNamespace cppNamespace)
+    {
+        if (cppNamespace.FullParentName == "")
+        {
+            return cppNamespace.Name;
+        }
+
+        return $"{cppNamespace.FullParentName}::{cppNamespace.Name}";
+    }
+}
+
 public static class CppClassExtension
 {
     public static void GenerateHeaderCode(this CppClass cppClass, StringBuilder sb)
@@ -430,7 +445,7 @@ public static class CppClassExtension
             var file = cppClass.Span.Start.File;
             
             sb.AppendLine($$"""
-                             namespace {{ns.FullParentName}}::{{ns.Name}}{ {{keywords}} {{cppClass.Name}}; }
+                             namespace {{ns.FullName()}}{ {{keywords}} {{cppClass.Name}}; }
                              template<> atlas::MetaClass* meta_class_of<{{cppClass.FullName}}>();
                              
                              struct PrivateCodeGen_{{cppClass.Name}}
@@ -445,14 +460,23 @@ public static class CppClassExtension
                              private: \
                              """);
 
-            foreach (var fn in cppClass.Functions)
+            if (cppClass.HasCustomizeFlag())
             {
-                fn.GenerateHeaderCode(sb);
+                Type? type = Type.GetType($"AtlasBuilder.Generator.CustomizeGenerator.{cppClass.Name}CustomizeGenerator");
+                Debug.Assert(type != null);
+                type.InvokeMember("GenerateBodyMarco", BindingFlags.Public | BindingFlags.Static | BindingFlags.InvokeMethod, null, null, [sb]);
             }
-
-            if (cppClass.ClassKind == CppClassKind.Struct)
+            else
             {
-                sb.AppendLine("public: \\");
+                foreach (var fn in cppClass.Functions)
+                {
+                    fn.GenerateHeaderCode(sb);
+                }
+
+                if (cppClass.ClassKind == CppClassKind.Struct)
+                {
+                    sb.AppendLine("public: \\");
+                }
             }
         }
     }
@@ -492,15 +516,24 @@ public static class CppClassExtension
                 }
             }
         }
-
-        foreach (var field in cppClass.Fields)
-        {
-            field.GenerateSourceCode(sb, 1);
-        }
         
-        foreach (var fn in cppClass.Functions)
+        if (cppClass.HasCustomizeFlag())
         {
-            fn.GenerateSourceCode(sb, 1);
+            Type? type = Type.GetType($"AtlasBuilder.Generator.CustomizeGenerator.{cppClass.Name}CustomizeGenerator");
+            Debug.Assert(type != null);
+            type.InvokeMember("GenerateRegistrationCode", BindingFlags.Public |BindingFlags.Static | BindingFlags.InvokeMethod, null, null, [sb, 1]);
+        }
+        else
+        {
+            foreach (var field in cppClass.Fields)
+            {
+                field.GenerateSourceCode(sb, 1);
+            }
+        
+            foreach (var fn in cppClass.Functions)
+            {
+                fn.GenerateSourceCode(sb, 1);
+            }
         }
 
         sb.AppendLine($$"""
@@ -530,6 +563,15 @@ public static class CppClassExtension
         if (cppClass.Parent is not CppNamespace or CppCompilation)
         {
             throw new MetaDeclarationException("Meta classes can only be declared in namespaces (including global namespaces).");
+        }
+
+        if (cppClass.HasCustomizeFlag())
+        {
+            Type? type = Type.GetType($"AtlasBuilder.Generator.CustomizeGenerator.{cppClass.Name}CustomizeGenerator");
+            if (type?.GetInterface("ICustomizeClassGenerator") == null)
+            {
+                throw new MetaDeclarationException($"Can not find customize generator for class {cppClass.Name}.");
+            }           
         }
 
         bool hasBaseClass = false;
@@ -566,6 +608,22 @@ public static class CppClassExtension
         {
             fn.Verify(storage);
         }
+    }
+
+    public static bool HasCustomizeFlag(this CppClass cppClass)
+    {
+        foreach (var attribute in cppClass.MetaAttributes.MetaList)
+        {
+            foreach (var pair in attribute.ArgumentMap)
+            {
+                if (pair is { Key: "Customize", Value: bool })
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public static bool IsInterface(this CppClass cppClass)
@@ -636,10 +694,35 @@ public static class CppEnumExtension
 
 public static class CppFieldExtension
 {
+    private static void GeneratePropertyReg(StringBuilder sb, CppType cppType)
+    {
+        if (cppType.IsArrayType())
+        {
+            CppType tempType = ((CppClass)cppType).TemplateSpecializedArguments[0].ArgAsType;
+            sb.Append(@"Registration::ArrayPropertyReg("""", 0, ");
+            GeneratePropertyReg(sb, tempType);
+            sb.Append(").get()");
+        }
+        else
+        {
+            sb.Append($@"Registration::PropertyReg<{cppType.GetPrettyName()}>("""", 0).get()");
+        }
+    }
+    
     public static void GenerateSourceCode(this CppField cppField, StringBuilder sb, int numTabs)
     {
         sb.AppendTabs(numTabs);
-        sb.AppendLine($".add_property(Registration::PropertyReg<{cppField.Type.GetPrettyName()}>(\"{cppField.Name}\", OFFSET_OF({((CppClass)cppField.Parent).FullName}, {cppField.Name}))");
+        if (cppField.Type.IsArrayType())
+        {
+            CppType tempType = ((CppClass)cppField.Type).TemplateSpecializedArguments[0].ArgAsType;
+            sb.Append($".add_property(Registration::ArrayPropertyReg(\"{cppField.Name}\", OFFSET_OF({((CppClass)cppField.Parent).FullName}, {cppField.Name}), ");
+            GeneratePropertyReg(sb, cppField.Type);
+            sb.AppendLine(")");
+        }
+        else
+        {
+            sb.AppendLine($".add_property(Registration::PropertyReg<{cppField.Type.GetPrettyName()}>(\"{cppField.Name}\", OFFSET_OF({((CppClass)cppField.Parent).FullName}, {cppField.Name}))");
+        }
         
         List<string> flags = new();
         switch (cppField.Visibility)
@@ -873,8 +956,8 @@ static class CppTypeUtils
             {
                 return true;
             }
-            
-            return storage.ContainsKey(typedef.ElementType.FullName);
+
+            underlyingType = typedef.ElementType;
         }
 
         if (BasicTypes.Contains(underlyingType.FullName))
@@ -886,11 +969,41 @@ static class CppTypeUtils
         {
             return true;
         }
+        
+        if (underlyingType.IsContainerType(out var templateTypes))
+        {
+            foreach (var tempType in templateTypes!)
+            {
+                if (!IsValidType(tempType, storage))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         return false;
     }
+    
+    internal static bool IsContainerType(this CppType type, out List<CppType>? templateTypes)
+    {
+        if (type.IsArrayType())
+        {
+            templateTypes = [((CppClass)type).TemplateSpecializedArguments[0].ArgAsType];
+            return true;
+        }
 
-    public static string GetPrettyName(this CppType type)
+        templateTypes = null;
+        return false;
+    }
+
+    internal static bool IsArrayType(this CppType type)
+    {
+        return type is CppClass { Name: "Array" };
+    }
+
+    internal static string GetPrettyName(this CppType type)
     {
         if (type is CppTypedef typedef)
         {
@@ -910,7 +1023,7 @@ static class CppTypeUtils
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    public static CppType GetUnderlyingType(this CppType type)
+    internal static CppType GetUnderlyingType(this CppType type)
     {
         while (true)
         {

@@ -33,7 +33,8 @@ enum class EMetaCastFlag : uint32
     StringProperty              = 1 << 11,
     StringNameProperty          = 1 << 12,
     ClassProperty               = 1 << 13,
-    ArrayProperty               = 1 << 14,
+    PointerProperty             = 1 << 14,
+    ArrayProperty               = 1 << 15,
 };
 ENUM_BIT_MASK(EMetaCastFlag);
 
@@ -143,12 +144,6 @@ ParamPack pack_arguments(const Args&... args)
     (package.emplace(const_cast<Args*>(&args)), ...);
     return package;
 }
-
-#if defined(ATLAS_BUILDER)
-#define META(...) [[clang::annotate(#__VA_ARGS__)]]
-#else
-#define META(...)
-#endif
 
 #define FILE_PATH 1
 

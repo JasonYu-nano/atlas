@@ -6,24 +6,20 @@
 #include "assertion.hpp"
 #include "color.hpp"
 #include "texture_format_types.hpp"
+#include "texture_format_rgb8.gen.hpp"
 
 namespace atlas
 {
 
-class ENGINE_API TFRGB8 final : public ITextureFormat
+class ENGINE_API META() TFRGB8 final : public ITextureFormat
 {
+    GEN_CLASS_BODY(TFRGB8)
 public:
     TFRGB8() = default;
 
     TFRGB8(uint32 width, uint32 height) : width_(width), height_(height)
     {
-        data_ = new Color[width * height];
-    }
-
-    ~TFRGB8() override
-    {
-        delete data_;
-        data_ = nullptr;
+        data_.resize(width * height);
     }
 
     void serialize(WriteStream& ws) const override
@@ -41,9 +37,8 @@ public:
     void deserialize(ReadStream& rs) override
     {
         rs >> width_ >> height_;
-        delete data_;
 
-        data_ = new Color[width_ * height_];
+        data_.resize(width_ * height_);
         for (uint32 y = 0; y < height_; ++y)
         {
             for (uint32 x = 0; x < width_; ++x)
@@ -60,14 +55,19 @@ public:
 
     void set_color(uint32 x, uint32 y, Color c)
     {
-        ASSERT(x < width_ && y < height_ && data_);
+        ASSERT(x < width_ && y < height_);
         data_[y * width_ + x] = c;
     }
 
-private:
+    private:
+    META()
     uint32 width_{ 0 };
+
+    META()
     uint32 height_{ 0 };
-    Color* data_{ nullptr };
+
+    META()
+    Array<Color> data_;
 };
 
 }// namespace atlas

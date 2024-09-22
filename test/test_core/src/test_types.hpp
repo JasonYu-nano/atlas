@@ -48,7 +48,7 @@ public:
         return static_cast<double>(a) + b;
     }
 
-    META(Serializable)
+    META(Temporary)
     bool b_ = false;
 
     META()
@@ -57,7 +57,7 @@ public:
     META()
     float f_ = 0.0f;
 
-    META(Serializable)
+    META(Temporary)
     EMyEnum enumerator_ = EMyEnum::None;
 
     META()

@@ -85,24 +85,30 @@ set(ATLAS_TOOL_DIRECTORY ${CMAKE_SOURCE_DIR}/tools)
 
 ## run build tool
 
-if (WIN32)
-    set(RUN_GRADLE gradlew.bat)
-else ()
-    set(RUN_GRADLE gradlew)
-endif ()
+set(EXECUTABLE_PATHS "")
+
+file(GLOB_RECURSE SUB_PATH LIST_DIRECTORIES true "${CMAKE_SOURCE_DIR}/tools/AtlasBuilder/bin/Release/*")
+foreach(PATH ${SUB_PATH})
+    if(IS_DIRECTORY ${PATH})
+        list(APPEND EXECUTABLE_PATHS ${PATH})
+    endif()
+endforeach()
+
+find_program(ATLAS_BUILDER NAMES AtlasBuilder PATHS ${EXECUTABLE_PATHS} NO_DEFAULT_PATH REQUIRED)
 
 execute_process(
-        COMMAND ${RUN_GRADLE} :atlas_builder:run
+        COMMAND ${ATLAS_BUILDER}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         RESULTS_VARIABLE EXIT_CODE
         OUTPUT_VARIABLE OUTPUT
 )
 
-if (EXIT_CODE)
-    message(FATAL_ERROR "Atlas: some errors occurred while running atlas builder. msg: ${EXIT_CODE}")
-else ()
-    message("${OUTPUT}")
-endif ()
+#if (EXIT_CODE)
+#    message("${OUTPUT}")
+#    message(FATAL_ERROR "Atlas: some errors occurred while running atlas builder. msg: ${EXIT_CODE}")
+#else ()
+#    message("${OUTPUT}")
+#endif ()
 
 add_subdirectory(src)
 

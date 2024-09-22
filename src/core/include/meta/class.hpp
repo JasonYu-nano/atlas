@@ -18,6 +18,7 @@ enum class EMetaClassFlag : uint32
     None            = 0,
     Abstract        = 1 << 0,
     Interface       = 1 << 1,
+    Customize       = 1 << 2,
 };
 
 ENUM_BIT_MASK(EMetaClassFlag);
@@ -284,6 +285,22 @@ public:
     NODISCARD property_iterator create_property_iterator(bool exclude_base = false)
     {
         return property_iterator(*this, exclude_base);
+    }
+
+    void serialize(WriteStream& stream, const void* data) const
+    {
+        for (auto it = create_property_iterator(); it; ++it)
+        {
+            it->serialize(stream, data);
+        }
+    }
+
+    void deserialize(ReadStream& stream, void* data) const
+    {
+        for (auto prop : properties_)
+        {
+            prop->deserialize(stream, data);
+        }
     }
 
 private:

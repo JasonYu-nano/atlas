@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "class.hpp"
 #include "meta/meta_types.hpp"
 #include "utility/stream.hpp"
 
@@ -19,7 +18,7 @@ enum class EPropertyFlag : uint32
     Const           = 1 << 3,
     Reference       = 1 << 4,
     RightReference  = 1 << 5,
-    Serializable    = 1 << 6,
+    Temporary       = 1 << 6,
 };
 
 ENUM_BIT_MASK(EPropertyFlag);
@@ -46,24 +45,20 @@ public:
         return test_flags(flags_, flag);
     }
 
-    void serialize(WriteStream& stream, void* data) const
-    {
-        if (has_flag(EPropertyFlag::Serializable))
-        {
-            serialize_impl(stream, data);
-        }
-    }
+    void serialize(WriteStream& stream, const void* data) const;
 
     void deserialize(ReadStream& stream, void* data)
     {
-        if (has_flag(EPropertyFlag::Serializable))
+        if (!has_flag(EPropertyFlag::Temporary))
         {
-
+            deserialize_impl(stream, data);
         }
     }
 
 protected:
-    virtual void serialize_impl(WriteStream& stream, void* data) const {};
+    virtual void serialize_impl(WriteStream& stream, const void* data) const {}
+
+    virtual void deserialize_impl(ReadStream& stream, void* data) const {}
 
     EPropertyFlag flags_{ EPropertyFlag::None };
 };
@@ -94,6 +89,16 @@ public:
     }
 
 protected:
+    void serialize_impl(WriteStream& stream, const void* data) const override
+    {
+        stream << get_value(data);
+    }
+
+    void deserialize_impl(ReadStream& stream, void* data) const override
+    {
+        stream >> *reinterpret_cast<T*>(static_cast<byte*>(data) + offset_);
+    }
+
     uint16 offset_{ 0 };
 };
 
@@ -108,7 +113,7 @@ class CORE_API NumericProperty : public Property
 {
     DECLARE_META_CAST_FLAG(EMetaCastFlag::NumericProperty, Property)
 public:
-    NODISCARD int8 property_size() const
+    NODISCARD uint8 property_size() const
     {
         return property_size_;
     }
@@ -145,29 +150,12 @@ class CORE_API IntProperty : public NumericProperty
 public:
     IntProperty(uint16 offset, uint8 property_size) : NumericProperty(offset, property_size) {}
 
-    int64 get_value(const void* structure_ptr) const
-    {
-        switch (property_size_)
-        {
-            case 1: return get_value_internal<int8>(structure_ptr);
-            case 2: return get_value_internal<int16>(structure_ptr);
-            case 4: return get_value_internal<int32>(structure_ptr);
-            case 8: return get_value_internal<int64>(structure_ptr);
-            default: std::unreachable();
-        }
-    }
+    int64 get_value(const void* structure_ptr) const;
 
-    void set_value(void* structure_ptr, int64 new_value) const
-    {
-        switch (property_size_)
-        {
-            case 1: return set_value_internal<int8>(structure_ptr, new_value);
-            case 2: return set_value_internal<int16>(structure_ptr, new_value);
-            case 4: return set_value_internal<int32>(structure_ptr, new_value);
-            case 8: return set_value_internal<int64>(structure_ptr, new_value);
-            default: std::unreachable();
-        }
-    }
+    void set_value(void* structure_ptr, int64 new_value) const;
+
+protected:
+    void serialize_impl(WriteStream& stream, const void* data) const override;
 };
 
 class CORE_API UIntProperty : public NumericProperty
@@ -176,29 +164,12 @@ class CORE_API UIntProperty : public NumericProperty
 public:
     UIntProperty(uint16 offset, uint8 property_size) : NumericProperty(offset, property_size) {}
 
-    uint64 get_value(const void* structure_ptr) const
-    {
-        switch (property_size_)
-        {
-            case 1: return get_value_internal<uint8>(structure_ptr);
-            case 2: return get_value_internal<uint16>(structure_ptr);
-            case 4: return get_value_internal<uint32>(structure_ptr);
-            case 8: return get_value_internal<uint64>(structure_ptr);
-            default: std::unreachable();
-        }
-    }
+    uint64 get_value(const void* structure_ptr) const;
 
-    void set_value(void* structure_ptr, uint64 new_value) const
-    {
-        switch (property_size_)
-        {
-            case 1: return set_value_internal<uint8>(structure_ptr, new_value);
-            case 2: return set_value_internal<uint16>(structure_ptr, new_value);
-            case 4: return set_value_internal<uint32>(structure_ptr, new_value);
-            case 8: return set_value_internal<uint64>(structure_ptr, new_value);
-            default: std::unreachable();
-        }
-    }
+    void set_value(void* structure_ptr, uint64 new_value) const;
+
+protected:
+    void serialize_impl(WriteStream& stream, const void* data) const override;
 };
 
 class CORE_API FloatPointProperty : public NumericProperty
@@ -216,6 +187,9 @@ public:
     {
         property_size_ == 8 ? set_value_internal<double>(structure_ptr, new_value) : set_value_internal<float>(structure_ptr, new_value);
     }
+
+protected:
+    void serialize_impl(WriteStream& stream, const void* data) const override;
 };
 
 class CORE_API EnumProperty : public Property
@@ -307,9 +281,44 @@ public:
         return class_;
     }
 
-    NODISCARD const void* get_class_address(const void* structure_ptr)
+    NODISCARD const void* get_class_address(const void* structure_ptr) const
     {
         return reinterpret_cast<const byte*>(structure_ptr) + offset_;
+    }
+
+    NODISCARD void* get_class_address(void* structure_ptr) const
+    {
+        return reinterpret_cast<byte*>(structure_ptr) + offset_;
+    }
+
+protected:
+    void serialize_impl(WriteStream& stream, const void* data) const override;
+
+    uint16 offset_{ 0 };
+    MetaClass* class_{ nullptr };
+};
+
+class CORE_API PointerProperty : public Property
+{
+    DECLARE_META_CAST_FLAG(EMetaCastFlag::PointerProperty, Property)
+public:
+    PointerProperty(uint16 offset, class MetaClass* cls) : offset_(offset), class_(cls) {}
+
+    NODISCARD uint16 property_offset() const override
+    {
+        return offset_;
+    }
+
+    NODISCARD MetaClass* get_class() const
+    {
+        return class_;
+    }
+
+    NODISCARD const void* get_class_address(const void* structure_ptr)
+    {
+        auto ptr_address = reinterpret_cast<const byte*>(structure_ptr) + offset_;
+        auto ptr = reinterpret_cast<intptr_t* const *>(ptr_address);
+        return ptr;
     }
 
 protected:
@@ -321,7 +330,13 @@ class CORE_API ArrayProperty : public Property
 {
     DECLARE_META_CAST_FLAG(EMetaCastFlag::ArrayProperty, Property)
 public:
-    ArrayProperty(uint16 offset) : offset_(offset) {}
+    ArrayProperty(uint16 offset, Property* underlying_property) : offset_(offset), underlying_property_(underlying_property) {}
+
+    ~ArrayProperty() override
+    {
+        delete underlying_property_;
+        underlying_property_ = nullptr;
+    }
 
     NODISCARD uint16 property_offset() const override
     {

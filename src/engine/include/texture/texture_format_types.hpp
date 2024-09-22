@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "core_def.hpp"
+#include "texture_format_types.gen.hpp"
 
 namespace atlas
 {
@@ -14,9 +14,9 @@ enum class ETextureFormat
     RGB8
 };
 
-class ENGINE_API ITextureFormat
+class ENGINE_API META() ITextureFormat
 {
-public:
+    public:
     virtual ~ITextureFormat() = default;
 
     NODISCARD virtual ETextureFormat format_type() const = 0;

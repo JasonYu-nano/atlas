@@ -258,13 +258,13 @@ public:
         EnumField* field_{ nullptr };
     };
 
-    template<typename T, bool IsNumeric = std::is_arithmetic_v<T>, bool IsEnum = std::is_enum_v<T>, bool IsClass = std::is_class_v<T>>
+    template<typename T, bool IsNumeric = std::is_arithmetic_v<T>, bool IsEnum = std::is_enum_v<T>, bool IsClass = std::is_class_v<T>, bool IsPointer = std::is_pointer_v<T>>
     class PropertyReg : public PropertyRegBase
     {
     };
 
     template<typename T>
-    class PropertyReg<T, true, false, false> : public PropertyRegBase
+    class PropertyReg<T, true, false, false, false> : public PropertyRegBase
     {
     public:
         PropertyReg(StringName name, uint16 offset)
@@ -289,7 +289,7 @@ public:
     };
 
     template<typename T>
-    class PropertyReg<T, false, true, false> : public PropertyRegBase
+    class PropertyReg<T, false, true, false, false> : public PropertyRegBase
     {
     public:
         PropertyReg(StringName name, uint16 offset)
@@ -302,7 +302,20 @@ public:
     };
 
     template<typename T>
-    class PropertyReg<T, false, false, true> : public PropertyRegBase
+    class PropertyReg<T, false, false, true, false> : public PropertyRegBase
+    {
+    public:
+        PropertyReg(StringName name, uint16 offset)
+        {
+            auto cls = meta_class_of<T>();
+            ASSERT(cls != nullptr);
+            property_ = new ClassProperty(offset, cls);
+            property_->name_ = name;
+        }
+    };
+
+    template<typename T>
+    class PropertyReg<T, false, false, false, true> : public PropertyRegBase
     {
     public:
         PropertyReg(StringName name, uint16 offset)
@@ -343,6 +356,16 @@ public:
         PropertyReg(StringName name, uint16 offset)
         {
             property_ = new StringProperty(offset);
+            property_->name_ = name;
+        }
+    };
+
+    class ArrayPropertyReg : public PropertyRegBase
+    {
+    public:
+        ArrayPropertyReg(StringName name, uint16 offset, Property* underlying_property)
+        {
+            property_ = new ArrayProperty(offset, underlying_property);
             property_->name_ = name;
         }
     };

@@ -1,6 +1,7 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
+#include "print_writer.hpp"
 #include "gtest/gtest.h"
 #include "test_types.hpp"
 
@@ -162,6 +163,16 @@ TEST(MetaTest, Enum)
         auto md = field->get_meta("ToolTip");
         EXPECT_TRUE(std::get<String>(md) == "Enum One");
 #endif
+    }
+}
+
+TEST(MetaTest, Serialize)
+{
+    {
+        Cat cat({2022, 4, 1}, "pangzi");
+        auto cls = cat.meta_class();
+        PrintWriter writer;
+        cls->serialize(writer, &cat);
     }
 }
 

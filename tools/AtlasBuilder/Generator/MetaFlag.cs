@@ -4,6 +4,7 @@ public enum MetaClassFlag
 {
     Abstract,
     Interface,
+    Customize,
 }
 
 public enum MetaEnumFlag
@@ -25,7 +26,7 @@ public enum PropertyFlag
     Public,
     Protected,
     Private,
-    Serializable
+    Temporary
 }
 
 public enum EnumFieldFlag
