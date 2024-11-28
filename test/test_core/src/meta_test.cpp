@@ -21,8 +21,10 @@ TEST(MetaTest, Method)
     {
         auto method = meta_class->find_method("add");
         double result;
-        auto pack = pack_arguments(5, 7.2);
-        method->invoke( pack, &result);
+        auto a = 5;
+        auto b = 7.2;
+        auto pack = pack_arguments(a, b);
+        method->invoke(pack, &result);
         EXPECT_EQ(result, 12.2);
     }
 }

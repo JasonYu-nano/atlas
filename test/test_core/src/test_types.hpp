@@ -87,6 +87,8 @@ class META() IAnimal
 {
     GEN_CLASS_BODY(IAnimal)
 public:
+    virtual ~IAnimal() = default;
+
     META()
     virtual void make_sound() const = 0;
 };

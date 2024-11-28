@@ -289,6 +289,7 @@ public:
 
     void serialize(WriteStream& stream, const void* data) const
     {
+        stream << name_;
         for (auto it = create_property_iterator(); it; ++it)
         {
             it->serialize(stream, data);

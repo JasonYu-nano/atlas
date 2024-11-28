@@ -11,9 +11,11 @@ enable_language(C)
 
 set(CMAKE_CXX_STANDARD 23)
 
+# include cmake file
 include(${CMAKE_SOURCE_DIR}/cmake/detect_platform.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/import_asan.cmake)
 
 # compile option
 option(SHARED               "build with dynamic link"                   ON)
@@ -21,7 +23,14 @@ option(UNICODE              "build with UNICODE string"                 ON)
 option(WITH_EDITOR          "build with game editor"                    ON)
 option(WITH_TEST            "build with unit test"                      OFF)
 option(WITH_BENCHMARK       "build with benchmark"                      OFF)
-option(WITH_CRASH_HANDLER   "build with crash handler"                  OFF)
+option(ASAN_ENABLED         "enable address sanitizer"                  OFF)
+
+# redirect output directory
+set(CMAKE_DEBUG_POSTFIX "d")
+set(ENGINE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
 
 if(SHARED)
     add_compile_definitions(AE_SHARED)
@@ -54,6 +63,12 @@ if (MSVC)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
     add_compile_definitions(_HAS_EXCEPTIONS=0)
+
+    if(ASAN_ENABLED)
+        IMPORT_ASAN()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fsanitize=address")
+        add_compile_definitions(_DISABLE_VECTOR_ANNOTATION)
+    endif()
 else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions")
 endif ()
@@ -72,13 +87,6 @@ if(WIN32)
     add_compile_definitions(WIN32)
     add_compile_definitions(_WIN32)
 endif()
-
-# set output
-set(CMAKE_DEBUG_POSTFIX "d")
-set(ENGINE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ENGINE_OUTPUT_DIRECTORY}/bin)
 
 ## set absolute path
 set(ATLAS_TOOL_DIRECTORY ${CMAKE_SOURCE_DIR}/tools)
