@@ -1,13 +1,10 @@
 cmake_minimum_required(VERSION 3.26)
 
 include(${CMAKE_SOURCE_DIR}/cmake/pre_check.cmake)
+include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 DO_CHECK()
 
-set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES cmake/conan_provider.cmake)
 project(atlas LANGUAGES CXX)
-
-# for conan package manager
-enable_language(C)
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -105,18 +102,18 @@ endforeach()
 find_program(ATLAS_BUILDER NAMES AtlasBuilder PATHS ${EXECUTABLE_PATHS} NO_DEFAULT_PATH REQUIRED)
 
 execute_process(
-        COMMAND ${ATLAS_BUILDER}
+        COMMAND ${ATLAS_BUILDER} --package_manager=Vcpkg
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         RESULTS_VARIABLE EXIT_CODE
         OUTPUT_VARIABLE OUTPUT
 )
 
-#if (EXIT_CODE)
-#    message("${OUTPUT}")
-#    message(FATAL_ERROR "Atlas: some errors occurred while running atlas builder. msg: ${EXIT_CODE}")
-#else ()
-#    message("${OUTPUT}")
-#endif ()
+if (EXIT_CODE)
+    message("${OUTPUT}")
+    message(FATAL_ERROR "Atlas: some errors occurred while running atlas builder. msg: ${EXIT_CODE}")
+else ()
+    message("${OUTPUT}")
+endif ()
 
 add_subdirectory(src)
 

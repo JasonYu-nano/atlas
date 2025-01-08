@@ -13,28 +13,9 @@ static class AtlasBuilder
     public static DateTime StartTime { get; private set; }
     public static async Task<int> Main(string[] args)
     {
-        var buildDefinitionOpt = new Option<bool>(
-            name: "--build_definition",
-            description: "Whether generate definition files",
-            getDefaultValue: () => true);
-        
-        var buildMetaOpt = new Option<bool>(
-            name: "--build_meta",
-            description: "Whether generate meta files",
-            getDefaultValue: () => true);
-        
-        var rootCommand = new RootCommand("");
-        rootCommand.AddOption(buildDefinitionOpt);
-        rootCommand.AddOption(buildMetaOpt);
-        
-        rootCommand.SetHandler(async context =>
-        {
-            bool buildDefinition = context.ParseResult.GetValueForOption(buildDefinitionOpt);
-            bool buildMeta = context.ParseResult.GetValueForOption(buildMetaOpt);
-            context.ExitCode = await GenerateImpl(buildDefinition, buildMeta);
-        });
+        BuildCommand.SetHandler(() => GenerateImpl(BuildCommand.IsBuildDefinition, BuildCommand.IsBuildMeta));
 
-        return rootCommand.InvokeAsync(args).Result;
+        return BuildCommand.Command.InvokeAsync(args).Result;
     }
 
     private static async Task<int> GenerateImpl(bool buildDefinition, bool buildMeta)

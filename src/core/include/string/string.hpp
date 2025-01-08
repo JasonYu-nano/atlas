@@ -981,19 +981,17 @@ public:
 
     /**
      * @brief Construct a new UTF-8 string from string format.
-     * @tparam CharType
      * @tparam Args
      * @param fmt
      * @param args
      * @return
      */
-    template <typename CharType, typename... Args>
-    static String format(const CharType* fmt, Args&&... args)
+    template <typename... Args>
+    static String format(fmt::format_string<Args...> fmt, Args&&... args)
     {
-        static_assert(std::is_same_v<CharType, char> || std::is_same_v<CharType, char8_t>);
-        fmt::basic_memory_buffer<CharType, 250> buffer;
-        fmt::detail::vformat_to(buffer, fmt::basic_string_view<CharType>(fmt), fmt::make_format_args<fmt::buffer_context<CharType>>(args...));
-        return {buffer.data(), convert_size(buffer.size())};
+        auto out = fmt::memory_buffer();
+        fmt::format_to(std::back_inserter(out), fmt, std::forward<Args>(args)...);
+        return {out.data(), convert_size(out.size())};
     }
 protected:
     allocator_type& get_alloc()              { return pair_.first(); }
@@ -1050,8 +1048,7 @@ using StringView = BasicStringView<String::value_type>;
 template<>
 struct CORE_API fmt::formatter<atlas::String> : formatter<fmt::string_view>
 {
-    template <typename FormatContext>
-    auto format(const atlas::String& str, FormatContext& ctx)
+    auto format(const atlas::String& str, format_context& ctx) const
     {
         return formatter<fmt::string_view>::format({str.data(), str.length()}, ctx);
     }

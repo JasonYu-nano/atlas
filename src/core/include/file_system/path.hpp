@@ -662,8 +662,7 @@ private:
 template<>
 struct CORE_API fmt::formatter<atlas::Path> : formatter<atlas::String>
 {
-    template <typename FormatContext>
-    auto format(const atlas::Path& path, FormatContext& ctx)
+    auto format(const atlas::Path& path, format_context& ctx) const
     {
         return formatter<atlas::String>::format(path.to_string(), ctx);
     }

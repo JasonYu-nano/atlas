@@ -5,6 +5,8 @@ namespace AtlasBuilder.BuildTarget;
 
 public class ConanPackageFinder : IPackageFinder
 {
+    public static PackageManagerType GetPackageManagerType() => PackageManagerType.Conan;
+    
     public static ThirdPartyPackage? FindPackage(string name)
     {
         var buildDir = DirectoryUtils.GetEngineBuildDirectory(BuildType.Debug);

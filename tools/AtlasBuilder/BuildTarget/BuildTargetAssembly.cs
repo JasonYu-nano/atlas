@@ -119,6 +119,14 @@ public class BuildTargetAssembly
             
             foreach (var type in implementingTypes)
             {
+                var getPackageManagerType = type.GetMethod("GetPackageManagerType", BindingFlags.Public | BindingFlags.Static);
+                Debug.Assert(getPackageManagerType != null);
+                var t = getPackageManagerType.Invoke(null, []);
+                if (t == null || (PackageManagerType)t != BuildCommand.PackageManager)
+                {
+                    continue;
+                }
+                
                 var finder = type.GetMethod("FindPackage", BindingFlags.Public | BindingFlags.Static);
                 Debug.Assert(finder != null);
                 _packageFinders.Add(finder);

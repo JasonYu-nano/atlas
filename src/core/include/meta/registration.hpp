@@ -320,9 +320,9 @@ public:
     public:
         PropertyReg(StringName name, uint16 offset)
         {
-            auto cls = meta_class_of<T>();
+            auto cls = meta_class_of<std::remove_pointer_t<T>>();
             ASSERT(cls != nullptr);
-            property_ = new ClassProperty(offset, cls);
+            property_ = new PointerProperty(offset, cls);
             property_->name_ = name;
         }
     };

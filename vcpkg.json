@@ -1,0 +1,30 @@
+{
+  "name" : "atlas",
+  "version" : "1.0.0",
+  "builtin-baseline" : "a345bbdc68cdfda65603e24413b21afb28f110fb",
+  "dependencies" : [ {
+    "name" : "spdlog",
+    "version>=" : "1.15.0#1"
+  }, {
+    "name" : "boost-locale",
+    "version>=" : "1.86.0"
+  }, {
+    "name" : "gtest",
+    "version>=" : "1.15.2"
+  }, {
+    "name" : "benchmark",
+    "version>=" : "1.9.0"
+  }, {
+    "name" : "tomlplusplus",
+    "version>=" : "3.4.0"
+  }, {
+    "name" : "nlohmann-json",
+    "version>=" : "3.11.3#1"
+  }, {
+    "name" : "libpng",
+    "version>=" : "1.6.44"
+  }, {
+    "name" : "pkgconf",
+    "version>=" : "2.3.0"
+  } ]
+}
