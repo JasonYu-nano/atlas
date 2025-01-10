@@ -17,7 +17,8 @@ Project Project::parse(const Path& project_file)
 
     String project_name = project_file.normalize().to_string();
     project_name.remove(project_suffix_);
-    size_t index = project_name.last_index_of(&Path::preferred_separator_);
+
+    size_t index = project_name.last_index_of(Path::preferred_separator_);
     if (index != INDEX_NONE)
     {
         project_name.remove(0, index + 1);

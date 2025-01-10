@@ -859,6 +859,16 @@ public:
         return range.empty() ? size_type(INDEX_NONE) : std::distance(cbegin(), range.begin());
     }
     /**
+     * @brief Reports the zero-based index of the first occurrence of the specified char in this instance.
+     * @param search
+     * @param case_sensitive
+     * @return
+     */
+    size_type index_of(value_type search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return index_of(view_type(&search, 1), case_sensitive);
+    }
+    /**
      * @brief Reports the zero-based index of the first occurrence of the specified string in this instance.
      * @param search
      * @param case_sensitive
@@ -879,6 +889,16 @@ public:
     size_type index_of(const RangeType& search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
     {
         return find(search, 0, case_sensitive);
+    }
+    /**
+     * @brief Reports the zero-based index position of the last occurrence of a specified char within this instance.
+     * @param search
+     * @param case_sensitive
+     * @return
+     */
+    size_type last_index_of(value_type search, ECaseSensitive case_sensitive = ECaseSensitive::Sensitive) const
+    {
+        return last_index_of(view_type(&search, 1), case_sensitive);
     }
     /**
      * @brief Reports the zero-based index position of the last occurrence of a specified string within this instance.
