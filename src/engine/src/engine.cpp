@@ -8,8 +8,6 @@
 #include "meta/meta_types.hpp"
 #include "meta/registration.hpp"
 #include "project.hpp"
-#include "serialize/binary_archive.hpp"
-#include "serialize/json_archive.hpp"
 #include "texture/texture_2d.hpp"
 #include "texture/texture_format_rgb8.hpp"
 #include "tickable/tickable_object.hpp"

@@ -10,10 +10,13 @@
 #include "container/map.hpp"
 #include "core_def.hpp"
 #include "core_macro.hpp"
+#include "log/logger.hpp"
 #include "string/string_name.hpp"
 
 namespace atlas
 {
+
+DEFINE_LOGGER(meta);
 
 // Flags used to cast safely from MetaType.
 enum class EMetaCastFlag : uint32

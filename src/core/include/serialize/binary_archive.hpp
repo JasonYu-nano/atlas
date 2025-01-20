@@ -1,13 +1,22 @@
+// Copyright(c) 2023-present, Atlas.
+// Distributed under the MIT License (http://opensource.org/licenses/MIT)
+
 #pragma once
 
-#include "utility/stream.hpp"
+#include "stream.hpp"
 
 namespace atlas
 {
 
-class ENGINE_API BinaryArchiveWriter : public WriteStream
+/**
+ * @class BinaryArchiveWriter
+ * @brief A class provides functionality to serialize various data types into a binary format.
+ */
+class CORE_API BinaryArchiveWriter : public WriteStream
 {
 public:
+    ~BinaryArchiveWriter() override = default;
+
     template<typename T>
     WriteStream& operator<< (const T& value) { serialize(*this, value); return *this; }
 
@@ -80,8 +89,9 @@ public:
 
     WriteStream& operator<< (const String& value) override
     {
-        serialize_numeric(value.length());
-        buffer_.append(value);
+        const size_t len = value.length();
+        operator<<(len);
+        write_bytes(reinterpret_cast<const byte*>(value.data()), len);
         return *this;
     }
 
@@ -91,27 +101,78 @@ public:
         return *this;
     }
 
+    /**
+     * @brief Get the buffer containing the serialized binary data.
+     * @return An buffer containing the binary data.
+     */
     NODISCARD IOBuffer get_buffer() const override
     {
         return buffer_;
     }
 
-private:
+    /**
+     * @brief Get the size of the binary stream.
+     * @return The size of the binary stream.
+     */
+    NODISCARD size_t size() const override
+    {
+        return buffer_.size();
+    }
+
+    /**
+     * @brief Get the current write position in the binary stream.
+     * @return The current write position.
+     */
+    NODISCARD size_t tell() const override
+    {
+        return write_position_;
+    }
+
+    /**
+     * @brief Set the write position in the binary stream.
+     * @param position The new write position.
+     */
+    void seek(size_t position) override
+    {
+        if (write_position_ <= size())
+        {
+            write_position_ = position;
+        }
+    }
+
+protected:
+    /**
+     * @brief Serialize a numeric value into the binary stream.
+     * @tparam T The type of the numeric value to serialize.
+     * @param value The value to serialize.
+     */
     template<typename T>
     void serialize_numeric(T value) requires(std::is_arithmetic_v<T>)
     {
-        byte bytes[sizeof(T)];
-        std::memcpy(bytes, reinterpret_cast<byte*>(&value), sizeof(T));
-        buffer_.append(bytes);
+        write_bytes(reinterpret_cast<byte*>(&value), sizeof(T));
     }
 
+    /**
+     * @brief Write a sequence of bytes to the binary stream.
+     * @param bytes The pointer to the bytes to write.
+     * @param byte_size The number of bytes to write.
+     */
+    void write_bytes(const byte* bytes, size_t byte_size);
+
     IOBuffer buffer_;
+    size_t write_position_ = 0;
 };
 
-class ENGINE_API BinaryArchiveReader : public ReadStream
+/**
+ * @class BinaryArchiveReader
+ * @brief A class for reading data from a binary stream.
+ */
+class CORE_API BinaryArchiveReader : public ReadStream
 {
 public:
     explicit BinaryArchiveReader(const IOBuffer& buffer) : buffer_(buffer) {}
+
+    ~BinaryArchiveReader() override = default;
 
     template<typename T>
     ReadStream& operator>> (T& value) { deserialize(*this, value); return *this; }
@@ -187,9 +248,9 @@ public:
     ReadStream& operator>> (String& value) override
     {
         size_t len;
-        deserialize_numeric(len);
-        const byte* start = buffer_.data() + cursor_;
-        cursor_ += len;
+        operator>>(len);
+        const byte* start = buffer_.data() + read_position_;
+        read_position_ += len;
         value = String(reinterpret_cast<String::const_pointer>(start), len);
         return *this;
     }
@@ -201,16 +262,51 @@ public:
         value = str;
         return *this;
     }
-private:
+
+    /**
+     * @brief Check if the end of the binary stream has been reached.
+     * @return True if the end of the stream is reached, false otherwise.
+     */
+    bool eof() override
+    {
+        return read_position_ >= buffer_.size();
+    }
+
+    /**
+     * @brief Get the current read position in the binary stream.
+     * @return The current read position.
+     */
+    size_t tell() override
+    {
+        return read_position_;
+    }
+
+    /**
+     * @brief Set the read position in the binary stream.
+     * @param position The new read position.
+     */
+    void seek(size_t position) override
+    {
+        if (position < buffer_.size())
+        {
+            read_position_ = position;
+        }
+    }
+protected:
+    /**
+     * @brief Deserialize a numeric value from the binary stream.
+     * @tparam T The type of the numeric value to deserialize.
+     * @param value The value to deserialize.
+     */
     template<typename T>
     void deserialize_numeric(T& value) requires(std::is_arithmetic_v<T>)
     {
-        byte* begin = &buffer_[cursor_];
-        cursor_ += sizeof(T);
+        byte* begin = &buffer_[read_position_];
+        read_position_ += sizeof(T);
         value = *reinterpret_cast<T*>(begin);
     }
 
-    size_t cursor_{ 0 };
+    size_t read_position_{ 0 };
     IOBuffer buffer_;
 };
 

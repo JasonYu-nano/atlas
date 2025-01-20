@@ -4,7 +4,7 @@
 #pragma once
 
 #include "meta/meta_types.hpp"
-#include "utility/stream.hpp"
+#include "serialize/stream.hpp"
 
 namespace atlas
 {
@@ -47,7 +47,7 @@ public:
 
     void serialize(WriteStream& stream, const void* data) const;
 
-    void deserialize(ReadStream& stream, void* data)
+    void deserialize(ReadStream& stream, void* data) const
     {
         if (!has_flag(EPropertyFlag::Temporary))
         {
@@ -156,6 +156,8 @@ public:
 
 protected:
     void serialize_impl(WriteStream& stream, const void* data) const override;
+
+    void deserialize_impl(ReadStream& stream, void* data) const override;
 };
 
 class CORE_API UIntProperty : public NumericProperty
@@ -170,6 +172,8 @@ public:
 
 protected:
     void serialize_impl(WriteStream& stream, const void* data) const override;
+
+    void deserialize_impl(ReadStream& stream, void* data) const override;
 };
 
 class CORE_API FloatPointProperty : public NumericProperty
@@ -190,6 +194,8 @@ public:
 
 protected:
     void serialize_impl(WriteStream& stream, const void* data) const override;
+
+    void deserialize_impl(ReadStream& stream, void* data) const override;
 };
 
 class CORE_API EnumProperty : public Property
@@ -293,6 +299,8 @@ public:
 
 protected:
     void serialize_impl(WriteStream& stream, const void* data) const override;
+
+    void deserialize_impl(ReadStream& stream, void* data) const override;
 
     uint16 offset_{ 0 };
     MetaClass* class_{ nullptr };

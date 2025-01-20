@@ -1,8 +1,10 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
-#include "print_writer.hpp"
 #include "gtest/gtest.h"
+#include "serialize/binary_archive.hpp"
+#include "serialize/compact_binary_archive.hpp"
+#include "serialize/json_archive.hpp"
 #include "test_types.hpp"
 
 namespace atlas::test
@@ -108,7 +110,7 @@ TEST(MetaTest, Class)
     }
 
     {
-        AnimalBase* animal = new Cat({2022, 4, 1}, "pangzi");
+        AnimalBase* animal = new Cat({2022, 4, 1}, "pangzi", true);
         EXPECT_TRUE(animal->meta_class() == meta_class_of<Cat>());
         auto cat_class = animal->meta_class();
 
@@ -171,10 +173,38 @@ TEST(MetaTest, Enum)
 TEST(MetaTest, Serialize)
 {
     {
-        Cat cat({2022, 4, 1}, "pangzi");
+        Cat cat({2022, 4, 1}, "pangzi", true);
         auto cls = cat.meta_class();
-        PrintWriter writer;
-        cls->serialize(writer, &cat);
+
+        {
+            JsonArchiveWriter writer;
+            cls->serialize(writer, &cat);
+            std::cout << writer.get_json().dump() << std::endl;
+        }
+
+        {
+            BinaryArchiveWriter bin_writer;
+            cls->serialize(bin_writer, &cat);
+
+            Cat cat_copy;
+            BinaryArchiveReader bin_reader(bin_writer.get_buffer());
+            cls->deserialize(bin_reader, &cat_copy);
+
+            EXPECT_TRUE(cat_copy.get_name() == cat.get_name());
+        }
+
+        {
+            CompactBinaryArchiveWriter bin_writer;
+            cls->serialize(bin_writer, &cat);
+
+            bin_writer << int32(-1);
+
+            Cat cat_copy;
+            CompactBinaryArchiveReader bin_reader(bin_writer.get_buffer());
+            cls->deserialize(bin_reader, &cat_copy);
+
+            EXPECT_TRUE(cat_copy.get_name() == cat.get_name());
+        }
     }
 }
 

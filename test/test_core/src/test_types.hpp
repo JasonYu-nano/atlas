@@ -121,7 +121,7 @@ class META() Cat : public AnimalBase
 
 public:
     Cat() = default;
-    Cat(DateTime date, String name) : AnimalBase(date, name) {}
+    Cat(DateTime date, String name, bool is_male) : AnimalBase(date, name), is_male_(is_male) {}
 
     void make_sound() const override
     {

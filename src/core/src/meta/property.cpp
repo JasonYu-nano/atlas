@@ -11,7 +11,6 @@ void Property::serialize(WriteStream& stream, const void* data) const
 {
     if (!has_flag(EPropertyFlag::Temporary))
     {
-        stream << name_;
         serialize_impl(stream, data);
     }
 }
@@ -52,6 +51,18 @@ void IntProperty::serialize_impl(WriteStream& stream, const void* data) const
     }
 }
 
+void IntProperty::deserialize_impl(ReadStream& stream, void* data) const
+{
+    switch (property_size_)
+    {
+        case 1: stream >> *reinterpret_cast<int8*>(static_cast<byte*>(data) + offset_); break;
+        case 2: stream >> *reinterpret_cast<int16*>(static_cast<byte*>(data) + offset_); break;
+        case 4: stream >> *reinterpret_cast<int32*>(static_cast<byte*>(data) + offset_); break;
+        case 8: stream >> *reinterpret_cast<int64*>(static_cast<byte*>(data) + offset_); break;
+        default: std::unreachable();
+    }
+}
+
 uint64 UIntProperty::get_value(const void* structure_ptr) const
 {
     switch (property_size_)
@@ -88,6 +99,18 @@ void UIntProperty::serialize_impl(WriteStream& stream, const void* data) const
     }
 }
 
+void UIntProperty::deserialize_impl(ReadStream& stream, void* data) const
+{
+    switch (property_size_)
+    {
+        case 1: stream >> *reinterpret_cast<uint8*>(static_cast<byte*>(data) + offset_); break;
+        case 2: stream >> *reinterpret_cast<uint16*>(static_cast<byte*>(data) + offset_); break;
+        case 4: stream >> *reinterpret_cast<uint32*>(static_cast<byte*>(data) + offset_); break;
+        case 8: stream >> *reinterpret_cast<uint64*>(static_cast<byte*>(data) + offset_); break;
+        default: std::unreachable();
+    }
+}
+
 void FloatPointProperty::serialize_impl(WriteStream& stream, const void* data) const
 {
     switch (property_size_)
@@ -98,9 +121,24 @@ void FloatPointProperty::serialize_impl(WriteStream& stream, const void* data) c
     }
 }
 
+void FloatPointProperty::deserialize_impl(ReadStream& stream, void* data) const
+{
+    switch (property_size_)
+    {
+        case 4: stream >> *reinterpret_cast<float*>(static_cast<byte*>(data) + offset_); break;
+        case 8: stream >> *reinterpret_cast<double*>(static_cast<byte*>(data) + offset_); break;
+        default: std::unreachable();
+    }
+}
+
 void ClassProperty::serialize_impl(WriteStream& stream, const void* data) const
 {
     class_->serialize(stream, get_class_address(data));
+}
+
+void ClassProperty::deserialize_impl(ReadStream& stream, void* data) const
+{
+    class_->deserialize(stream, get_class_address(data));
 }
 
 }// namespace atlas

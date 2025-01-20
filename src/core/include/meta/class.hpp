@@ -43,6 +43,7 @@ enum class EEnumUnderlyingType : uint8
 };
 
 /**
+ * @class ConstMetaClassIterator
  * @brief Const Iterator for meta class.
  */
 class CORE_API ConstMetaClassIterator
@@ -73,6 +74,7 @@ protected:
 };
 
 /**
+ * @class MetaClassIterator
  * @brief Iterator for meta class.
  */
 class CORE_API MetaClassIterator : public ConstMetaClassIterator
@@ -97,7 +99,8 @@ public:
 };
 
 /**
- * Const iterator for properties in meta class.
+ * @class ConstPropertyIterator
+ * @brief Const iterator for properties in meta class.
  */
 class CORE_API ConstPropertyIterator
 {
@@ -127,7 +130,8 @@ protected:
 };
 
 /**
- * Iterator for properties in meta class.
+ * @class PropertyIterator
+ * @brief Iterator for properties in meta class.
  */
 class CORE_API PropertyIterator : public ConstPropertyIterator
 {
@@ -151,6 +155,7 @@ public:
 };
 
 /**
+ * @class MetaClass
  * @brief The meta-type of class and struct.
  * Use meta_class_of<T> or instance.meta_class() for get metaclass.
  */
@@ -176,65 +181,108 @@ public:
     }
     /**
      * @brief Creates class const iterator.
-     * @return
+     * @return @ref ConstMetaClassIterator
      */
     static ConstMetaClassIterator create_const_class_iterator()
     {
         return ConstMetaClassIterator(meta_class_map_);
     }
     /**
-     * @brief
-     * @return Creates class iterator.
+     * @brief Creates class iterator.
+     * @return MetaClassIterator
      */
     static MetaClassIterator create_class_iterator()
     {
         return MetaClassIterator(meta_class_map_);
     }
 
+    /**
+     * @brief Constructor for MetaClass.
+     * @param size Size of the class.
+     * @param align Alignment of the class.
+     * @param constructor Pointer to the constructor of the class.
+     */
     MetaClass(uint32 size, uint32 align, Constructor* constructor) : size_(size), align_(align), constructor_(constructor) {}
 
     ~MetaClass() override;
 
+    /**
+     * @brief Get the base class of this class.
+     * @return Pointer to the base class.
+     */
     NODISCARD MetaClass* base_class() const
     {
         return base_;
     }
 
+    /**
+     * @brief Check if this class is derived from another class.
+     * @param meta_class Pointer to the other class.
+     * @return True if this class is derived from the other class, false otherwise.
+     */
     NODISCARD bool is_derived_from(MetaClass* meta_class) const;
 
+    /**
+     * @brief Check if this class implements a specific interface.
+     * @param meta_class Pointer to the interface class.
+     * @return True if this class implements the interface, false otherwise.
+     */
     NODISCARD bool has_implement_interface(MetaClass* meta_class) const;
 
+    /**
+     * @brief Check if this class has any child classes.
+     * @return True if this class has child classes, false otherwise.
+     */
     NODISCARD bool has_child() const
     {
         return children_ != nullptr && !children_->empty();
     }
 
+    /**
+     * @brief Get the child classes of this class.
+     * @param recursion Whether to get child classes recursively.
+     * @return UnorderedSet of child classes.
+     */
     NODISCARD UnorderedSet<MetaClass*> get_children(bool recursion = false) const;
 
+    /**
+     * @brief Check if this class is an object.
+     * @return True if this class is an object, false otherwise.
+     */
     NODISCARD bool is_object() const;
 
+    /**
+     * @brief Get the size of the class.
+     * @return Size of the class.
+     */
     NODISCARD uint32 class_size() const
     {
         return size_;
     }
 
+    /**
+     * @brief Get the alignment of the class.
+     * @return Alignment of the class.
+     */
     NODISCARD uint32 class_align() const
     {
         return align_;
     }
+
     /**
      * @brief Test whether the class contains the given flag.
-     * @param flag
-     * @return
+     * @param flag The flag to test.
+     * @return True if the class contains the flag, false otherwise.
      */
     NODISCARD bool has_flag(EMetaClassFlag flag) const
     {
         return test_flags(flags_, flag);
     }
+
     /**
      * @brief Construct an instance in the given memory address.
      * @note The memory space must be larger than the class size.
-     * @param memory
+     * @param memory Pointer to the memory address.
      */
     void construct(void* memory) const
     {
@@ -243,9 +291,10 @@ public:
             constructor_->construct(memory);
         }
     }
+
     /**
      * @brief Destruct an instance pointer by class destructor.
-     * @param ptr
+     * @param ptr Pointer to the instance.
      */
     void destruct(void* ptr) const
     {
@@ -268,39 +317,87 @@ public:
      * @return Null if not found.
      */
     NODISCARD Method* find_method(StringName name, bool exclude_base = false) const;
+
     /**
      * @brief Creates property const iterator.
      * @param exclude_base Do not iterate property in base class.
-     * @return
+     * @return const_property_iterator
      */
     NODISCARD const_property_iterator create_property_iterator(bool exclude_base = false) const
     {
         return const_property_iterator(*this, exclude_base);
     }
+
     /**
      * @brief Creates property iterator.
      * @param exclude_base Do not iterate property in base class.
-     * @return
+     * @return property_iterator
      */
     NODISCARD property_iterator create_property_iterator(bool exclude_base = false)
     {
         return property_iterator(*this, exclude_base);
     }
 
+    /**
+     * @brief Serialize the class data to a stream.
+     * @param stream The stream to serialize to.
+     * @param data The data to serialize.
+     */
     void serialize(WriteStream& stream, const void* data) const
     {
         stream << name_;
+        const size_t rewrite_pos = stream.tell();
+        stream << FixedU32(0); // Write a 32-bit placeholder
+        const size_t pos_before_write = stream.tell();
+
         for (auto it = create_property_iterator(); it; ++it)
         {
+            stream << it->name();
             it->serialize(stream, data);
         }
+        const size_t write_size = stream.tell() - pos_before_write;
+
+        ASSERT(write_size < std::numeric_limits<uint32>::max());
+
+        ScopeStreamSeek seek(stream, rewrite_pos);
+        stream << FixedU32(write_size); // The size of the class that is actually serialized to the stream
     }
 
+    /**
+     * @brief Deserialize the class data from a stream.
+     * @param stream The stream to deserialize from.
+     * @param data The data to deserialize.
+     */
     void deserialize(ReadStream& stream, void* data) const
     {
-        for (auto prop : properties_)
+        StringName class_name;
+        stream >> class_name;
+        FixedU32 serialize_size = 0;
+        stream >> serialize_size;
+        if (name_ != class_name)
         {
-            prop->deserialize(stream, data);
+            stream.seek(stream.tell() + serialize_size);
+            LOG_INFO(meta, "The name of the meta-class [{0}] does not match the class name [{1}] in the stream.", name_.to_string(), class_name.to_string());
+            return;
+        }
+
+        const size_t start_pos = stream.tell();
+
+        UnorderedMap<StringName, ConstPropertyIterator> prop_map;
+        for (auto it = create_property_iterator(); it; ++it)
+        {
+            prop_map.insert(it->name(), it);
+        }
+
+        while (!stream.eof() && start_pos + serialize_size > stream.tell())
+        {
+            StringName prop_name;
+            stream >> prop_name;
+
+            if (auto it = prop_map.find(prop_name); it != prop_map.end())
+            {
+                it->second->deserialize(stream, data);
+            }
         }
     }
 

@@ -39,7 +39,7 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "WITH_TEST": "ON",
         "WITH_CRASH_HANDLER": "ON",
-        "ASAN_ENABLED": "ON",
+        "ASAN_ENABLED": "OFF",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
       }
     }
