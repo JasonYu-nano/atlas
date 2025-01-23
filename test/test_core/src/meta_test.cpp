@@ -170,6 +170,13 @@ TEST(MetaTest, Enum)
     }
 }
 
+TEST(MetaTest, EnumIteration)
+{
+    auto meta_enum = meta_enum_of<EMyEnum>();
+    ASSERT_EQ((*meta_enum->begin())->value(), 0);
+    ASSERT_EQ((*--meta_enum->end())->value(), 2);
+}
+
 TEST(MetaTest, Serialize)
 {
     {

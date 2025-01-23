@@ -41,6 +41,13 @@ enum class EMetaCastFlag : uint32
 };
 ENUM_BIT_MASK(EMetaCastFlag);
 
+/**
+ * @class MetaType
+ * @brief A base class for all meta types in the Atlas framework.
+ *
+ * This class provides the basic interface and functionality for meta types,
+ * including type casting, metadata management, and name retrieval.
+ */
 class CORE_API MetaType
 {
 public:
@@ -55,6 +62,11 @@ public:
         }
     }
 
+    /**
+     * @brief Gets the cast flags for the MetaType.
+     * Overload in child class.
+     * @return The cast flags for the MetaType.
+     */
     static EMetaCastFlag get_cast_flags()
     {
         return EMetaCastFlag::MetaType;
@@ -62,8 +74,8 @@ public:
 
     /**
      * @brief Checks if the current meta-type can be converted to the given type.
-     * @tparam T
-     * @return
+     * @tparam T The type to check against.
+     * @return True if the meta-type can be converted to the given type, false otherwise.
      */
     template<typename T> requires std::is_base_of_v<MetaType, T>
     NODISCARD bool is() const
@@ -71,17 +83,30 @@ public:
         return test_flags(cast_flags(), T::get_cast_flags());
     }
 
+    /**
+     * @brief Gets the cast flags for the current instance.
+     * @return The cast flags for the current instance.
+     */
     NODISCARD virtual EMetaCastFlag cast_flags() const
     {
         return get_cast_flags();
     }
 
+    /**
+     * @brief Gets the name of the meta-type.
+     * @return The name of the meta-type.
+     */
     NODISCARD StringName name() const
     {
         return name_;
     }
 
 #if WITH_EDITOR
+    /**
+     * @brief Gets the metadata associated with a given key.
+     * @param key The key for the metadata.
+     * @return The metadata associated with the key, or an empty variant if not found.
+     */
     NODISCARD variant_type get_meta(StringName key) const
     {
         if (meta_data_)
@@ -95,6 +120,11 @@ public:
         return {};
     }
 
+    /**
+     * @brief Sets the metadata for a given key to an integer value.
+     * @param key The key for the metadata.
+     * @param value The integer value to set.
+     */
     void set_meta(StringName key, int32 value)
     {
         if (!meta_data_)
@@ -104,6 +134,11 @@ public:
         meta_data_->insert(key, variant_type{value});
     }
 
+    /**
+     * @brief Sets the metadata for a given key to a string value.
+     * @param key The key for the metadata.
+     * @param value The string value to set.
+     */
     void set_meta(StringName key, StringView value)
     {
         if (!meta_data_)
@@ -122,6 +157,16 @@ protected:
 };
 
 
+/**
+ * @brief Casts a MetaType pointer to a pointer of type T if possible.
+ *
+ * This function template attempts to cast a MetaType pointer to a pointer of type T.
+ * The cast is performed only if the MetaType can be converted to the given type T.
+ *
+ * @tparam T The type to which the MetaType pointer should be cast.
+ * @param from A pointer to the MetaType to be cast.
+ * @return A pointer to the type T if the cast is successful, nullptr otherwise.
+ */
 template<typename T> requires std::is_base_of_v<MetaType, T>
 T* meta_cast(MetaType* from)
 {
@@ -140,6 +185,16 @@ using ParamPack = InlineArray<void*, 20>;
 
 inline ParamPack param_pack_null = ParamPack();
 
+/**
+ * @brief Packs a variable number of arguments into a ParamPack.
+ *
+ * This function template takes a variable number of arguments and packs them into a ParamPack.
+ * Each argument is cast to a void pointer and added to the ParamPack.
+ *
+ * @tparam Args The types of the arguments to be packed.
+ * @param args The arguments to be packed.
+ * @return A ParamPack containing the packed arguments.
+ */
 template<typename... Args>
 ParamPack pack_arguments(const Args&... args)
 {

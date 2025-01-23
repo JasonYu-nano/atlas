@@ -421,20 +421,37 @@ private:
     mutable std::shared_mutex method_mutex_{};
 };
 
+/**
+ * @class MetaEnum
+* @brief The meta-type of enum.
+ * Use meta_enum_of<T> for get metaenum.
+ */
 class CORE_API MetaEnum : public MetaType
 {
     using base = MetaType;
     DECLARE_META_CAST_FLAG(EMetaCastFlag::Enum, base)
 public:
+    using const_iterator = Array<EnumField*>::const_iterator;
+    using iterator = Array<EnumField*>::iterator;
+
+    /**
+     * @brief Finds a MetaEnum by its name.
+     * @param name The name of the enumeration.
+     * @return A pointer to the MetaEnum if found, nullptr otherwise.
+     */
     static MetaEnum* find_enum(StringName name)
     {
         const auto it = meta_enum_map_.find(name);
         return it != meta_enum_map_.end() ? it->second.get() : nullptr;
     }
 
+    /**
+     * @brief Executes a function for each MetaEnum.
+     * @param fn The function to execute.
+     */
     static void foreach_enum(std::function<void(MetaEnum*)> fn)
     {
-        std::for_each(meta_enum_map_.begin(), meta_enum_map_.end(), [&fn](auto&& it) {
+        std::ranges::for_each(meta_enum_map_, [&fn](auto&& it) {
             fn(it.second.get());
         });
     }
@@ -447,34 +464,63 @@ public:
         }
     }
 
+    /**
+     * @brief Checks if the MetaEnum has a specific flag.
+     * @param flag The flag to check.
+     * @return True if the flag is set, false otherwise.
+     */
     NODISCARD bool has_flag(EMetaEnumFlag flag) const
     {
         return test_flags(flags_, flag);
     }
 
+    /**
+     * @brief Gets the number of fields in the MetaEnum.
+     * @return The number of fields.
+     */
     NODISCARD size_t size() const
     {
         return fields_.size();
     }
 
+    /**
+     * @brief Gets a field by its index.
+     * @param index The index of the field.
+     * @return A pointer to the field.
+     */
     NODISCARD EnumField* get_field(size_t index) const
     {
         CHECK(fields_.is_valid_index(index), "Index over bounds");
         return fields_[index];
     }
 
+    /**
+     * @brief Gets the value of an enumeration field by its index.
+     * @param index The index of the field.
+     * @return The value of the field.
+     */
     NODISCARD int64 get_enum_value(size_t index) const
     {
         CHECK(fields_.is_valid_index(index), "Index over bounds");
         return fields_[index]->value();
     }
 
+    /**
+     * @brief Gets the name of an enumeration field by its index.
+     * @param index The index of the field.
+     * @return The name of the field.
+     */
     NODISCARD StringName get_enum_name(size_t index) const
     {
         CHECK(fields_.is_valid_index(index), "Index over bounds");
         return fields_[index]->name();
     }
 
+    /**
+     * @brief Gets the value of an enumeration field by its name.
+     * @param name The name of the field.
+     * @return The value of the field, or INDEX_NONE if not found.
+     */
     NODISCARD int64 get_value_by_name(StringName name) const
     {
         for (auto field : fields_)
@@ -487,6 +533,11 @@ public:
         return INDEX_NONE;
     }
 
+    /**
+     * @brief Gets the name of an enumeration field by its value.
+     * @param value The value of the field.
+     * @return The name of the field, or an empty string if not found.
+     */
     NODISCARD StringName get_name_by_value(int64 value) const
     {
         for (auto field : fields_)
@@ -499,6 +550,42 @@ public:
         return "";
     }
 
+    /**
+     * @brief Returns a constant iterator to the beginning of the fields.
+     * @return A constant iterator to the beginning of the fields.
+     */
+    NODISCARD const_iterator begin() const
+    {
+        return fields_.begin();
+    }
+
+    /**
+     * @brief Returns an iterator to the beginning of the fields.
+     * @return An iterator to the beginning of the fields.
+     */
+    NODISCARD iterator begin()
+    {
+        return fields_.begin();
+    }
+
+    /**
+     * @brief Returns a constant iterator to the end of the fields.
+     * @return A constant iterator to the end of the fields.
+     */
+    NODISCARD const_iterator end() const
+    {
+        return fields_.end();
+    }
+
+    /**
+     * @brief Returns an iterator to the end of the fields.
+     * @return An iterator to the end of the fields.
+     */
+    NODISCARD iterator end()
+    {
+        return fields_.end();
+    }
+
 private:
     static inline UnorderedMap<StringName, std::unique_ptr<MetaEnum>> meta_enum_map_;
 
@@ -509,12 +596,30 @@ private:
 
 }// namespace atlas
 
+/**
+ * @brief Retrieves the MetaClass for a given type T.
+ *
+ * This function template returns a pointer to the MetaClass associated with the type T.
+ * If the MetaClass is not found, it returns nullptr.
+ *
+ * @tparam T The type for which to retrieve the MetaClass.
+ * @return A pointer to the MetaClass associated with the type T, or nullptr if not found.
+ */
 template<typename T>
 atlas::MetaClass* meta_class_of()
 {
     return nullptr;
 }
 
+/**
+ * @brief Retrieves the MetaEnum for a given type T.
+ *
+ * This function template returns a pointer to the MetaEnum associated with the type T.
+ * If the MetaEnum is not found, it returns nullptr.
+ *
+ * @tparam T The type for which to retrieve the MetaEnum.
+ * @return A pointer to the MetaEnum associated with the type T, or nullptr if not found.
+ */
 template<typename T>
 atlas::MetaEnum* meta_enum_of()
 {

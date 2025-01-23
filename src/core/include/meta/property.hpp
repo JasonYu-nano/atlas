@@ -23,12 +23,20 @@ enum class EPropertyFlag : uint32
 
 ENUM_BIT_MASK(EPropertyFlag);
 
+/**
+ * @class EnumField
+ * @brief Represents an enumeration field in the MetaEnum.
+ */
 class CORE_API EnumField : public MetaType
 {
     DECLARE_META_CAST_FLAG(EMetaCastFlag::EnumField, MetaType)
 public:
     EnumField(int64 value) : value_(value) {}
 
+    /**
+     * @brief Retrieves the value of the enumeration field.
+     * @return The integer value of the enumeration field.
+     */
     NODISCARD int64 value() const {return value_;}
 private:
     int64 value_{ 0 };
