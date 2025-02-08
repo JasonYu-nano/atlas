@@ -25,14 +25,14 @@ class META() ITestInterface
 
 class META() BaseClass
 {
-    GEN_CLASS_BODY(BaseClass)
+    GEN_META_CODE(BaseClass)
 
     int32 zzz;
 };
 
 class TEST_CORE_API META(ToolTip = "Only for test", MaxSize = 1) MyClass : public BaseClass, public ITestInterface
 {
-    GEN_CLASS_BODY(MyClass)
+    GEN_META_CODE(MyClass)
 public:
     MyClass() = default;
 
@@ -69,7 +69,7 @@ public:
 
 struct META() DateTime
 {
-    GEN_CLASS_BODY(DateTime)
+    GEN_META_CODE(DateTime)
     DateTime() = default;
     DateTime(uint16 y, uint8 m, uint8 d) : year(y), month(m), day(d) {}
 
@@ -85,7 +85,7 @@ struct META() DateTime
 
 class META() IAnimal
 {
-    GEN_CLASS_BODY(IAnimal)
+    GEN_META_CODE(IAnimal)
 public:
     virtual ~IAnimal() = default;
 
@@ -95,7 +95,7 @@ public:
 
 class META() AnimalBase : public IAnimal
 {
-    GEN_CLASS_BODY(AnimalBase)
+    GEN_META_CODE(AnimalBase)
 
 public:
     AnimalBase() = default;
@@ -117,7 +117,7 @@ private:
 
 class META() Cat : public AnimalBase
 {
-    GEN_CLASS_BODY(Cat);
+    GEN_META_CODE(Cat);
 
 public:
     Cat() = default;
@@ -135,7 +135,7 @@ private:
 
 class META() Dog : public AnimalBase
 {
-    GEN_CLASS_BODY(Dog);
+    GEN_META_CODE(Dog);
 
 public:
     void make_sound() const override

@@ -13,7 +13,7 @@ namespace atlas
 
 class ENGINE_API META() TFRGB8 final : public ITextureFormat
 {
-    GEN_CLASS_BODY(TFRGB8)
+    GEN_META_CODE(TFRGB8)
 public:
     TFRGB8() = default;
 

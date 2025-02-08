@@ -13,7 +13,7 @@ namespace atlas
 
 class ENGINE_API META() Texture2D
 {
-    GEN_CLASS_BODY(Texture2D)
+    GEN_META_CODE(Texture2D)
 public:
     Texture2D() = default;
 
