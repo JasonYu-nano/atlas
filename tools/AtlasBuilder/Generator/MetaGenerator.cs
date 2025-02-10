@@ -31,6 +31,8 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 
     public async Task Generate()
     {
+        DeleteOutdatedGeneratedFiles();
+        
         var cc = await Parse();
         if (cc == null)
         {
@@ -54,6 +56,32 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
         VerifyMetaType();
         await GenerateMetaCode();
         RecordGeneration();
+    }
+
+    private void DeleteOutdatedGeneratedFiles()
+    {
+        foreach (var buildTarget in buildTargetAssembly.NameToBuildTargets.Values)
+        {
+            var outputDir = Path.Combine(DirectoryUtils.BuildTargetIntermediateDirectory, buildTarget.TargetName);
+            
+            string[] extensions = ["*.gen.hpp", "*.gen.cpp"];
+            var headers = extensions.SelectMany(ext => Directory.GetFiles(outputDir, ext, SearchOption.AllDirectories));
+            
+            foreach (var header in headers)
+            {
+                var fileName = Path.GetFileNameWithoutExtension(header);
+                var index = fileName.IndexOf(".gen", StringComparison.OrdinalIgnoreCase);
+                fileName = fileName.Substring(0, index);
+
+                var outdated = Directory.EnumerateFiles(buildTarget.RootDirectory, "*.hpp", SearchOption.AllDirectories)
+                    .All(file => Path.GetFileNameWithoutExtension(file) != fileName);
+
+                if (outdated)
+                {
+                    File.Delete(header);
+                }
+            }
+        }
     }
 
     private async Task<CppCompilation?> Parse()
