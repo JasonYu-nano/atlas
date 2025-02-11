@@ -18,6 +18,9 @@ class CORE_API CompactBinaryArchiveWriter : public BinaryArchiveWriter
 public:
     ~CompactBinaryArchiveWriter() override = default;
 
+    template<typename T>
+    WriteStream& operator<< (const T& value) { serialize(*this, value); return *this; }
+
     WriteStream& operator<< (int8 value) override
     {
         serialize_varint(math::zigzag_encode8(value));
@@ -110,6 +113,9 @@ public:
     explicit CompactBinaryArchiveReader(const IOBuffer& buffer) : BinaryArchiveReader(buffer) {}
 
     ~CompactBinaryArchiveReader() override = default;
+
+    template<typename T>
+    ReadStream& operator>> (T& value) { deserialize(*this, value); return *this; }
 
     ReadStream& operator>> (int8& value) override
     {

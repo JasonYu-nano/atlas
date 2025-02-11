@@ -6,7 +6,9 @@
 #include "file_system/directory.hpp"
 #include "platform/windows/windows_minimal_api.hpp"
 #include "string/string_name.hpp"
+#include "utility/guid.hpp"
 
+#include <combaseapi.h>
 #if WITH_CRASH_HANDLER
 #include <dbghelp.h>
 #endif
@@ -92,7 +94,7 @@ static LONG exception_handler(EXCEPTION_POINTERS* exception_ptr)
 
     auto now = std::chrono::system_clock::now();
     std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-    Path dump_file = dir / String::format("atals_crash_{}.dump", now_time);
+    Path dump_file = dir / String::format("atlas_crash_{}.dump", now_time);
     HANDLE handle = ::CreateFile(dump_file.to_os_path().data(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL,
         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -118,6 +120,15 @@ void WindowsPlatformTraits::setup_crash_handler()
 #if WITH_CRASH_HANDLER
     SetUnhandledExceptionFilter(exception_handler);
 #endif
+}
+
+void WindowsPlatformTraits::get_guid(GUID& guid)
+{
+    auto result = CoCreateGuid((::GUID*)&guid);
+    if (result != S_OK)
+    {
+        guid.invalidate();
+    }
 }
 
 } // namespace atlas

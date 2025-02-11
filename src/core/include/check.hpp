@@ -5,7 +5,7 @@
 
 #include "core_log.hpp"
 
-// Ensure that the expression is true at runtime. Ortherwise will abort application.
+// Ensure that the expression is true at runtime. Otherwise will abort application.
 #define CHECK(expression, msg) \
     if (!(expression)) { \
         LOG_CRITICAL(core, msg); \

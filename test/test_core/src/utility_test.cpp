@@ -1,10 +1,12 @@
 // Copyright(c) 2023-present, Atlas.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
+#include "container/unordered_map.hpp"
 #include "gtest/gtest.h"
-
-#include "utility/compression_pair.hpp"
+#include "serialize/compact_binary_archive.hpp"
 #include "utility/call_traits.hpp"
+#include "utility/compression_pair.hpp"
+#include "utility/guid.hpp"
 #include "utility/untyped_data.hpp"
 
 namespace atlas::test
@@ -74,6 +76,25 @@ TEST(UtilityTest, UntypedDataTest)
     };
 
     static_assert(alignof(UntypedData<UT>) == 128 && sizeof(UntypedData<UT>) == 256);
+}
+
+TEST(UtilityTest, GuidTest)
+{
+    auto id = GUID::new_guid();
+    EXPECT_TRUE(id.is_valid());
+    LOG_INFO(temp, "GUID is {}", id.to_string(GUID::EFormats::DigitsWithHyphensInBracesLowercase));
+
+    UnorderedMap<GUID, int32> map;
+    map.insert(id, 1);
+
+    CompactBinaryArchiveWriter ws;
+    ws << id;
+
+    GUID new_id;
+    CompactBinaryArchiveReader rs(ws.get_buffer());
+    rs >> new_id;
+
+    EXPECT_EQ(id, new_id);
 }
 
 }
