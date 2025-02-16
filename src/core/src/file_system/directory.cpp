@@ -19,7 +19,7 @@ bool Directory::make_dir_tree(const Path& path)
     return std::filesystem::create_directories(path, ec);
 }
 
-Path Directory::get_engine_directory()
+const Path& Directory::get_engine_directory()
 {
     static Path directory = PlatformTraits::get_engine_directory().normalize();
     return directory;
@@ -47,6 +47,15 @@ Path Directory::get_engine_save_directory()
     Path engine_root = get_engine_directory();
     Path dir = engine_root / "save" / separator;
     return dir;
+}
+
+Path Directory::get_project_directory()
+{
+    if (get_project_directory_impl_.is_bound())
+    {
+        return get_project_directory_impl_.execute();
+    }
+    return {};
 }
 
 }// namespace atlas

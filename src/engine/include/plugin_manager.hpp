@@ -27,6 +27,7 @@ struct ENGINE_API PluginDesc
     StringName name;
     Array<PluginModuleDesc> modules;
     Set<StringName> dependency_plugins;
+    Path absolute_path;
 };
 
 class ENGINE_API PluginManager
@@ -42,7 +43,7 @@ public:
 private:
     void scan_plugins(const Path& directory);
 
-    void parse_plugin_description(StringView file_path);
+    void parse_plugin_description(const std::filesystem::path& dir, StringView file_path);
 
     Array<PluginDesc> plugins_;
 };

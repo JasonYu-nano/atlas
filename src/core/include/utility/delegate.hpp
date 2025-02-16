@@ -106,15 +106,15 @@ public:
 
 protected:
     template<typename Callable, typename Tuple, size_t... Indices, typename... InvokeArgs>
-    RetType InvokeImpl(Callable&& obj, Tuple&& tpl, std::index_sequence<Indices...>, InvokeArgs&&... args)
+    RetType invoke_impl(Callable&& obj, Tuple&& tpl, std::index_sequence<Indices...>, InvokeArgs&&... args)
     {
         return std::invoke(std::forward<Callable>(obj), std::forward<InvokeArgs>(args)..., std::get<Indices>(std::forward<Tuple>(tpl))...);
     }
 
     template<typename Callable, typename... InvokeArgs>
-    RetType Invoke(Callable&& obj, InvokeArgs&&... args)
+    RetType invoke(Callable&& obj, InvokeArgs&&... args)
     {
-        return InvokeImpl(std::forward<Callable>(obj),
+        return invoke_impl(std::forward<Callable>(obj),
             payload_,
             std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<std::tuple<Payload...>>>>{},
             std::forward<InvokeArgs>(args)...);
@@ -147,7 +147,7 @@ public:
 
     NODISCARD RetType execute(Args&&... args) override
     {
-        return base::Invoke(function_pointer_, std::forward<Args>(args)...);
+        return base::invoke(function_pointer_, std::forward<Args>(args)...);
     }
 
 private:
@@ -192,7 +192,7 @@ public:
 
     NODISCARD RetType execute(Args&&... args) override
     {
-        return base::Invoke(function_pointer_, object_, std::forward<Args>(args)...);
+        return base::invoke(function_pointer_, object_, std::forward<Args>(args)...);
     }
 
     NODISCARD bool is_bound_to_object(const void* obj) const override
@@ -231,7 +231,7 @@ public:
 
     NODISCARD RetType execute(Args&&... args) override
     {
-        return base::Invoke(function_pointer_, object_.get(), std::forward<Args>(args)...);
+        return base::invoke(function_pointer_, object_.get(), std::forward<Args>(args)...);
     }
 
     NODISCARD bool is_bound_to_object(const void* obj) const override
@@ -247,6 +247,32 @@ public:
 private:
     std::shared_ptr<Object> object_;
     function_pointer function_pointer_;
+};
+
+template <std::invocable Invocable, typename Callable, typename... Payload>
+class InvocableDelegateInstance;
+
+template <std::invocable Invocable, typename RetType, typename... Args, typename... Payload>
+class InvocableDelegateInstance<Invocable, RetType(Args...), Payload...> final : public DelegateInstance<RetType(Args...), Payload...>
+{
+    using base = DelegateInstance<RetType(Args...), Payload...>;
+public:
+    explicit InvocableDelegateInstance(Invocable&& invocable, Payload&&... payload)
+        : base(std::forward<Payload>(payload)...), invocable_(std::forward<Invocable>(invocable)) {}
+
+    InvocableDelegateInstance(const InvocableDelegateInstance&) = default;
+    InvocableDelegateInstance(InvocableDelegateInstance&&) = default;
+
+    InvocableDelegateInstance& operator= (const InvocableDelegateInstance&) = default;
+    InvocableDelegateInstance& operator= (InvocableDelegateInstance&&) = default;
+
+    NODISCARD RetType execute(Args&&... args) override
+    {
+        return base::invoke(invocable_, std::forward<Args>(args)...);
+    }
+
+private:
+    Invocable invocable_;
 };
 
 } // namespace details
@@ -401,6 +427,14 @@ public:
         if (instance_ == nullptr)
         {
             instance_ = std::make_shared<details::SPDelegateInstance<Object, false, RetType(Args...), Payload...>>(object, fn, std::forward<Payload>(payload)...);
+        }
+    }
+    template<std::invocable Invocable, typename... Payload>
+    void bind_invocable(Invocable&& object, Payload&&... payload)
+    {
+        if (instance_ == nullptr)
+        {
+            instance_ = std::make_shared<details::InvocableDelegateInstance<Invocable, RetType(Args...), Payload...>>(std::forward<Invocable>(object), std::forward<Payload>(payload)...);
         }
     }
     /**

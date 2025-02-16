@@ -4,9 +4,12 @@
 #pragma once
 
 #include "file_system/path.hpp"
+#include "utility/delegate_fwd.hpp"
 
 namespace atlas
 {
+
+DECLARE_DELEGATE_RET(GetProjectDirectoryImpl, Path);
 
 class CORE_API Directory
 {
@@ -17,7 +20,7 @@ public:
      * @brief Gets root directory of engine.
      * @return
      */
-    static Path get_engine_directory();
+    static const Path& get_engine_directory();
     /**
      * @brief Gets directory of engine module library.
      * @return
@@ -38,6 +41,13 @@ public:
      * @return
      */
     static Path get_engine_save_directory();
+    /**
+     * @brief Gets directory of the current project.
+     * @return
+     */
+    static Path get_project_directory();
+
+    static inline GetProjectDirectoryImpl get_project_directory_impl_;
 };
 
 }

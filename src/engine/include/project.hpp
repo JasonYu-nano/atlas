@@ -19,11 +19,17 @@ public:
         return !!module_;
     }
 
+    const Path& get_directory() const
+    {
+        return project_dir_;
+    }
+
     static inline const char* project_suffix_ = ".project.json";
 
 private:
 
     StringName name_;
+    Path project_dir_;
     class IModule* module_{ nullptr };
 };
 

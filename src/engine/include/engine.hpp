@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "asset/asset_manager.hpp"
 #include "module/module_manager.hpp"
 #include "plugin_manager.hpp"
 #include "project.hpp"
@@ -49,6 +50,10 @@ public:
 
     LowLevelIO& get_llio() const { return llio_; }
 
+    AssetManager* get_asset_manager() const { return asset_manager_.get(); }
+
+    const Project& get_project() const { return project_; }
+
 protected:
     void load_project();
 
@@ -58,10 +63,11 @@ protected:
     std::chrono::nanoseconds current_time_{ 0 };
     double delta_time_{ 0.0 };
 
+    mutable LowLevelIO llio_;
+
     std::unique_ptr<TickTaskManager> tick_task_manager_{ nullptr };
     std::unique_ptr<PluginManager> plugin_manager_{ nullptr };
-
-    mutable LowLevelIO llio_;
+    std::unique_ptr<AssetManager> asset_manager_{ nullptr };
 
     Project project_;
 };

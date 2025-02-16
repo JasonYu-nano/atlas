@@ -19,7 +19,7 @@ void PluginManager::initialize()
 
 void PluginManager::scan_plugins(const Path& directory)
 {
-    if (!std::filesystem::exists(directory))
+    if (!directory.exists())
     {
         LOG_INFO(engine, "plugin directory {0} is not exists", directory.to_string());
         return;
@@ -32,13 +32,13 @@ void PluginManager::scan_plugins(const Path& directory)
             auto plugin_path = dir_entry.path() / "plugin.toml";
             if (std::filesystem::exists(plugin_path))
             {
-                parse_plugin_description(String::from(plugin_path));
+                parse_plugin_description(dir_entry.path(), String::from(plugin_path));
             }
         }
     }
 }
 
-EModuleType ConvertToModuleType(StringView view)
+EModuleType convert_to_module_type(StringView view)
 {
     constexpr StringView runtime = "runtime";
     constexpr StringView editor = "editor";
@@ -56,7 +56,7 @@ EModuleType ConvertToModuleType(StringView view)
     return EModuleType::Runtime;
 }
 
-void ParsePluginBaseInfo(PluginDesc& desc, const toml::table& config)
+void parse_plugin_base_info(PluginDesc& desc, const toml::table& config)
 {
     if (auto name_view = config["name"].value<std::string_view>())
     {
@@ -64,7 +64,7 @@ void ParsePluginBaseInfo(PluginDesc& desc, const toml::table& config)
     }
 }
 
-void ParsePluginModule(PluginDesc& desc, const toml::table& config)
+void parse_plugin_module(PluginDesc& desc, const toml::table& config)
 {
     if (auto module_array = config["modules"].as_array())
     {
@@ -89,7 +89,7 @@ void ParsePluginModule(PluginDesc& desc, const toml::table& config)
                     }
 
                     StringView type_view = type_node->value_or("runtime");
-                    module_desc.type = ConvertToModuleType(type_view);
+                    module_desc.type = convert_to_module_type(type_view);
 
                     desc.modules.add(std::move(module_desc));
                 }
@@ -98,7 +98,7 @@ void ParsePluginModule(PluginDesc& desc, const toml::table& config)
     }
 }
 
-void ParsePluginDependency(PluginDesc& desc, const toml::table& config)
+void parse_plugin_dependency(PluginDesc& desc, const toml::table& config)
 {
     if (auto dependency_array = config["dependency_plugins"].as_array())
     {
@@ -112,20 +112,21 @@ void ParsePluginDependency(PluginDesc& desc, const toml::table& config)
     }
 }
 
-void PluginManager::parse_plugin_description(StringView file_path)
+void PluginManager::parse_plugin_description(const std::filesystem::path& dir, StringView file_path)
 {
     auto config = toml::parse_file(file_path);
     PluginDesc plugin_desc;
 
-    ParsePluginBaseInfo(plugin_desc, config);
+    parse_plugin_base_info(plugin_desc, config);
     if (plugin_desc.name.is_none())
     {
         // plugin name is necessary
         return;
     }
 
-    ParsePluginModule(plugin_desc, config);
-    ParsePluginDependency(plugin_desc, config);
+    parse_plugin_module(plugin_desc, config);
+    parse_plugin_dependency(plugin_desc, config);
+    plugin_desc.absolute_path = String::from(dir);
 
     plugins_.add(std::move(plugin_desc));
 }

@@ -38,6 +38,8 @@ void Engine::startup(int argc, char** argv)
     plugin_manager_ = std::make_unique<PluginManager>();
     plugin_manager_->initialize();
 
+    asset_manager_ = std::make_unique<AssetManager>();
+
     load_project();
 
     if (!project_.is_valid())
@@ -83,11 +85,20 @@ void Engine::load_project()
     if (path.is_relative())
     {
         // try convert to absolute path
-        const Path root = Directory::get_engine_directory();
+        const Path& root = Directory::get_engine_directory();
         path = root / path;
     }
 
     project_ = Project::parse(path);
+
+    Directory::get_project_directory_impl_.bind_invocable([]() -> Path
+    {
+        if (g_engine)
+        {
+            return g_engine->get_project().get_directory();
+        }
+        return {};
+    });
 }
 
 } // namespace atlas

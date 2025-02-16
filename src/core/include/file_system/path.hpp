@@ -439,6 +439,21 @@ public:
     {
         return {String{parse_extension()}};
     }
+
+    NODISCARD Path replace_extension(StringView new_ext) const
+    {
+        auto ext = parse_extension();
+        if (ext.empty() || ext == new_ext)
+        {
+            return *this;
+        }
+
+        Path new_path(*this);
+        auto index = text_.size() - ext.size();
+        new_path.text_.remove(index, ext.size());
+        new_path.text_.append(new_ext);
+        return new_path;
+    }
     /** Gets the parent path.
      * @brief
      * @return
