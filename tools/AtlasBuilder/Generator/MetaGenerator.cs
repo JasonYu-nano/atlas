@@ -24,7 +24,7 @@ public class MetaTypeException(CppType type, CppDeclaration declaration) : Excep
 
 public class MetaDeclarationException(string message) : Exception(message);
 
-[GeneratorVersion("0.0.5")]
+[GeneratorVersion("0.0.6")]
 public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 {
     private MetaTypeStorage _metaTypeStorage = new();
@@ -481,11 +481,10 @@ public static class CppClassExtension
                                  static atlas::MetaClass* get_meta_class();
                              };
                              
-                             #define CLASS_BODY_{{CodeGenUtils.MakeUnderlineStylePath(file)}}_{{cppClass.Name}}() \
+                             #define META_CODE_{{CodeGenUtils.MakeUnderlineStylePath(file)}}_{{cppClass.Name}}() \
                              public: \
                              friend class PrivateCodeGen_{{cppClass.Name}}; \
                              NODISCARD virtual MetaClass* meta_class() const { return meta_class_of<{{cppClass.FullName}}>(); } \
-                             private: \
                              """);
 
             if (cppClass.HasCustomizeFlag())
@@ -496,9 +495,25 @@ public static class CppClassExtension
             }
             else
             {
-                foreach (var fn in cppClass.Functions)
+                if (cppClass.Functions.Count > 0)
                 {
-                    fn.GenerateHeaderCode(sb);
+                    sb.AppendLine("private: \\");
+                    foreach (var fn in cppClass.Functions)
+                    {
+                        fn.GenerateHeaderCode(sb);
+                    }
+
+                    if (cppClass.ClassKind == CppClassKind.Struct)
+                    {
+                        sb.AppendLine("public: \\");
+                    }
+                }
+                else
+                {
+                    if (cppClass.ClassKind == CppClassKind.Class)
+                    {
+                        sb.AppendLine("private: \\");
+                    }
                 }
 
                 if (cppClass.ClassKind == CppClassKind.Struct)

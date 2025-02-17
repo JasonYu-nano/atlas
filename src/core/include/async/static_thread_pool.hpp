@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <functional>
 #include <queue>
 
 #include "async/thread.hpp"
@@ -15,7 +16,11 @@ namespace atlas
 
 struct CORE_API ThreadPoolPolicy
 {
+#if defined __cpp_lib_move_only_function
     using task_type = std::move_only_function<void()>;
+#else
+    using task_type = std::function<void()>;
+#endif
 };
 
 template<uint32 NumOfQueues, typename Policy = ThreadPoolPolicy> requires(std::invocable<typename Policy::task_type>)

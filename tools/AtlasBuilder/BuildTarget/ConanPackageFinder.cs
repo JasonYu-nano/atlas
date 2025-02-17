@@ -9,8 +9,8 @@ public class ConanPackageFinder : IPackageFinder
     
     public static ThirdPartyPackage? FindPackage(string name)
     {
-        var buildDir = DirectoryUtils.GetEngineBuildDirectory(BuildType.Debug);
-        var conanDir = Path.Combine(buildDir, "conan", "build", "Debug", "generators");
+        var buildDir = DirectoryUtils.GetEngineBuildDirectory(BuildCommand.BuildType);
+        var conanDir = Path.Combine(buildDir, "conan", "build", BuildCommand.ArchType.ToString(), "generators");
         if (!Path.Exists(conanDir))
         {
             return null;

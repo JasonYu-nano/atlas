@@ -66,13 +66,13 @@ public:
         return *this;
     }
 
-    WriteStream& operator<< (FixedU32 value)
+    WriteStream& operator<< (FixedU32 value) override
     {
         serialize_numeric(value.value);
         return *this;
     }
 
-    WriteStream& operator<< (FixedU64 value)
+    WriteStream& operator<< (FixedU64 value) override
     {
         serialize_numeric(value.value);
         return *this;

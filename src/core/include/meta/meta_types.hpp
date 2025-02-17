@@ -209,8 +209,8 @@ ParamPack pack_arguments(const Args&... args)
 #define FILE_ID_COMBINE(path, class_name) FILE_ID_INTERNAL(path, class_name)
 #define FILE_ID(class_name) FILE_ID_COMBINE(FILE_PATH, class_name)
 
-#define META_CODE_INTERNAL(fileId) CLASS_BODY_##fileId
-#define META_CODE_COMBINE(fileId) META_CODE_INTERNAL(fileId)
+#define META_CODE_INTERNAL(file_id) META_CODE_##file_id
+#define META_CODE_COMBINE(file_id) META_CODE_INTERNAL(file_id)
 
 #if !defined(ATLAS_BUILDER)
 #define GEN_META_CODE(class_name) META_CODE_COMBINE(FILE_ID(class_name))()
