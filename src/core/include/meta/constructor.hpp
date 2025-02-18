@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <nlohmann/detail/meta/type_traits.hpp>
+#include <type_traits>
 
 #include "core_def.hpp"
 

@@ -25,12 +25,12 @@ public:
 
     template <typename Callable, typename... Args, typename = std::enable_if_t<!std::is_same_v<std::remove_cvref_t<Callable>, Thread>>>
     explicit Thread(Callable&& callable, Args&&... args) requires(std::is_invocable_v<std::decay_t<Callable>, std::decay_t<Args>...>)
-        : thread_(std::forward<Callable>(callable), std::forward<Args>(args)...)
+        : stop_source_(), thread_(std::forward<Callable>(callable), std::forward<Args>(args)...)
     {}
 
     template <typename Callable, typename... Args, typename = std::enable_if_t<!std::is_same_v<std::remove_cvref_t<Callable>, Thread>>>
     explicit Thread(Callable&& callable, Args&&... args) requires(std::is_invocable_v<std::decay_t<Callable>, StopToken, std::decay_t<Args>...>)
-        : thread_(std::thread(std::forward<Callable>(callable), stop_source_.get_token(), std::forward<Args>(args)...))
+        : stop_source_(), thread_(std::thread(std::forward<Callable>(callable), stop_source_.get_token(), std::forward<Args>(args)...))
     {}
 
     Thread(Thread&& rhs) noexcept
