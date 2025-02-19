@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using AtlasBuilder.BuildTarget;
+using ClangSharp.Interop;
 using CppAst;
 using Newtonsoft.Json;
 using ToolCore.Utils;
@@ -86,6 +88,8 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 
     private async Task<CppCompilation?> Parse()
     {
+        Console.WriteLine($"Bundled clang version: {clang.getClangVersion()}");
+        
         List<Task<IEnumerable<string>>> tasks = new();
         foreach (var buildTarget in buildTargetAssembly.NameToBuildTargets.Values)
         {
@@ -135,6 +139,18 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
             "-DATLAS_BUILDER",
             "-Wno-microsoft-include"
         ]);
+        
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            options.TargetCpu = CppTargetCpu.ARM64;
+            options.TargetVendor = "apple";
+            options.TargetSystem = "darwin";
+            options.SystemIncludeFolders.AddRange([
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include/c++/v1",
+                "/Library/Developer/CommandLineTools/usr/lib/clang/16/include",
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk/usr/include",
+            ]);
+        }
             
         foreach (var nameToBuildTarget in buildTargetAssembly.NameToBuildTargets)
         {

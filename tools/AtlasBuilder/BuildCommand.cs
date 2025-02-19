@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.Runtime.InteropServices;
 using ToolCore.Utils;
 
 namespace AtlasBuilder;
@@ -44,7 +45,7 @@ public static class BuildCommand
         var archOpt = new Option<ArchType>(
             name: "--arch",
             description: "Which architecture to build",
-            getDefaultValue: () => ArchType.X64);
+            getDefaultValue: () => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? ArchType.Arm64 : ArchType.X64);
 
         Command = new RootCommand("Build Command");
         Command.AddOption(buildDefinitionOpt);

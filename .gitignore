@@ -51,6 +51,7 @@
 **/crash_dump/
 **/temp/
 **/vcpkg_installed/
+*.user
 
 # Ignore Gradle build output directory
 build
