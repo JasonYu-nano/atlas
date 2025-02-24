@@ -18,7 +18,7 @@ if (WITH_EDITOR)
     target_compile_definitions(core PUBLIC NAME_PRESERVING_CASE_SENSITIVE=1)
 endif ()
 
-if (${PLATFORM_APPLE})
+if (${PLATFORM_MACOS})
     find_library(COCOA_LIBRARY Cocoa)
     target_link_libraries(core PUBLIC ${COCOA_LIBRARY})
 endif ()

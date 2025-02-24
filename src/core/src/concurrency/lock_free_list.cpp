@@ -35,7 +35,7 @@ void* atomic_compare_exchange_pointer(void* volatile* dest, void* exchange, void
 {
 #if PLATFORM_WINDOWS
     return ::_InterlockedCompareExchangePointer(dest, exchange, comparand);
-#elif PLATFORM_APPLE
+#elif PLATFORM_MACOS
     __atomic_compare_exchange_n(dest, &comparand, exchange, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
     return comparand;
 #endif
@@ -45,7 +45,7 @@ int64 atomic_compare_exchange(volatile int64* dest, int64 exchange, int64 compar
 {
 #if PLATFORM_WINDOWS
     return ::_InterlockedCompareExchange64(dest, exchange, comparand);
-#elif PLATFORM_APPLE
+#elif PLATFORM_MACOS
     __atomic_compare_exchange_n(dest, &comparand, exchange, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
     return comparand;
 #endif
@@ -55,7 +55,7 @@ int64 atomic_read(volatile const int64* src)
 {
 #if PLATFORM_WINDOWS
     return atomic_compare_exchange(const_cast<int64*>(src), 0, 0);
-#elif PLATFORM_APPLE
+#elif PLATFORM_MACOS
     return __atomic_load_n(src, __ATOMIC_SEQ_CST);
 #endif
 }

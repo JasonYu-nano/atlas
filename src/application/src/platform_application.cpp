@@ -6,7 +6,7 @@
 
 #if PLATFORM_WINDOWS
 #include "platform/windows/windows_application.hpp"
-#elif PLATFORM_APPLE
+#elif PLATFORM_MACOS
 #include "platform/mac/mac_application.hpp"
 #endif
 
@@ -18,7 +18,7 @@ std::unique_ptr<PlatformApplication> PlatformApplication::Create()
     PlatformApplication* app;
 #if PLATFORM_WINDOWS
     app = new PlatformApplication(new WindowsApplication());
-#elif PLATFORM_APPLE
+#elif PLATFORM_MACOS
     app = new PlatformApplication(new MacApplication());
 #endif
     ASSERT(app);

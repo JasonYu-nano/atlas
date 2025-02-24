@@ -9,7 +9,7 @@
 
 #if PLATFORM_WINDOWS
 #include "platform/windows/windows_memory.hpp"
-#elif PLATFORM_APPLE
+#elif PLATFORM_MACOS
 #include "platform/mac/mac_memory.hpp"
 #elif PLATFORM_LINUX
 #endif

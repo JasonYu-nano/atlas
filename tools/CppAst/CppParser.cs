@@ -129,7 +129,9 @@ namespace CppAst
                     ParseSystemIncludes = options.ParseSystemIncludes,
                     ParseTokenAttributeEnabled = options.ParseTokenAttributes,
                     ParseCommentAttributeEnabled = options.ParseCommentAttribute,
+                    //++ Atlas customization: Only parse statements that declared user annotate.
                     ParseUserAnnotateOnly = options.ParseUserAnnotateOnly,
+                    //-- Atlas customization
                 };
                 var compilation = builder.RootCompilation;
 

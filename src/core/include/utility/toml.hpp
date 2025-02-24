@@ -3,7 +3,14 @@
 
 #pragma once
 
-#include "core_def.hpp"
+#if PLATFORM_MACOS
+// Fix link error on macos
+#undef TOML_HEADER_ONLY
+#undef TOML_SHARED_LIB
+#define TOML_HEADER_ONLY 1
+
+#endif
+
 #include "toml++/toml.hpp"
 
 namespace toml

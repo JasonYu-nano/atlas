@@ -112,6 +112,13 @@ namespace CppAst
         /// Gets or sets a boolean indicating if this declaration is anonymous.
         /// </summary>
         public bool IsAnonymous { get; set; }
+        
+        //++ Atlas customization: Support final keyword
+        /// <summary>
+        /// Gets or sets a boolean indicating if this declaration is mark final.
+        /// </summary>
+        public bool IsFinal {get; set;}
+        //-- Atlas customization
 
         /// <summary>
         /// Get the base types of this type.

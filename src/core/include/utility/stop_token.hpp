@@ -163,6 +163,11 @@ public:
 
     NODISCARD StopToken get_token() const noexcept
     {
+        const auto local = state_;
+        if (local != nullptr)
+        {
+            local->stop_tokens.fetch_add(1, std::memory_order_relaxed);
+        }
         return StopToken(state_);
     }
 

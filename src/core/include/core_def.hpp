@@ -15,7 +15,7 @@
 #if defined( __WIN32__ ) || defined( _WIN32 )
 #   define PLATFORM_WINDOWS 1
 #elif defined( __APPLE_CC__)
-#   define PLATFORM_APPLE 1
+#   define PLATFORM_MACOS 1
 #else
 #   define PLATFORM_LINUX 1
 #endif
@@ -61,7 +61,7 @@ __GNUC_PATCHLEVEL__)
 
 #if PLATFORM_WINDOWS
 #include "platform/windows/windows_platform.hpp"
-#elif PLATFORM_APPLE
+#elif PLATFORM_MACOS
 #include "platform/mac/mac_platform.hpp"
 #elif PLATFORM_LINUX
 

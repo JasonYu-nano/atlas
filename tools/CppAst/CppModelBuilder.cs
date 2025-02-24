@@ -37,7 +37,9 @@ namespace CppAst
 
         public bool ParseCommentAttributeEnabled { get; set; }
         
+        //++ Atlas customization: Only parse statements that declared user annotate.
         public bool ParseUserAnnotateOnly { get; set; }
+        //-- Atlas customization
 
         public CppCompilation RootCompilation { get; }
 
@@ -296,13 +298,26 @@ namespace CppAst
             CppElement element = null;
             switch (cursor.Kind)
             {
+                //++ Atlas customization: Support final keyword.
+                case CXCursorKind.CXCursor_CXXFinalAttr:
+                    {
+                        var containerContext = GetOrCreateDeclarationContainer(parent, data);
+                        if (containerContext.DeclarationContainer is CppClass cppClass)
+                        {
+                            cppClass.IsFinal = true;
+                        }
+                        break;
+                    }
+                //-- Atlas customization
                 case CXCursorKind.CXCursor_FieldDecl:
                 case CXCursorKind.CXCursor_VarDecl:
                     {
+                        //++ Atlas customization: Only parse statements that declared user annotate.
                         if (ParseUserAnnotateOnly && !HasUserAnnotate(cursor))
                         {
                             break;
                         }
+                        //-- Atlas customization
                         
                         var containerContext = GetOrCreateDeclarationContainer(parent, data);
                         element = VisitFieldOrVariable(containerContext, cursor, data);
@@ -333,10 +348,12 @@ namespace CppAst
                 case CXCursorKind.CXCursor_StructDecl:
                 case CXCursorKind.CXCursor_UnionDecl:
                     {
+                        //++ Atlas customization: Only parse statements that declared user annotate.
                         if (ParseUserAnnotateOnly && !HasUserAnnotate(cursor))
                         {
                             break;
                         }
+                        //-- Atlas customization
 
                         bool isAnonymous = cursor.IsAnonymous;
                         var cppClass = VisitClassDecl(cursor, data);
@@ -380,10 +397,12 @@ namespace CppAst
                     }
 
                 case CXCursorKind.CXCursor_EnumDecl:
+                    //++ Atlas customization: Only parse statements that declared user annotate.
                     if (ParseUserAnnotateOnly && !HasUserAnnotate(cursor))
                     {
                         break;
                     }
+                    //-- Atlas customization
                     element = VisitEnumDecl(cursor, data);
                     break;
 
@@ -402,11 +421,12 @@ namespace CppAst
                 case CXCursorKind.CXCursor_Constructor:
                 case CXCursorKind.CXCursor_Destructor:
                 case CXCursorKind.CXCursor_CXXMethod:
+                    //++ Atlas customization: Only parse statements that declared user annotate.
                     if (ParseUserAnnotateOnly && !HasUserAnnotate(cursor))
                     {
                         break;
                     }
-                    
+                    //-- Atlas customization                    
                     element = VisitFunctionDecl(cursor, parent, data);
                     break;
 

@@ -37,7 +37,9 @@ namespace CppAst
             ParseSystemIncludes = true;
             ParseTokenAttributes = false;
             ParseCommentAttribute = false;
+            //++ Atlas customization: Only parse statements that declared user annotate.
             ParseUserAnnotateOnly = false;
+            //-- Atlas customization
 
             // Default triple targets
             TargetCpu = IntPtr.Size == 8 ? CppTargetCpu.X86_64 : CppTargetCpu.X86;
@@ -102,10 +104,12 @@ namespace CppAst
         /// </summary>
         public bool ParseCommentAttribute { get; set; }
         
+        //++ Atlas customization: Only parse statements that declared user annotate.
         /// <summary>
         /// Only parse statements that declared user annotate.
         /// </summary>
         public bool ParseUserAnnotateOnly { get; set; }
+        //-- Atlas customization
 
         /// <summary>
         /// Sets <see cref="ParseMacros"/> to <c>true</c> and return this instance.
