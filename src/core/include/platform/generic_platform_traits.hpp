@@ -32,7 +32,7 @@ public:
     static const Path& get_engine_directory();
     static const Path& get_relative_build_directory();
     static Path get_library_path(const Path& module_dir, StringName lib_name);
-    static void set_thread_name(void* thread_handle, const String& name) VIRTUAL_IMPL(core)
+    static void set_thread_name(const String& name) VIRTUAL_IMPL(core)
     static void* get_this_thread_handle() VIRTUAL_IMPL(core, return nullptr;)
     static ESystemMsgBoxReturnType show_message_box(ESystemMsgBoxType type, const String& caption, const String& message) VIRTUAL_IMPL(core, return ESystemMsgBoxReturnType::No;)
     static void setup_crash_handler() VIRTUAL_IMPL(core)

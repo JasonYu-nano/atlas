@@ -19,7 +19,7 @@ public:
 
     static void* get_exported_symbol(void* handle, const String& symbol_name);
 
-    static void set_thread_name(void* thread_handle, const String& name);
+    static void set_thread_name(const String& name);
 
     static void* get_this_thread_handle();
 

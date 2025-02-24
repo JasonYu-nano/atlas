@@ -38,7 +38,7 @@ void* WindowsPlatformTraits::get_exported_symbol(void* handle, const String& sym
     return ::GetProcAddress(static_cast<HMODULE>(handle), symbol_name.data());
 }
 
-void WindowsPlatformTraits::set_thread_name(void* thread_handle, const String& name)
+void WindowsPlatformTraits::set_thread_name(const String& name)
 {
     typedef HRESULT(WINAPI *SetThreadDescriptionFnPtr)(HANDLE hThread, PCWSTR lpThreadDescription);
 
@@ -46,7 +46,8 @@ void WindowsPlatformTraits::set_thread_name(void* thread_handle, const String& n
 
     if (set_thread_description)
     {
-        set_thread_description(thread_handle, name.to_wide().data());
+        HANDLE current = ::GetCurrentThread();
+        set_thread_description(current, name.to_wide().data());
     }
 }
 

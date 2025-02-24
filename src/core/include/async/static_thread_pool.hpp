@@ -139,6 +139,8 @@ private:
         String thread_name = String::format("{}-{}", work_thread_name, current);
 
         threads_.emplace([this, thread_name](StopToken stoken) {
+            PlatformTraits::set_thread_name(thread_name);
+
             while (true)
             {
                 std::unique_lock lock(mutex_);
@@ -166,8 +168,6 @@ private:
             }
             LOG_INFO(core, "{} terminated", thread_name)
         }, stop_source_.get_token());
-
-        PlatformTraits::set_thread_name(threads_.last().native_handle(), thread_name);
     }
 
     std::optional<task_type> pop_task()

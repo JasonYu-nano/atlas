@@ -104,7 +104,7 @@ public:
 
     void set_name(const String& name)
     {
-        PlatformTraits::set_thread_name(native_handle(), name);
+        PlatformTraits::set_thread_name(name);
     }
 
     static uint32 hardware_concurrency() noexcept
@@ -126,7 +126,7 @@ CORE_API inline void* native_handle()
 
 CORE_API inline void set_name(const String& name)
 {
-    PlatformTraits::set_thread_name(PlatformTraits::get_this_thread_handle(), name);
+    PlatformTraits::set_thread_name(name);
 }
 
 }// namespace this_thread
