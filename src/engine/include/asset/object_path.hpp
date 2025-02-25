@@ -63,7 +63,8 @@ public:
         auto last_name = find_last_name(first, last);
         if (last_name < last)
         {
-            return StringView(++last_name, last - last_name - 1);
+            ++last_name;
+            return StringView(last_name, last - last_name);
         }
         return {};
     }

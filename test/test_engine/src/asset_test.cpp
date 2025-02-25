@@ -46,7 +46,11 @@ TEST(AssetTest, SaveAndLoad)
     AssetOverview overview{ GUID::new_guid(), {GUID::new_guid(), GUID::new_guid()}, 0, 0, ObjectPath() };
     package.assets_.insert(overview.id, overview);
 
-    Path save_path = Directory::get_engine_save_directory() / "test_package.ap";
+    Path save_path = Directory::get_engine_directory() / "test" / "test_engine" / "temp" / "test_package.ap";
+    if (!save_path.exists())
+    {
+        Directory::make_dir_tree(save_path.parent_path());
+    }
 
     static LowLevelIO llio;
     auto package_loader = std::make_unique<PackageLoader>(llio);

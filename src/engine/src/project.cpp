@@ -23,6 +23,7 @@ Project Project::parse(const Path& project_file)
     {
         project_name.remove(0, index + 1);
         proj.name_ = project_name;
+        proj.project_dir_ = project_file.parent_path();
 
         ModuleManager::add_module_search_path(proj.name_, project_file.parent_path());
         proj.module_ = ModuleManager::load(proj.name_);
