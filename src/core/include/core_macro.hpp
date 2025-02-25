@@ -55,7 +55,7 @@ constexpr bool test_flags(enum_type flags, enum_type test)              \
 #define VIRTUAL_IMPL(log_category, ...) { LOG_ERROR(log_category, "Virtual function not implemented!"); __VA_ARGS__ }
 
 #ifdef __clang__
-#define OFFSET_OF(type, field)	__builtin_offsetof(type, field)
+#define OFFSET_OF(type, field)	((size_t)&(((type *)0)->field))
 #else
 #define OFFSET_OF(type, field) offsetof(type, field)
 #endif

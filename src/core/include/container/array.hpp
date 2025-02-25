@@ -4,7 +4,7 @@
 #pragma once
 
 #include <type_traits>
-#if PLATFORM_APPLE
+#if PLATFORM_MACOS
 #include <__bit_reference>
 #endif
 

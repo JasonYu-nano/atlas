@@ -35,11 +35,10 @@ public:
     static void* get_exported_symbol(void* handle, const String& symbol_name);
 
     /**
-     * @brief Sets the name of the specified thread.
-     * @param thread_handle The handle to the thread.
+     * @brief Sets the name of the current thread.
      * @param name The name to set for the thread.
      */
-    static void set_thread_name(void* thread_handle, const String& name);
+    static void set_thread_name(const String& name);
 
     /**
      * @brief Gets the handle of the current thread.

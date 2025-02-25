@@ -16,7 +16,9 @@ enum class ETextureFormat
 
 class ENGINE_API META() ITextureFormat
 {
-    public:
+    GEN_META_CODE(ITextureFormat)
+
+public:
     virtual ~ITextureFormat() = default;
 
     NODISCARD virtual ETextureFormat format_type() const = 0;

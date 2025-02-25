@@ -24,7 +24,5 @@ Global
 		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.RelWithDebInfo|Any CPU.ActiveCfg = Debug|Any CPU
-		{F39D3AB6-8C80-48B3-905F-AE3D5D22270F}.RelWithDebInfo|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal

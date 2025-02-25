@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 
+set(CMAKE_OSX_ARCHITECTURES "arm64")
+
 include(${CMAKE_SOURCE_DIR}/cmake/pre_check.cmake)
 include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 DO_CHECK()
@@ -10,6 +12,7 @@ set(CMAKE_CXX_STANDARD 23)
 
 # include cmake file
 include(${CMAKE_SOURCE_DIR}/cmake/detect_platform.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/detect_arch.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/atlas_build_target.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/CPM.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/import_asan.cmake)
@@ -68,16 +71,24 @@ if (MSVC)
     endif()
 else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-exceptions")
+
+    if(ASAN_ENABLED)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+        set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
+    endif()
 endif ()
 
 
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     add_compile_definitions(DEBUG)
+    set(ATLAS_BUILD_TYPE "Debug")
 elseif(${CMAKE_BUILD_TYPE} MATCHES "RelWithDebInfo")
     add_compile_definitions(DEBUG_OPTIMIZE)
+    set(ATLAS_BUILD_TYPE "DebugOptimize")
 elseif(${CMAKE_BUILD_TYPE} MATCHES "Release")
     add_compile_definitions(RELEASE)
+    set(ATLAS_BUILD_TYPE "Release")
 endif()
 
 if(WIN32)
@@ -102,7 +113,7 @@ endforeach()
 find_program(ATLAS_BUILDER NAMES AtlasBuilder PATHS ${EXECUTABLE_PATHS} NO_DEFAULT_PATH REQUIRED)
 
 execute_process(
-        COMMAND ${ATLAS_BUILDER} --package_manager=Vcpkg
+        COMMAND ${ATLAS_BUILDER} --package_manager=Vcpkg --build_type=${ATLAS_BUILD_TYPE} --arch=${ATLAS_TARGET_ARCH}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         RESULTS_VARIABLE EXIT_CODE
         OUTPUT_VARIABLE OUTPUT

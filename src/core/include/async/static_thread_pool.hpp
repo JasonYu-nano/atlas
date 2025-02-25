@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <functional>
 #include <queue>
 
 #include "async/thread.hpp"
@@ -15,7 +16,11 @@ namespace atlas
 
 struct CORE_API ThreadPoolPolicy
 {
+#if defined __cpp_lib_move_only_function
     using task_type = std::move_only_function<void()>;
+#else
+    using task_type = std::function<void()>;
+#endif
 };
 
 template<uint32 NumOfQueues, typename Policy = ThreadPoolPolicy> requires(std::invocable<typename Policy::task_type>)
@@ -134,6 +139,8 @@ private:
         String thread_name = String::format("{}-{}", work_thread_name, current);
 
         threads_.emplace([this, thread_name](StopToken stoken) {
+            PlatformTraits::set_thread_name(thread_name);
+
             while (true)
             {
                 std::unique_lock lock(mutex_);
@@ -161,8 +168,6 @@ private:
             }
             LOG_INFO(core, "{} terminated", thread_name)
         }, stop_source_.get_token());
-
-        PlatformTraits::set_thread_name(threads_.last().native_handle(), thread_name);
     }
 
     std::optional<task_type> pop_task()

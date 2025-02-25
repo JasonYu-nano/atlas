@@ -6,7 +6,6 @@
 #include "configuration/config_variable.hpp"
 #include "container/map.hpp"
 #include "file_system/directory.hpp"
-#include "log/logger.hpp"
 #include "string/string.hpp"
 #include "utility/toml.hpp"
 

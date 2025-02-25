@@ -67,7 +67,7 @@ public:
     StringName name_ = "";
 };
 
-struct META() DateTime
+struct META() DateTime final
 {
     GEN_META_CODE(DateTime)
     DateTime() = default;

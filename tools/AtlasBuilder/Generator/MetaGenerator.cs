@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using AtlasBuilder.BuildTarget;
+using ClangSharp.Interop;
 using CppAst;
 using Newtonsoft.Json;
 using ToolCore.Utils;
@@ -24,7 +26,7 @@ public class MetaTypeException(CppType type, CppDeclaration declaration) : Excep
 
 public class MetaDeclarationException(string message) : Exception(message);
 
-[GeneratorVersion("0.0.5")]
+[GeneratorVersion("0.0.7")]
 public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 {
     private MetaTypeStorage _metaTypeStorage = new();
@@ -57,6 +59,18 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
         await GenerateMetaCode();
         RecordGeneration();
     }
+    
+    public static Version GetGeneratorVersion()
+    {
+        foreach (var attribute in Attribute.GetCustomAttributes(typeof(MetaGenerator)))
+        {
+            if (attribute is GeneratorVersionAttribute versionAttribute)
+            {
+                return versionAttribute.Version;
+            }
+        }
+        return Version.Parse("0.0.0");
+    }
 
     private void DeleteOutdatedGeneratedFiles()
     {
@@ -86,6 +100,8 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 
     private async Task<CppCompilation?> Parse()
     {
+        Console.WriteLine($"Bundled clang version: {clang.getClangVersion()}");
+        
         List<Task<IEnumerable<string>>> tasks = new();
         foreach (var buildTarget in buildTargetAssembly.NameToBuildTargets.Values)
         {
@@ -135,6 +151,10 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
             "-DATLAS_BUILDER",
             "-Wno-microsoft-include"
         ]);
+
+        SetupTargetCpu(options);
+        SetupTargetVendorAndSystem(options);
+        SetupSystemInclude(options);
             
         foreach (var nameToBuildTarget in buildTargetAssembly.NameToBuildTargets)
         {
@@ -151,16 +171,78 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
         return options;
     }
 
-    public static Version GetGeneratorVersion()
+    private void SetupTargetCpu(CppParserOptions options)
     {
-        foreach (var attribute in Attribute.GetCustomAttributes(typeof(MetaGenerator)))
+        switch (BuildCommand.ArchType)
         {
-            if (attribute is GeneratorVersionAttribute versionAttribute)
+            case ArchType.X86:
+                options.TargetCpu = CppTargetCpu.X86;
+                break;
+            case ArchType.X64:
+                options.TargetCpu = CppTargetCpu.X86_64;
+                break;
+            case ArchType.Arm:
+                options.TargetCpu = CppTargetCpu.ARM;
+                break;
+            case ArchType.Arm64:
+                options.TargetCpu = CppTargetCpu.ARM64;
+                break;
+            default:
+                throw new UnreachableException();
+        }
+    }
+
+    private void SetupTargetVendorAndSystem(CppParserOptions options)
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            options.TargetVendor = "pc";
+            options.TargetSystem = "windows";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            options.TargetVendor = "apple";
+            options.TargetSystem = "darwin";
+        }
+        else
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private void SetupSystemInclude(CppParserOptions options)
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            ProcessStartInfo psi = new ProcessStartInfo
             {
-                return versionAttribute.Version;
+                FileName = "/usr/bin/xcode-select", Arguments = "-print-path", RedirectStandardOutput = true, 
+                UseShellExecute = false, CreateNoWindow = true
+            };
+            
+            using (Process? process = Process.Start(psi))
+            {
+                if (process != null)
+                {
+                    process.WaitForExit();
+                    var output = process.StandardOutput.ReadToEnd().Trim();
+                    // Do not change the order of the following lines.
+                    options.SystemIncludeFolders.AddRange([
+                        Path.Combine(output, "SDKs/MacOSX.sdk/usr/include/c++/v1"),
+                        Path.Combine(output, "usr/lib/clang/16/include"),
+                        Path.Combine(output, "SDKs/MacOSX.sdk/usr/include"),
+                    ]);
+                }
             }
         }
-        return Version.Parse("0.0.0");
+        else
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private CodeGenRecord? GetLastGenRecord()
@@ -387,7 +469,7 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
         {
             if (type is CppClass cppClass)
             {
-                cppClass.GenerateHeaderCode(sb);
+                cppClass.GenerateHeaderCode(sb, _metaTypeStorage);
                 sb.AppendLine();
             }
             else if (type is CppEnum cppEnum)
@@ -465,12 +547,16 @@ public static class CppNamespaceExtension
 
 public static class CppClassExtension
 {
-    public static void GenerateHeaderCode(this CppClass cppClass, StringBuilder sb)
+    public static void GenerateHeaderCode(this CppClass cppClass, StringBuilder sb, MetaTypeStorage storage)
     {
         if (cppClass.Parent is CppNamespace ns)
         {
             var keywords = cppClass.ClassKind == CppClassKind.Struct ? "struct" : "class";
             var file = cppClass.Span.Start.File;
+            
+            var inheritFromOther = cppClass.IsInheritedFromOtherMetaClass(storage);
+            var metaClassVirtual = !inheritFromOther && cppClass.IsFinal ? "" : " virtual";
+            var metaClassOverriden = inheritFromOther ? " override" : "";
             
             sb.AppendLine($$"""
                              namespace {{ns.FullName()}}{ {{keywords}} {{cppClass.Name}}; }
@@ -481,11 +567,10 @@ public static class CppClassExtension
                                  static atlas::MetaClass* get_meta_class();
                              };
                              
-                             #define CLASS_BODY_{{CodeGenUtils.MakeUnderlineStylePath(file)}}_{{cppClass.Name}}() \
+                             #define META_CODE_{{CodeGenUtils.MakeUnderlineStylePath(file)}}_{{cppClass.Name}}() \
                              public: \
-                             friend class PrivateCodeGen_{{cppClass.Name}}; \
-                             NODISCARD virtual MetaClass* meta_class() const { return meta_class_of<{{cppClass.FullName}}>(); } \
-                             private: \
+                             friend struct ::PrivateCodeGen_{{cppClass.Name}}; \
+                             NODISCARD{{metaClassVirtual}} MetaClass* meta_class() const{{metaClassOverriden}} { return meta_class_of<{{cppClass.FullName}}>(); } \
                              """);
 
             if (cppClass.HasCustomizeFlag())
@@ -496,9 +581,25 @@ public static class CppClassExtension
             }
             else
             {
-                foreach (var fn in cppClass.Functions)
+                if (cppClass.Functions.Count > 0)
                 {
-                    fn.GenerateHeaderCode(sb);
+                    sb.AppendLine("private: \\");
+                    foreach (var fn in cppClass.Functions)
+                    {
+                        fn.GenerateHeaderCode(sb);
+                    }
+
+                    if (cppClass.ClassKind == CppClassKind.Struct)
+                    {
+                        sb.AppendLine("public: \\");
+                    }
+                }
+                else
+                {
+                    if (cppClass.ClassKind == CppClassKind.Class)
+                    {
+                        sb.AppendLine("private: \\");
+                    }
                 }
 
                 if (cppClass.ClassKind == CppClassKind.Struct)
@@ -657,6 +758,22 @@ public static class CppClassExtension
     public static bool IsInterface(this CppClass cppClass)
     {
         return cppClass.IsAbstract && cppClass.Fields.Count <= 0;
+    }
+    
+    public static bool IsInheritedFromOtherMetaClass(this CppClass cppClass, MetaTypeStorage storage)
+    {
+        foreach (var baseType in cppClass.BaseTypes)
+        {
+            if (baseType.Type is CppClass baseClass)
+            {
+                if (storage.ContainsKey(baseClass.FullName))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
 

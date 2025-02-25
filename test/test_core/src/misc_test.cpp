@@ -214,15 +214,13 @@ TEST(MiscTest, IOTest)
     {
         IOBuffer buffer = {'a','b','c','d','e'};
 
-        auto task = llio.async_write(file, buffer);
-        task.then([=](auto write) {
-            EXPECT_TRUE(write == 5);
+        auto task = launch(llio.async_write(file, buffer));
+        auto write_size = task.get_result();
 
-            auto read_task = launch(llio.async_read(file));
-            auto&& b = read_task.get_result();
-            EXPECT_TRUE(b.size() == 5);
-        });
-        task.start();
+        EXPECT_TRUE(write_size == 5);
+        auto read_task = launch(llio.async_read(file));
+        auto&& b = read_task.get_result();
+        EXPECT_TRUE(b.size() == 5);
     }
 }
 

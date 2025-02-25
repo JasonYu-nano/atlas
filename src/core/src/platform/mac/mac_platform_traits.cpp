@@ -41,4 +41,9 @@ Path MacPlatformTraits::get_library_path(const Path& module_dir, StringName lib_
 #endif
 }
 
+void MacPlatformTraits::set_thread_name(const String& name)
+{
+    pthread_setname_np(name.data());
+}
+
 } // namespace atlas

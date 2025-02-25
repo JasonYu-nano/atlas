@@ -72,11 +72,10 @@ public:
     static Path get_library_path(const Path& module_dir, StringName lib_name);
 
     /**
-     * @brief Sets the name of the specified thread.
-     * @param thread_handle The handle to the thread.
+     * @brief Sets the name of the current thread.
      * @param name The name to set for the thread.
      */
-    static void set_thread_name(void* thread_handle, const String& name) VIRTUAL_IMPL(core)
+    static void set_thread_name(const String& name) VIRTUAL_IMPL(core)
 
     /**
      * @brief Gets the handle of the current thread.

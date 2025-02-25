@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.Runtime.InteropServices;
 using ToolCore.Utils;
 
 namespace AtlasBuilder;
@@ -9,6 +10,8 @@ public static class BuildCommand
     public static bool IsBuildMeta { get; private set; }
     public static TargetPlatform TargetPlatform { get; private set; }
     public static PackageManagerType PackageManager { get; private set; }
+    public static BuildType BuildType { get; private set; }
+    public static ArchType ArchType { get; private set; }
     public static RootCommand Command { get; private set; }
     private static Func<Task<int>>? _handler;
 
@@ -34,11 +37,23 @@ public static class BuildCommand
             description: "Which package manager to use",
             getDefaultValue: () => PackageManagerType.Vcpkg);
 
+        var buildOpt = new Option<BuildType>(
+            name: "--build_type",
+            description: "Which type to build",
+            getDefaultValue: () => BuildType.Debug);
+        
+        var archOpt = new Option<ArchType>(
+            name: "--arch",
+            description: "Which architecture to build",
+            getDefaultValue: () => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? ArchType.Arm64 : ArchType.X64);
+
         Command = new RootCommand("Build Command");
         Command.AddOption(buildDefinitionOpt);
         Command.AddOption(buildMetaOpt);
         Command.AddOption(targetPlatformOpt);
         Command.AddOption(pkgManagerOpt);
+        Command.AddOption(buildOpt);
+        Command.AddOption(archOpt);
             
         Command.SetHandler(async context =>
         {
@@ -46,6 +61,8 @@ public static class BuildCommand
             IsBuildMeta = context.ParseResult.GetValueForOption(buildMetaOpt);
             TargetPlatform = context.ParseResult.GetValueForOption(targetPlatformOpt);
             PackageManager = context.ParseResult.GetValueForOption(pkgManagerOpt);
+            BuildType = context.ParseResult.GetValueForOption(buildOpt);
+            ArchType = context.ParseResult.GetValueForOption(archOpt);
 
             context.ExitCode = _handler != null ? await _handler.Invoke() : 1;
         });

@@ -13,7 +13,6 @@ namespace atlas
 
 static void assign_node(node& source, node& target)
 {
-    using namespace toml;
     switch (source.type())
     {
         case node_type::boolean:

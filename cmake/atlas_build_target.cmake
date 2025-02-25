@@ -62,7 +62,7 @@ function(_test_file_need_exclude FILE_PATH OUT_RESULT)
                     set(RESULT "TRUE")
                 endif ()
 
-            elseif (${PLATFORM_APPLE})
+            elseif (${PLATFORM_MACOS})
                 if (${FILE_PATH} MATCHES "windows|linux")
                     set(RESULT "TRUE")
                 endif ()
@@ -156,7 +156,7 @@ macro(add_atlas_library)
 
     set(MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    if (${PLATFORM_APPLE})
+    if (${PLATFORM_MACOS})
         file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp *.h *.mm)
     else ()
         file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp)
@@ -186,7 +186,7 @@ macro(add_atlas_executable)
 
     set(MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    if (${PLATFORM_APPLE})
+    if (${PLATFORM_MACOS})
         file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp *.h *.mm)
     else ()
         file(GLOB_RECURSE MODULE_FILES *.hpp *.cpp)

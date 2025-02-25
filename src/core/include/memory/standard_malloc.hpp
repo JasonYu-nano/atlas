@@ -8,7 +8,7 @@
 #include "memory/malloc_base.hpp"
 #include "assertion.hpp"
 
-#if PLATFORM_APPLE
+#if PLATFORM_MACOS
 #include <malloc/malloc.h>
 #endif
 
@@ -30,7 +30,7 @@ public:
     {
 #if PLATFORM_WINDOWS
         return ::_aligned_malloc(size, alignment);
-#elif PLATFORM_APPLE
+#elif PLATFORM_MACOS
         ASSERT(size % alignment == 0);
         return std::aligned_alloc(alignment, size);
 #else
@@ -47,7 +47,7 @@ public:
     {
 #if PLATFORM_WINDOWS
         return ::_aligned_realloc(ptr, new_size, alignment);
-#elif PLATFORM_APPLE
+#elif PLATFORM_MACOS
         ASSERT(new_size % alignment == 0);
 
         if (ptr == nullptr)
