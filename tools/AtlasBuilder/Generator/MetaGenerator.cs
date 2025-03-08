@@ -26,7 +26,7 @@ public class MetaTypeException(CppType type, CppDeclaration declaration) : Excep
 
 public class MetaDeclarationException(string message) : Exception(message);
 
-[GeneratorVersion("0.0.7")]
+[GeneratorVersion("0.0.8")]
 public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 {
     private MetaTypeStorage _metaTypeStorage = new();
@@ -424,7 +424,7 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
             }
             
             {
-                var content = GenerateHeaderCode(pair.Key, pair.Value);
+                var content = GenerateHeaderCode(pair.Key, pair.Value, ownerTarget);
                 var outFile = Path.Combine(DirectoryUtils.BuildTargetIntermediateDirectory, ownerTarget.TargetName, $"{fileName}.gen.hpp");
                 tasks.Add(Task.Run(async () =>
                 {
@@ -447,7 +447,7 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
         return Task.WhenAll(tasks.ToArray());
     }
 
-    private string GenerateHeaderCode(string file, List<CppTypeDeclaration> types)
+    private string GenerateHeaderCode(string file, List<CppTypeDeclaration> types, BuildTargetBase ownerTarget)
     {
         StringBuilder sb = new();
         sb.AppendLine($"""
@@ -469,12 +469,12 @@ public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
         {
             if (type is CppClass cppClass)
             {
-                cppClass.GenerateHeaderCode(sb, _metaTypeStorage);
+                cppClass.GenerateHeaderCode(sb, _metaTypeStorage, ownerTarget);
                 sb.AppendLine();
             }
             else if (type is CppEnum cppEnum)
             {
-                cppEnum.GenerateHeaderCode(sb);
+                cppEnum.GenerateHeaderCode(sb, ownerTarget);
                 sb.AppendLine();
             }
         }
@@ -547,7 +547,7 @@ public static class CppNamespaceExtension
 
 public static class CppClassExtension
 {
-    public static void GenerateHeaderCode(this CppClass cppClass, StringBuilder sb, MetaTypeStorage storage)
+    public static void GenerateHeaderCode(this CppClass cppClass, StringBuilder sb, MetaTypeStorage storage, BuildTargetBase ownerTarget)
     {
         if (cppClass.Parent is CppNamespace ns)
         {
@@ -560,7 +560,7 @@ public static class CppClassExtension
             
             sb.AppendLine($$"""
                              namespace {{ns.FullName()}}{ {{keywords}} {{cppClass.Name}}; }
-                             template<> atlas::MetaClass* meta_class_of<{{cppClass.FullName}}>();
+                             template<> {{ownerTarget.ExportStatement}} atlas::MetaClass* meta_class_of<{{cppClass.FullName}}>();
                              
                              struct PrivateCodeGen_{{cppClass.Name}}
                              {
@@ -779,7 +779,7 @@ public static class CppClassExtension
 
 public static class CppEnumExtension
 {
-    public static void GenerateHeaderCode(this CppEnum cppEnum, StringBuilder sb)
+    public static void GenerateHeaderCode(this CppEnum cppEnum, StringBuilder sb, BuildTargetBase ownerTarget)
     {
         if (cppEnum.Parent is CppNamespace ns)
         {
@@ -787,14 +787,14 @@ public static class CppEnumExtension
             {
                 sb.AppendLine($$"""
                                 namespace {{ns.FullParentName}}::{{ns.Name}}{ enum class {{cppEnum.Name}} : {{cppEnum.IntegerType.GetPrettyName()}}; }
-                                template<> atlas::MetaEnum* meta_enum_of<{{cppEnum.FullName}}>();
+                                template<> {{ownerTarget.ExportStatement}} atlas::MetaEnum* meta_enum_of<{{cppEnum.FullName}}>();
                                 """);
             }
             else
             {
                 sb.AppendLine($$"""
                                 namespace {{ns.FullParentName}}::{{ns.Name}}{ enum {{cppEnum.Name}}; }
-                                template<> atlas::MetaEnum* meta_enum_of<{{cppEnum.FullName}}>();
+                                template<> {{ownerTarget.ExportStatement}} atlas::MetaEnum* meta_enum_of<{{cppEnum.FullName}}>();
                                 """);
             }
         }

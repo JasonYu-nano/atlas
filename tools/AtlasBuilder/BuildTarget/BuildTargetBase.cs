@@ -15,6 +15,8 @@ public abstract class BuildTargetBase : IComparable<BuildTargetBase>
     public string TargetName { get; }
     
     public string RootDirectory { get; }
+    
+    public string ExportStatement { get; private set; }
 
     public List<BuildTargetBase> PublicLinkBuildTargets { get; set; } = new List<BuildTargetBase>();
     
@@ -30,6 +32,7 @@ public abstract class BuildTargetBase : IComparable<BuildTargetBase>
     {
         TargetName = targetName;
         RootDirectory = rootDirectory;
+        ExportStatement = $"{TargetName.ToUpper()}_API";
     }
     
     protected BuildTargetBase(string targetName, string rootDirectory, HashSet<string> options, Dictionary<string, string> oneValueArgs, Dictionary<string, List<string>> multiValueArgs)
@@ -39,6 +42,7 @@ public abstract class BuildTargetBase : IComparable<BuildTargetBase>
         Options = options;
         OneValueArgs = oneValueArgs;
         MultiValueArgs = multiValueArgs;
+        ExportStatement = $"{TargetName.ToUpper()}_API";    
     }
 
     public abstract bool NeedExportSymbol();
