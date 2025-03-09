@@ -5,9 +5,9 @@
 
 #include "core_log.hpp"
 
-// Ensure that the expression is true at runtime. Otherwise will abort application.
-#define CHECK(expression, msg) \
+// Ensure that the expression is true at runtime. Otherwise, will abort application.
+#define CHECK(expression, msg, ...) \
     if (!(expression)) { \
-        LOG_CRITICAL(core, msg); \
+        LOG_CRITICAL(core, msg, ## __VA_ARGS__); \
         std::abort(); \
     }
