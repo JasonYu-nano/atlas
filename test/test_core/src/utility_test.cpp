@@ -80,17 +80,17 @@ TEST(UtilityTest, UntypedDataTest)
 
 TEST(UtilityTest, GuidTest)
 {
-    auto id = GUID::new_guid();
+    auto id = Guid::new_guid();
     EXPECT_TRUE(id.is_valid());
-    LOG_INFO(temp, "GUID is {}", id.to_string(GUID::EFormats::DigitsWithHyphensInBracesLowercase));
+    LOG_INFO(temp, "GUID is {}", id.to_string(EGuidFormats::DigitsWithHyphensInBracesLowercase));
 
-    UnorderedMap<GUID, int32> map;
+    UnorderedMap<Guid, int32> map;
     map.insert(id, 1);
 
     CompactBinaryArchiveWriter ws;
     ws << id;
 
-    GUID new_id;
+    Guid new_id;
     CompactBinaryArchiveReader rs(ws.get_buffer());
     rs >> new_id;
 

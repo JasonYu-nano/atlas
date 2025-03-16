@@ -49,7 +49,7 @@ public:
     }
 
 // private:
-    UnorderedMap<GUID, AssetOverview> assets_;
+    UnorderedMap<Guid, AssetOverview> assets_;
 };
 
 }// namespace atlas

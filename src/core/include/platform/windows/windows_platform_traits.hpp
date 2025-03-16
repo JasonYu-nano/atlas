@@ -64,7 +64,7 @@ public:
      * @brief Retrieves a GUID.
      * @param guid The GUID to be retrieved.
      */
-    static void get_guid(class GUID& guid);
+    static void get_guid(class Guid& guid);
 
     /**
      * @brief The alias name for the platform.

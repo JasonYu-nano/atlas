@@ -43,7 +43,7 @@ TEST(AssetTest, ObjectPath)
 TEST(AssetTest, SaveAndLoad)
 {
     AssetPackage package;
-    AssetOverview overview{ GUID::new_guid(), {GUID::new_guid(), GUID::new_guid()}, 0, 0, ObjectPath() };
+    AssetOverview overview{ Guid::new_guid(), {Guid::new_guid(), Guid::new_guid()}, 0, 0, ObjectPath() };
     package.assets_.insert(overview.id, overview);
 
     Path save_path = Directory::get_engine_directory() / "test" / "test_engine" / "temp" / "test_package.ap";

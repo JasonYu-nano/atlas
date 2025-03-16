@@ -30,14 +30,14 @@ public:
         }
     }
 
-    void remove(GUID guid)
+    void remove(Guid guid)
     {
         std::unique_lock lock(cache_mutex_);
         cache_.remove(guid);
     }
 
 private:
-    UnorderedMap<GUID, WeakObjectPtr<GObject>> cache_;
+    UnorderedMap<Guid, WeakObjectPtr<GObject>> cache_;
     std::shared_mutex cache_mutex_;
 };
 

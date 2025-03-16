@@ -24,7 +24,7 @@ public:
     }
 // private:
     std::unique_ptr<PackageLoaderBase> package_loader_{ nullptr };
-    UnorderedMap<GUID, AssetOverview> asset_cache_;
+    UnorderedMap<Guid, AssetOverview> asset_cache_;
 };
 
 }// namespace atlas

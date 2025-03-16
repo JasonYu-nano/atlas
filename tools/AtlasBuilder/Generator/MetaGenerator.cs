@@ -26,10 +26,10 @@ public class MetaTypeException(CppType type, CppDeclaration declaration) : Excep
 
 public class MetaDeclarationException(string message) : Exception(message);
 
-[GeneratorVersion("0.0.8")]
+[GeneratorVersion("0.0.9")]
 public class MetaGenerator(BuildTargetAssembly buildTargetAssembly)
 {
-    private MetaTypeStorage _metaTypeStorage = new();
+    private readonly MetaTypeStorage _metaTypeStorage = new();
 
     public async Task Generate()
     {
@@ -565,6 +565,8 @@ public static class CppClassExtension
                              struct PrivateCodeGen_{{cppClass.Name}}
                              {
                                  static atlas::MetaClass* get_meta_class();
+                                 
+                                 static void generate_class_body();
                              };
                              
                              #define META_CODE_{{CodeGenUtils.MakeUnderlineStylePath(file)}}_{{cppClass.Name}}() \
@@ -645,15 +647,41 @@ public static class CppClassExtension
                 }
             }
         }
+
+        sb.AppendLine("""
+                          .get();
+                      }
+                      """);
         
         if (cppClass.HasCustomizeFlag())
         {
+            sb.AppendLine($$"""
+
+                            void PrivateCodeGen_{{cppClass.Name}}::generate_class_body()
+                            {
+                                auto meta_class = meta_class_of<{{cppClass.FullName}}>();
+                                Registration::ClassReg<{{cppClass.FullName}}>(meta_class)
+                            """);
+            
             Type? type = Type.GetType($"AtlasBuilder.Generator.CustomizeGenerator.{cppClass.Name}CustomizeGenerator");
             Debug.Assert(type != null);
             type.InvokeMember("GenerateRegistrationCode", BindingFlags.Public |BindingFlags.Static | BindingFlags.InvokeMethod, null, null, [sb, 1]);
+            
+            sb.AppendLine("""
+                              ;
+                          }
+                          """);
         }
-        else
+        else if (cppClass.Fields.Count > 0 || cppClass.Functions.Count > 0)
         {
+            sb.AppendLine($$"""
+                            
+                            void PrivateCodeGen_{{cppClass.Name}}::generate_class_body()
+                            {
+                                auto meta_class = meta_class_of<{{cppClass.FullName}}>();
+                                Registration::ClassReg<{{cppClass.FullName}}>(meta_class)
+                            """);
+            
             foreach (var field in cppClass.Fields)
             {
                 field.GenerateSourceCode(sb, 1);
@@ -663,11 +691,21 @@ public static class CppClassExtension
             {
                 fn.GenerateSourceCode(sb, 1);
             }
+
+            sb.AppendLine("""
+                              ;         
+                          }
+                          """);
+        }
+        else
+        {
+            sb.AppendLine($$"""
+
+                            void PrivateCodeGen_{{cppClass.Name}}::generate_class_body() {}
+                            """);
         }
 
         sb.AppendLine($$"""
-                          .get();
-                      }
                       
                       template<>
                       MetaClass* meta_class_of<{{cppClass.FullName}}>()
@@ -676,9 +714,7 @@ public static class CppClassExtension
                           return m;
                       }
                       
-                      static Registration auto_register_{{cppClass.Name}}([]{
-                          meta_class_of<{{cppClass.FullName}}>();
-                      });
+                      static Registration auto_register_{{cppClass.Name}}([]{meta_class_of<{{cppClass.FullName}}>();}, &PrivateCodeGen_{{cppClass.Name}}::generate_class_body);
                       """);
     }
     
@@ -783,17 +819,18 @@ public static class CppEnumExtension
     {
         if (cppEnum.Parent is CppNamespace ns)
         {
+            var fullNamespace = ns.FullParentName.Length > 0 ? $"{ns.FullParentName}::{ns.Name}" : $"{ns.Name}";
             if (cppEnum.IsScoped)
             {
                 sb.AppendLine($$"""
-                                namespace {{ns.FullParentName}}::{{ns.Name}}{ enum class {{cppEnum.Name}} : {{cppEnum.IntegerType.GetPrettyName()}}; }
+                                namespace {{fullNamespace}}{ enum class {{cppEnum.Name}} : {{cppEnum.IntegerType.GetPrettyName()}}; }
                                 template<> {{ownerTarget.ExportStatement}} atlas::MetaEnum* meta_enum_of<{{cppEnum.FullName}}>();
                                 """);
             }
             else
             {
                 sb.AppendLine($$"""
-                                namespace {{ns.FullParentName}}::{{ns.Name}}{ enum {{cppEnum.Name}}; }
+                                namespace {{fullNamespace}}{ enum {{cppEnum.Name}}; }
                                 template<> {{ownerTarget.ExportStatement}} atlas::MetaEnum* meta_enum_of<{{cppEnum.FullName}}>();
                                 """);
             }
@@ -854,19 +891,36 @@ public static class CppFieldExtension
         }
     }
     
-    public static void GenerateSourceCode(this CppField cppField, StringBuilder sb, int numTabs)
+    public static void GenerateSourceCode(this CppField cppField, StringBuilder sb, int numTabs, CppClass? ownerClass = null)
     {
+        if (cppField is {IsAnonymous: true, Type: CppClass {ClassKind: CppClassKind.Union}})
+        {
+            var typeClass = (CppClass)cppField.Type;
+
+            // Expand the anonymous union.
+            // Process expressions like: union { struct {int a;}; struct {float b;}; };.
+            foreach (var childClass in typeClass.Classes)
+            {
+                foreach (var field in childClass.Fields)
+                {
+                    field.GenerateSourceCode(sb, numTabs, (CppClass)cppField.Parent);
+                }
+            }
+            return;
+        }
+        
         sb.AppendTabs(numTabs);
+        CppClass parent = ownerClass ?? (CppClass)cppField.Parent;
         if (cppField.Type.IsArrayType())
         {
             CppType tempType = ((CppClass)cppField.Type).TemplateSpecializedArguments[0].ArgAsType;
-            sb.Append($".add_property(Registration::ArrayPropertyReg(\"{cppField.Name}\", OFFSET_OF({((CppClass)cppField.Parent).FullName}, {cppField.Name}), ");
+            sb.Append($".add_property(Registration::ArrayPropertyReg(\"{cppField.Name}\", OFFSET_OF({parent.FullName}, {cppField.Name}), ");
             GeneratePropertyReg(sb, cppField.Type);
             sb.AppendLine(")");
         }
         else
         {
-            sb.AppendLine($".add_property(Registration::PropertyReg<{cppField.Type.GetPrettyName()}>(\"{cppField.Name}\", OFFSET_OF({((CppClass)cppField.Parent).FullName}, {cppField.Name}))");
+            sb.AppendLine($".add_property(Registration::PropertyReg<{cppField.Type.GetPrettyName()}>(\"{cppField.Name}\", OFFSET_OF({parent.FullName}, {cppField.Name}))");
         }
         
         List<string> flags = new();
@@ -902,7 +956,7 @@ public static class CppFieldExtension
             throw new MetaDeclarationException("Property can only be declared in class or struct");
         }
 
-        if (!CppTypeUtils.IsValidType(cppField.Type, storage))
+        if (!cppField.IsAnonymous && !CppTypeUtils.IsValidType(cppField.Type, storage))
         {
             throw new MetaTypeException(cppField.Type, cppField);
         }

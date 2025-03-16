@@ -9,11 +9,11 @@
 namespace atlas
 {
 
-struct ENGINE_API META(Customize) Color
+struct ENGINE_API META() Color
 {
     union
     {
-        struct { uint8 r,g,b,a; };
+        struct { META() uint8 r,g,b,a; };
         uint32 components {};
     };
 
