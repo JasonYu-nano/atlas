@@ -58,7 +58,7 @@ public:
      * @brief Generates a new GUID.
      * @return A new GUID.
      */
-    static Guid new_guid();
+    META() static Guid new_guid();
 
     /**
      * @brief Equality operator.
@@ -95,13 +95,13 @@ public:
      * @param format The format of the string.
      * @return The string representation of the GUID.
      */
-    NODISCARD String to_string(EGuidFormats format = EGuidFormats::DigitsWithHyphens) const;
+    META() NODISCARD String to_string(EGuidFormats format = EGuidFormats::DigitsWithHyphens) const;
 
     /**
      * @brief Checks if the GUID is valid.
      * @return True if the GUID is valid, false otherwise.
      */
-    NODISCARD bool is_valid() const
+    META() NODISCARD bool is_valid() const
     {
         return (a_ | b_ | c_ | d_) != 0;
     }
@@ -109,7 +109,7 @@ public:
     /**
      * @brief Invalidate the GUID
      */
-    void invalidate()
+    META() void invalidate()
     {
         a_ = b_ = c_ = d_ = 0;
     }
