@@ -101,7 +101,7 @@ public:
      * @brief Retrieves a GUID.
      * @param guid The GUID to be retrieved.
      */
-    static void get_guid(class GUID& guid) VIRTUAL_IMPL(core)
+    static void get_guid(class Guid& guid) VIRTUAL_IMPL(core)
 
     /**
      * @brief The alias name for the platform.

@@ -191,6 +191,11 @@ public:
             }
             class_->name_ = class_name;
         }
+
+        explicit ClassReg(MetaClass* meta_class)
+        {
+            class_ = meta_class;
+        }
     };
 
     template<typename T>
@@ -406,22 +411,36 @@ public:
         Method* method_{ nullptr };
     };
 
-    explicit Registration(std::function<void()> fn)
+    using fn_register_type_body = void (*)();
+
+    explicit Registration(std::function<void()> register_type, fn_register_type_body register_body = nullptr)
     {
-        deffer_register_array_.add(fn);
+        deffer_register_type_array_.add(register_type);
+        if (register_body)
+        {
+            deffer_register_body_array_.add(register_body);
+        }
     }
 
     static void register_meta_types()
     {
-        for (const auto& fn : deffer_register_array_)
+        // Register the type first to avoid the dead loop
+        for (const auto& fn : deffer_register_type_array_)
         {
             fn();
         }
-        deffer_register_array_.clear();
+        deffer_register_type_array_.clear(true);
+
+        for (const auto& fn : deffer_register_body_array_)
+        {
+            fn();
+        }
+        deffer_register_body_array_.clear(true);
     }
 
 private:
-    static inline Array<std::function<void()>> deffer_register_array_;
+    static inline Array<std::function<void()>> deffer_register_type_array_;
+    static inline Array<fn_register_type_body> deffer_register_body_array_;
 };
 
 }// namespace atlas

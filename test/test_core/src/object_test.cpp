@@ -7,7 +7,7 @@
 namespace atlas::test
 {
 
-TEST(AObjectest, GOConstruct)
+TEST(ObjectTest, GOConstruct)
 {
     auto go1 = new_object<GObject>(nullptr);
     auto go2 = new_object<GObject>(meta_class_of<GObject>(), nullptr);

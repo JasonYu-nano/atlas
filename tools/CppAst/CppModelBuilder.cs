@@ -348,14 +348,13 @@ namespace CppAst
                 case CXCursorKind.CXCursor_StructDecl:
                 case CXCursorKind.CXCursor_UnionDecl:
                     {
+                        bool isAnonymous = cursor.IsAnonymous;
                         //++ Atlas customization: Only parse statements that declared user annotate.
-                        if (ParseUserAnnotateOnly && !HasUserAnnotate(cursor))
+                        if (ParseUserAnnotateOnly && !isAnonymous && !HasUserAnnotate(cursor))
                         {
                             break;
                         }
                         //-- Atlas customization
-
-                        bool isAnonymous = cursor.IsAnonymous;
                         var cppClass = VisitClassDecl(cursor, data);
 
                         var containerContext = GetOrCreateDeclarationContainer(parent, data);

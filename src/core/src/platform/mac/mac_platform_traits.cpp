@@ -53,7 +53,7 @@ void* MacPlatformTraits::get_this_thread_handle()
     return pthread_self();
 }
 
-void MacPlatformTraits::get_guid(GUID& guid)
+void MacPlatformTraits::get_guid(Guid& guid)
 {
     CFUUIDRef uuid = CFUUIDCreate(kCFAllocatorDefault);
     CFUUIDBytes uuidBytes = CFUUIDGetUUIDBytes(uuid);

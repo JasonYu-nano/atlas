@@ -8,34 +8,42 @@
 #include "serialize/stream.hpp"
 #include "string/string.hpp"
 
+#include "guid.gen.hpp"
+
 namespace atlas
 {
 
 /**
- * @class GUID
+ * @enum EGuidFormats
+ * @brief Enumeration of possible GUID string formats.
+ */
+enum class META() EGuidFormats
+{
+    DigitsWithHyphens, ///< Format with digits and hyphens.
+    DigitsWithHyphensLowercase, ///< Format with digits and hyphens in lowercase.
+    DigitsWithHyphensInBraces, ///< Format with digits, hyphens, and braces.
+    DigitsWithHyphensInBracesLowercase, ///< Format with digits, hyphens, and braces in lowercase.
+};
+
+/**
+ * @class Guid
  * @brief Represents a globally unique identifier (GUID).
  *
  * This class provides functionality to generate, serialize, and compare GUIDs.
  */
-class CORE_API GUID
+class CORE_API META() Guid
 {
+    GEN_META_CODE(Guid)
 public:
-    /**
-     * @enum EFormats
-     * @brief Enumeration of possible GUID string formats.
-     */
     enum class EFormats
     {
-        DigitsWithHyphens, ///< Format with digits and hyphens.
-        DigitsWithHyphensLowercase, ///< Format with digits and hyphens in lowercase.
-        DigitsWithHyphensInBraces, ///< Format with digits, hyphens, and braces.
-        DigitsWithHyphensInBracesLowercase, ///< Format with digits, hyphens, and braces in lowercase.
+
     };
 
     /**
      * @brief Default constructor. Initializes the GUID to zero.
      */
-    GUID() : a_(0), b_(0), c_(0), d_(0) {}
+    Guid() : a_(0), b_(0), c_(0), d_(0) {}
 
     /**
      * @brief Parameterized constructor. Initializes the GUID with the given values.
@@ -44,20 +52,20 @@ public:
      * @param c Third part of the GUID.
      * @param d Fourth part of the GUID.
      */
-    GUID(uint32 a, uint32 b, uint32 c, uint32 d) : a_(a), b_(b), c_(c), d_(d) {}
+    Guid(uint32 a, uint32 b, uint32 c, uint32 d) : a_(a), b_(b), c_(c), d_(d) {}
 
     /**
      * @brief Generates a new GUID.
      * @return A new GUID.
      */
-    static GUID new_guid();
+    static Guid new_guid();
 
     /**
      * @brief Equality operator.
      * @param other The GUID to compare with.
      * @return True if the GUIDs are equal, false otherwise.
      */
-    bool operator==(const GUID& other) const
+    bool operator==(const Guid& other) const
     {
         return other.a_ == a_ && other.b_ == b_ && other.c_ == c_ && other.d_ == d_;
     }
@@ -67,7 +75,7 @@ public:
      * @param ws The write stream.
      * @param id The GUID to serialize.
      */
-    friend void serialize(WriteStream& ws, const GUID& id)
+    friend void serialize(WriteStream& ws, const Guid& id)
     {
         ws << id.a_ << id.b_ << id.c_ << id.d_;
     }
@@ -77,7 +85,7 @@ public:
      * @param rs The read stream.
      * @param id The GUID to deserialize.
      */
-    friend void deserialize(ReadStream& rs, GUID& id)
+    friend void deserialize(ReadStream& rs, Guid& id)
     {
         rs >> id.a_ >> id.b_ >> id.c_ >> id.d_;
     }
@@ -87,7 +95,7 @@ public:
      * @param format The format of the string.
      * @return The string representation of the GUID.
      */
-    NODISCARD String to_string(EFormats format = EFormats::DigitsWithHyphens) const;
+    NODISCARD String to_string(EGuidFormats format = EGuidFormats::DigitsWithHyphens) const;
 
     /**
      * @brief Checks if the GUID is valid.
@@ -108,7 +116,7 @@ public:
 
     union
     {
-        struct { uint32 a_, b_, c_, d_; }; ///< The parts of the GUID.
+        struct { META() uint32 a_, b_, c_, d_; }; ///< The parts of the GUID.
         struct
         {
             uint32 part1_; ///< First part of the GUID.
@@ -124,15 +132,15 @@ public:
  * @brief Specialization of std::hash for GUID.
  */
 template <>
-struct CORE_API std::hash<atlas::GUID>
+struct CORE_API std::hash<atlas::Guid>
 {
     /**
      * @brief Hash function for GUID.
      * @param id The GUID to hash.
      * @return The hash value.
      */
-    NODISCARD size_t operator()(const atlas::GUID& id) const noexcept
+    NODISCARD size_t operator()(const atlas::Guid& id) const noexcept
     {
-        return atlas::city_hash::city_hash64((char*)&id, sizeof(atlas::GUID));
+        return atlas::city_hash::city_hash64((char*)&id, sizeof(atlas::Guid));
     }
 };

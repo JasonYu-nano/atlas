@@ -13,8 +13,8 @@ namespace atlas
 
 struct ENGINE_API AssetOverview
 {
-    GUID id;
-    Array<GUID> import_assets;
+    Guid id;
+    Array<Guid> import_assets;
     size_t offset;
     size_t size;
     ObjectPath path;
@@ -38,7 +38,7 @@ struct ENGINE_API AssetOverview
         rs >> size;
         for (size_t i = 0; i < size; ++i)
         {
-            GUID imported;
+            Guid imported;
             rs >> imported;
             v.import_assets.add(std::move(imported));
         }
