@@ -49,6 +49,8 @@ macro(_add_dependency)
             add_dependencies(${ARG_TARGET} ${TARGET})
         endforeach ()
     endif ()
+
+    add_dependencies(${ARG_TARGET} RUN_META_GENERATOR)
 endmacro()
 
 function(_test_file_need_exclude FILE_PATH OUT_RESULT)

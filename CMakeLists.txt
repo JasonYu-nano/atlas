@@ -119,6 +119,12 @@ execute_process(
         OUTPUT_VARIABLE OUTPUT
 )
 
+# create a custom target to run meta generator before compile target
+add_custom_target(RUN_META_GENERATOR
+        COMMAND ${ATLAS_BUILDER} --package_manager=Vcpkg --build_type=${ATLAS_BUILD_TYPE} --arch=${ATLAS_TARGET_ARCH} --build_definition=false
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 if (EXIT_CODE)
     message("${OUTPUT}")
     message(FATAL_ERROR "Atlas: some errors occurred while running atlas builder. msg: ${EXIT_CODE}")
