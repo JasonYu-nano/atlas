@@ -123,7 +123,7 @@ void WindowsPlatformTraits::setup_crash_handler()
 #endif
 }
 
-void WindowsPlatformTraits::get_guid(GUID& guid)
+void WindowsPlatformTraits::get_guid(Guid& guid)
 {
     auto result = CoCreateGuid((::GUID*)&guid);
     if (result != S_OK)
