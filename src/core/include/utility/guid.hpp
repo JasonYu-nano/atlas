@@ -17,7 +17,7 @@ namespace atlas
  * @enum EGuidFormats
  * @brief Enumeration of possible GUID string formats.
  */
-enum class META() EGuidFormats
+enum class META() EGuidFormats : uint8
 {
     DigitsWithHyphens, ///< Format with digits and hyphens.
     DigitsWithHyphensLowercase, ///< Format with digits and hyphens in lowercase.
