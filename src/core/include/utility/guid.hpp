@@ -35,11 +35,6 @@ class CORE_API META() Guid
 {
     GEN_META_CODE(Guid)
 public:
-    enum class EFormats
-    {
-
-    };
-
     /**
      * @brief Default constructor. Initializes the GUID to zero.
      */
